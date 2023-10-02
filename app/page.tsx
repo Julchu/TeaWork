@@ -1,6 +1,7 @@
 import { Button } from "app/components/ui/button"
+import { FC } from "react"
 
-export default function Home() {
+const Home: FC = () => {
   return (
     <main className="flex min-h-screen flex-col items-center justify-between p-24">
       <Button>Click me</Button>
@@ -8,3 +9,5 @@ export default function Home() {
     </main>
   )
 }
+
+export default Home
