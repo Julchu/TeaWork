@@ -1,4 +1,3 @@
-'use client';
 import { FC, ReactNode } from 'react';
 import AuthProvider from 'src/hooks/use-auth-context';
 

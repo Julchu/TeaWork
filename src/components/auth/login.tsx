@@ -6,6 +6,7 @@ import { Button } from 'src/components/ui/button';
 
 const Login: FC = () => {
   const [signInWithGoogle, user, loading, error] = useSignInWithGoogle(authentication);
+
   return (
     <Button
       onClick={() => {
