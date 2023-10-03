@@ -2,11 +2,16 @@
   "name": "teawork",
   "version": "0.1.0",
   "private": true,
+  "license": "MIT",
   "scripts": {
     "dev": "next dev",
     "build": "next build",
+    "export": "next build && next export",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "lint:fix": "next lint --fix '**/*.{ts,tsx}'",
+    "type-check": "tsc --noEmit",
+    "type-check:firebase": "tsc -p functions --skipLibCheck --noEmit"
   },
   "dependencies": {
     "@radix-ui/react-icons": "^1.3.0",

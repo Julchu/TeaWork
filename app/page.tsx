@@ -1,10 +1,10 @@
-import { Button } from 'app/components/ui/button';
 import { FC } from 'react';
+import Test from 'app/components/test/test';
 
 const Home: FC = () => {
   return (
     <main className="flex min-h-screen flex-col items-center justify-between p-24">
-      <Button>Click me</Button>
+      <Test />
     </main>
   );
 };
