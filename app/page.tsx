@@ -1,5 +1,5 @@
-import { Button } from "app/components/ui/button";
-import { FC } from "react";
+import { Button } from 'app/components/ui/button';
+import { FC } from 'react';
 
 const Home: FC = () => {
   return (
