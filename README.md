@@ -45,4 +45,4 @@ firebase --project="teaworkapp" emulators:start --only auth,firestore,storage --
 ./emulatorData```
 
 ```zsh
-firebase deploy```
+firebase --project teaworkapp deploy```

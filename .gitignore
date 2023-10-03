@@ -94,6 +94,7 @@ dist
 
 # Firebase
 emulatorData
+.firebase
 
 # Gatsby files
 .cache/

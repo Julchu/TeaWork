@@ -6,7 +6,6 @@
   "hosting": {
     "public": "out",
     "cleanUrls": true,
-    "source": ".",
     "ignore": [
       "firebase.json",
       "**/.*",
@@ -35,9 +34,6 @@
     },
     "hosting": {
       "port": 5000
-    },
-    "pubsub": {
-      "port": 8085
     },
     "storage": {
       "port": 9199

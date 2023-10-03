@@ -40,7 +40,7 @@ const Test: FC = () => {
           await test2();
         }}
       >
-        Click me
+        Click me too
       </Button>
     </>
   );
