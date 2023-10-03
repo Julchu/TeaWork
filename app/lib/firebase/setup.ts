@@ -24,10 +24,9 @@ const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0
 
 // const analytics = getAnalytics(app);
 // const storage = getStorage(app);
-// const functions = getFunctions(app);
-const authentication = getAuth(app);
 
 const firestore = getFirestore(app);
+const authentication = getAuth(app);
 connectFirestoreEmulator(firestore, '127.0.0.1', 8080);
 connectAuthEmulator(authentication, 'http://127.0.0.1:9099', { disableWarnings: true });
 
