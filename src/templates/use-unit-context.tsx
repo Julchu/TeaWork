@@ -1,6 +1,6 @@
-import { createContext, FC, ReactNode, useContext, useState } from "react";
-import { Unit, UnitCategory } from "../lib/firebase/interfaces";
-import { useAuthContext } from "./use-auth-context";
+import { createContext, FC, ReactNode, useContext, useState } from 'react';
+import { Unit, UnitCategory } from '../lib/firebase/interfaces';
+import { useAuthContext } from './use-auth-context';
 
 // Private context value types, set in Context Provider
 type UnitProps = {

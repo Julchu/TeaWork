@@ -1,5 +1,5 @@
 import { FC } from 'react';
-import Test from 'app/components/test/test';
+import Test from 'src/components/test/test';
 
 const Home: FC = () => {
   return (

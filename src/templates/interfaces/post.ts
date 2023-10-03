@@ -1,5 +1,5 @@
 import { collection, doc, FirestoreDataConverter, getDoc, getDocs } from 'firebase/firestore';
-import { db } from 'app/lib/firebase/interfaces';
+import { db } from '../../lib/firebase/interfaces';
 
 type Post = { title: string; content: string };
 

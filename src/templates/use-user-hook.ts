@@ -10,7 +10,7 @@ import {
 } from 'firebase/firestore';
 import { useCallback, useState } from 'react';
 import { db, Role, Unit, User, WithDocId } from '../lib/firebase/interfaces';
-import { filterNullableObject } from 'app/lib/functions';
+import { filterNullableObject } from '../lib/functions';
 import { useAuthContext } from './use-auth-context';
 
 type AuthData = {

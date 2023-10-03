@@ -1,4 +1,4 @@
-import { DependencyList, useCallback, useEffect, useRef, useState } from "react";
+import { DependencyList, useCallback, useEffect, useRef, useState } from 'react';
 
 /** Acts like `React.useCallback` but debounces its callback
  * @returns callback and cleanup functions
