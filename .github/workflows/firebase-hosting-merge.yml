@@ -31,6 +31,8 @@ jobs:
           echo NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID=$NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID >> .env
           echo NEXT_PUBLIC_EMULATOR_ENABLED=$NEXT_PUBLIC_EMULATOR_ENABLED >> .env
           cat .env
+          echo $NEXT_PUBLIC_FIREBASE_API_KEY
+          echo .env
       - run: 'yarn install && yarn run build'
       - uses: FirebaseExtended/action-hosting-deploy@v0
         with:
