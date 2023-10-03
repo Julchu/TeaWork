@@ -20,7 +20,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - run: 'echo "variable from shell environment : $env_var"'
+      - run: 'echo "variable from shell environment : $NEXT_PUBLIC_FIREBASE_API_KEY"'
       #      - run: 'yarn install && yarn run build'
       - uses: FirebaseExtended/action-hosting-deploy@v0
         with:
