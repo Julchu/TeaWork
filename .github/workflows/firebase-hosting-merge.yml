@@ -20,7 +20,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - run: 'echo "${{ vars.ENV_FILE }}" > .env'
+      - run: 'echo "${{ secrets.ENV_FILE }}" > .env'
       - run: 'yarn install && yarn run build'
       - uses: FirebaseExtended/action-hosting-deploy@v0
         with:
