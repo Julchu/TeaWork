@@ -1,48 +1,140 @@
-This is a [Next.js](https://nextjs.org/) project bootstrapped
-with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# TeaWork
 
-## Getting Started
+Finding pleasant cafes to grab coffee and to work at
 
-First, run the development server:
+Filter and save specific work environment information about nearby places
+
+# TODO:
+
+- [TODO Board](https://github.com/users/Julchu/projects/6)
+
+# Setup
+
+### NodeJS, `npm`, `yarn`
+
+- You'll need to download [NodeJS](https://nodejs.org/en/) and install to `npm` (Node Package Manager) to PATH so that
+  you can run commands to download packages used to create React projects.
+
+- The main package you'll need is a separate package manager called `yarn`, which functions similarly (like a super
+  layer) to `npm`
+
+### Why `yarn`
+
+- NextJS uses `yarn` over `npm` by default
+- `yarn` installs packages in parallel rather than one-by-one, like `npm` does
+- `yarn`'s lockfile is a lot more sturdy than `npm`'s lockfile
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm install --global yarn
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### Firebase/Firestore emulator
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
-
-This project uses [`next/font`](https://nextjs.org/docs/basic-features/font-optimization) to automatically optimize and
-load Inter, a custom Google Font.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js/) - your feedback and contributions
-are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use
-the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme)
-from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
+- You'll need Firebase installed globally
 
 ```zsh
-firebase --project="teaworkapp" emulators:start --only auth,firestore,storage --export-on-exit ./emulatorData --import
-./emulatorData```
+yarn global add firebase-tools
+```
+
+### Git
+
+- You'll need [git](https://git-scm.com/downloads) installed to copy the project into your local directory
+
+### Environment files
+
+- You'll need a copy of `.env.example` as your development environment, as well as a production environment when
+  deploying to live
 
 ```zsh
-firebase --project teaworkapp deploy```
+# Copy and setup your environment
+cp .env.example .env.development .env.production
+```
+
+### Cloning and installing the app
+
+```zsh
+# Go to your preferred project directory; a folder called teawork will be added
+git clone https://github.com/Julchu/TeaWork.git
+cd teawork
+
+# Installing the React app; a browser tab should open at localhost:3000
+yarn install
+yarn dev
+
+# Deploying app to live; make sure to comment out lines to connect emulators in /lib/firebase/index.ts before deploying
+# Optional flag: --except functions
+yarn export && firebase --project teaworkapp deploy
+```
+
+### Launching the Firebase/Firestore emulator: open the emulator at localhost:4000/firestore
+
+- Also exports/imports emulator data to `./emulatorData`
+
+```zsh
+firebase --project="teaworkapp" emulators:start --only auth,firestore,storage --export-on-exit ./emulatorData --import ./emulatorData
+```
+
+### Sometimes emulator port is in use, this command will kill that port
+
+```zsh
+sudo kill -9 $(sudo lsof -t -i:8080)
+```
+
+### Prettier (format on save)
+
+- In VSCode, install the extention Prettier
+- Go to your VSCode JSON settings:
+    - Command Palette -> Preferences: Open Settings (JSON)
+- Add the following code to the JSON object
+- Whenever you save a file, it'll run automatic formatting based on rules defined in `/.prettierrc.json`
+
+```json
+// settings.json
+{
+  ...
+  "editor.tabSize": 2,
+  // Add this to enable autosave in VSCode with Prettier
+  "editor.formatOnSave": true,
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  ...
+}
+```
+
+- I also use file autosave whenever I switch to a different page/window, mimicking Webstorm
+
+```json
+{
+  "files.autoSave": "onFocusChange"
+}
+```
+
+## Testing
+
+We're using ESLint to test for basic JavaScript and TypeScript errors
+
+You can run `lint` and `type-check` to check for basic project syntax errors
+
+```zsh
+# In root directory (/teawork)
+yarn lint
+yarn type-check
+```
+
+# Notes
+
+## Firestore
+
+```ts
+const newUserRef = await addDoc(db.userCollection, { userData });
+
+const userDoc = await getDoc(newUserRef);
+if (userDoc.exists()) {
+  const user = userDoc.data();
+}
+
+const existingUser = await getDocs(query(db.userCollection, where('uid', '==', uid)));
+
+if (existingUser.docs.length) {
+  const user = existingUser.docs[0].data();
+}
+```
