@@ -37,9 +37,6 @@
   ],
   "exclude": [
     "node_modules",
-    "app/hooks",
-    "app/lib/firebase/interfaces",
-    "app/lib/firebase/interfaces.ts",
-    "app/lib/firebase/functions.ts"
+    "app/templates"
   ]
 }
