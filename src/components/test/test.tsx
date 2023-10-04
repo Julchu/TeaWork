@@ -40,6 +40,7 @@ const Test: FC = () => {
       })}
 
       <Button
+        className={'rounded-xl'}
         onClick={() => {
           test();
         }}
