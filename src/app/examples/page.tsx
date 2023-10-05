@@ -11,20 +11,24 @@ const Example: FC = async () => {
   // const data = await getData('02wUnDjap2L7deE6ySu3');
   const data = await getAllData();
   return (
-    <div className={'bg-amber-400'}>
+    <div className={'bg-amber-400 leading-loose flex-col'}>
+      <h1 className={'place-self-center	'}>Server Component w/ Suspense</h1>
       <Suspense fallback={<Loading />}>
         <ServerComponent />
       </Suspense>
 
       {/*{JSON.stringify(data)}*/}
+      <h1 className={'place-self-center	'}>Client Component w/o Suspense</h1>
       {data.map(user => JSON.stringify(user))}
 
-      <Suspense fallback={<Loading />}>
-        <ReactFirebaseHook />
-      </Suspense>
-
+      <h1 className={'place-self-center	'}>Client Component w/ Suspense</h1>
       <Suspense fallback={<Loading />}>
         <ClientComponent />
+      </Suspense>
+
+      <h1 className={'place-self-center	'}>Firebase Hooks Client Component w/ Suspense</h1>
+      <Suspense fallback={<Loading />}>
+        <ReactFirebaseHook />
       </Suspense>
     </div>
   );
