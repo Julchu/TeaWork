@@ -8,13 +8,9 @@ import SignOut from 'src/components/auth/sign-out';
 const AuthProvider: FC<{ children: ReactNode }> = ({ children }) => {
   const [user, loading, error] = useAuthState(authentication);
 
-  if (!user) {
-    return <Login />;
-  }
-
   return (
     <>
-      <SignOut />
+      {user ? <SignOut /> : <Login />}
       {children}
     </>
   );
