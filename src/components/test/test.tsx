@@ -4,14 +4,14 @@ import { Button } from 'src/components/ui/button';
 import { Label } from 'src/components/ui/label';
 import { addDoc } from '@firebase/firestore';
 import { collection, getDocs, query, where } from 'firebase/firestore';
-import { authentication, firestore } from 'src/lib/firebase';
+import { firestore } from 'src/lib/firebase';
 import { useCollection, useCollectionData } from 'react-firebase-hooks/firestore';
 import { reactFirebaseHooksConverter } from 'src/lib/firebase/interfaces/react-firebase-hooks';
 import Link from 'next/link';
-import { useAuthState } from 'react-firebase-hooks/auth';
+import { useAuthContext } from 'src/hooks/use-auth-context';
 
 const Test: FC = () => {
-  const [user] = useAuthState(authentication);
+  const { user } = useAuthContext();
 
   const usersRef = collection(firestore, 'users');
   const q = query(usersRef, where('first', '==', 'Ada'));

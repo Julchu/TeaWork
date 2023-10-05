@@ -1,16 +1,16 @@
 'use client';
 import { FC } from 'react';
 import { Button } from 'src/components/ui/button';
-import { authentication } from 'src/lib/firebase';
 import { useSignOut } from 'react-firebase-hooks/auth';
+import { authentication } from 'src/lib/firebase';
 
-const Signout: FC = () => {
-  const [signOut, loading, error] = useSignOut(authentication);
+const SignOut: FC = () => {
+  const [logout] = useSignOut(authentication);
 
   return (
     <Button
-      onClick={() => {
-        signOut();
+      onClick={async () => {
+        await logout();
       }}
     >
       Sign out
@@ -18,4 +18,4 @@ const Signout: FC = () => {
   );
 };
 
-export default Signout;
+export default SignOut;

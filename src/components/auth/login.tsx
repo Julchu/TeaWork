@@ -1,16 +1,16 @@
 'use client';
 import { FC } from 'react';
+import { Button } from 'src/components/ui/button';
 import { useSignInWithGoogle } from 'react-firebase-hooks/auth';
 import { authentication } from 'src/lib/firebase';
-import { Button } from 'src/components/ui/button';
 
 const Login: FC = () => {
-  const [signInWithGoogle, user, loading, error] = useSignInWithGoogle(authentication);
+  const [login] = useSignInWithGoogle(authentication);
 
   return (
     <Button
-      onClick={() => {
-        signInWithGoogle();
+      onClick={async () => {
+        await login();
       }}
     >
       Sign In
