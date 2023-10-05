@@ -1,7 +1,7 @@
 'use client';
 import { FC, ReactNode } from 'react';
 import { useAuthState } from 'react-firebase-hooks/auth';
-import { authentication } from 'src/lib/firebase/setup';
+import { authentication } from 'src/lib/firebase';
 import Login from 'src/components/auth/login';
 import SignOut from 'src/components/auth/sign-out';
 

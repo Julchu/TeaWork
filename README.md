@@ -71,7 +71,7 @@ yarn export && firebase --project teaworkapp deploy
 - Also exports/imports emulator data to `./emulatorData`
 
 ```zsh
-firebase --project="teaworkapp" emulators:start --only auth,firestore,storage --export-on-exit ./emulatorData --import ./emulatorData
+firebase --project="teaworkapp" emulators:start --only auth,firestore.ts,storage --export-on-exit ./emulatorData --import ./emulatorData
 ```
 
 ### Sometimes emulator port is in use, this command will kill that port

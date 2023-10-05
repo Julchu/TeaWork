@@ -4,8 +4,9 @@ import { Button } from 'src/components/ui/button';
 import { Label } from 'src/components/ui/label';
 import { addDoc } from '@firebase/firestore';
 import { collection, getDocs, query, where } from 'firebase/firestore';
-import { firestore } from 'src/lib/firebase/setup';
-import { useCollection } from 'react-firebase-hooks/firestore';
+import { firestore } from 'src/lib/firebase';
+import { useCollection, useCollectionData } from 'react-firebase-hooks/firestore';
+import { reactFirebaseHooksConverter } from 'src/lib/firebase/interfaces/react-firebase-hooks';
 
 const Test: FC = () => {
   const usersRef = collection(firestore, 'users');
@@ -32,6 +33,11 @@ const Test: FC = () => {
       console.log(`${doc.id} => ${doc.data()}`);
     });
   };
+
+  const userCollectionRef = collection(firestore, 'users').withConverter(
+    reactFirebaseHooksConverter,
+  );
+  const [data2, loading2, error2] = useCollectionData(userCollectionRef);
 
   return (
     <>

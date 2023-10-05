@@ -86,7 +86,7 @@ export interface GroceryList {
 }
 
 // Public user data (aka not private auth data)
-export interface User {
+interface User {
   uid: string;
   email: string;
   photoURL?: string;

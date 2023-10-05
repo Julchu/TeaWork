@@ -7,7 +7,7 @@ import {
 } from 'firebase/firestore';
 import { useCallback, useState } from 'react';
 import { db, PersonalIngredient } from '../lib/firebase/interfaces';
-import { firestore } from '../lib/firebase/setup';
+import { firestore } from '../lib/firebase';
 
 type CsvMethods = {
   csvToIngredient: () => void;
