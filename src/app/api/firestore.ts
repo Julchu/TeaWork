@@ -1,5 +1,6 @@
-import { doc, getDoc } from 'firebase/firestore';
+import { doc, getDoc, getDocs } from 'firebase/firestore';
 import { firestore } from 'src/lib/firebase';
+import { db } from 'src/lib/firebase/interfaces/generics';
 
 export const getData = async (pathSegment: string) => {
   const docRef = doc(firestore, 'users', pathSegment);
@@ -12,4 +13,10 @@ export const getData = async (pathSegment: string) => {
 
   await new Promise(resolve => setTimeout(resolve, 1000));
   return docSnap.data();
+};
+
+export const getAllData = async () => {
+  const usersSnapshot = await getDocs(db.userCollection);
+  await new Promise(resolve => setTimeout(resolve, 1000));
+  return usersSnapshot.docs.map(doc => doc.data());
 };
