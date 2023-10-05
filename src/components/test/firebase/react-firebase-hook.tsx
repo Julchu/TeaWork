@@ -1,15 +1,11 @@
 'use client';
 import React, { FC } from 'react';
-import { db } from 'src/lib/firebase/interfaces/generics';
-import { useCollectionData } from 'react-firebase-hooks/firestore';
+import { useGetReactFirebaseHookData } from 'src/app/api/react-firestore-hooks-example';
 
 const ReactFirebaseHook: FC = () => {
-  const reactFirebaseHookUserCollectionRef = db.userCollection;
+  const { reactFirebaseHooksData, reactFirebaseHooksLoading, reactFirebaseHooksError } =
+    useGetReactFirebaseHookData();
 
-  const [reactFirebaseHooksData, reactFirebaseHooksLoading, reactFirebaseHooksError] =
-    useCollectionData(reactFirebaseHookUserCollectionRef);
-
-  // return <div className={'bg-red-900'}>{data}</div>;
   return (
     <div className={'bg-red-900'}>{reactFirebaseHooksData?.map(user => JSON.stringify(user))}</div>
   );

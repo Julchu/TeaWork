@@ -7,6 +7,7 @@ import { collection, getDocs, query, where } from 'firebase/firestore';
 import { firestore } from 'src/lib/firebase';
 import { useCollection, useCollectionData } from 'react-firebase-hooks/firestore';
 import { reactFirebaseHooksConverter } from 'src/lib/firebase/interfaces/react-firebase-hooks';
+import Link from 'next/link';
 
 const Test: FC = () => {
   const usersRef = collection(firestore, 'users');
@@ -53,6 +54,10 @@ const Test: FC = () => {
       >
         Click me
       </Button>
+
+      <Link href={'/examples'}>
+        <Button>Go to example page</Button>
+      </Link>
 
       <Button
         onClick={async () => {
