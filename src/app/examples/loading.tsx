@@ -6,7 +6,7 @@ import { Alert, AlertDescription, AlertTitle } from "src/components/ui/alert";
 const Loading = () => {
   // return <Skeleton className="w-[100px] h-[20px] rounded-full" />;
   return (
-    <Alert>
+    <Alert className={'bg-blue-950'}>
       <AlertTitle>Heads up!</AlertTitle>
       <AlertDescription>
         You can add components and dependencies to your app using the cli.
