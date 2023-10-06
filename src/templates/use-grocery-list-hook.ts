@@ -9,7 +9,7 @@ import {
 import { useCallback, useState } from 'react';
 import { GroceryListFormData } from '../components/GroceryLists';
 import { db, GroceryList, Unit } from '../lib/firebase/interfaces';
-import { useAuthContext } from './use-auth-context';
+import { oldUseAuthContext } from './old-use-auth-context';
 import { filterNullableObject } from '../lib/textFormatters';
 
 type GroceryListMethods = {
@@ -27,7 +27,7 @@ type GroceryListMethods = {
 const useGroceryListHook = (): [GroceryListMethods, boolean, Error | undefined] => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<Error>();
-  const { authUser } = useAuthContext();
+  const { authUser } = oldUseAuthContext();
 
   const submitGroceryList = useCallback<GroceryListMethods['submitGroceryList']>(
     async ({ name, ingredients, viewable = false }) => {

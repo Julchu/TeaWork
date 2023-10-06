@@ -28,7 +28,7 @@ type AuthContextType = {
 };
 
 // Public auth hook
-export const useAuthContext = (): AuthContextType => useContext(AuthContext);
+export const oldUseAuthContext = (): AuthContextType => useContext(AuthContext);
 
 // Initial values of Auth Context (AuthContextType)
 export const useProvideAuth = (): AuthContextType => {

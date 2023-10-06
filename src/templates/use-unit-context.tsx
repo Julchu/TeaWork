@@ -1,6 +1,6 @@
-import { createContext, FC, ReactNode, useContext, useState } from 'react';
-import { Unit, UnitCategory } from '../lib/firebase/interfaces';
-import { useAuthContext } from './use-auth-context';
+import { createContext, FC, ReactNode, useContext, useState } from "react";
+import { Unit, UnitCategory } from "../lib/firebase/interfaces";
+import { oldUseAuthContext } from "./old-use-auth-context";
 
 // Private context value types, set in Context Provider
 type UnitProps = {
@@ -37,7 +37,7 @@ export const useUnitContext = (): UnitContextType => {
 };
 
 export const UnitProvider: FC<{ children: ReactNode }> = ({ children }) => {
-  const { authUser } = useAuthContext();
+  const { authUser } = oldUseAuthContext();
   const [currentUnits, setCurrentUnits] = useState<UnitCategory>({
     mass: authUser?.preferences?.units?.mass || Unit.kilogram,
     volume: authUser?.preferences?.units?.volume || Unit.litre,

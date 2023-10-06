@@ -1,7 +1,7 @@
-import { onSnapshot, query, where } from 'firebase/firestore';
-import { createContext, FC, ReactNode, useContext, useEffect, useState } from 'react';
-import { db, PersonalIngredient, WithDocId } from '../lib/firebase/interfaces';
-import { useAuthContext } from './use-auth-context';
+import { onSnapshot, query, where } from "firebase/firestore";
+import { createContext, FC, ReactNode, useContext, useEffect, useState } from "react";
+import { db, PersonalIngredient, WithDocId } from "../lib/firebase/interfaces";
+import { oldUseAuthContext } from "./old-use-auth-context";
 
 // Private context value types, set in Context Provider
 type IngredientProps = {
@@ -26,7 +26,7 @@ type IngredientContextType = {
 };
 
 export const useIngredientContext = (): IngredientContextType => {
-  const { authUser } = useAuthContext();
+  const { authUser } = oldUseAuthContext();
   const { ingredientIndexes, setIngredientIndexes, currentIngredients, setCurrentIngredients } =
     useContext(IngredientContext);
 

@@ -7,7 +7,7 @@ import {
   priceConverter,
   unitConverter,
 } from '../lib/textFormatters';
-import { useAuthContext } from './use-auth-context';
+import { oldUseAuthContext } from './old-use-auth-context';
 import { IngredientFormData } from '../components/HomeDashboard';
 
 type IngredientMethods = {
@@ -23,7 +23,7 @@ type IngredientMethods = {
 const useIngredientHook = (): [IngredientMethods, boolean, Error | undefined] => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<Error>();
-  const { authUser } = useAuthContext();
+  const { authUser } = oldUseAuthContext();
 
   const submitIngredient = useCallback<IngredientMethods['submitIngredient']>(
     async ({ name, price, capacity, quantity, unit, image }) => {

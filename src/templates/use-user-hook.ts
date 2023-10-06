@@ -11,7 +11,7 @@ import {
 import { useCallback, useState } from 'react';
 import { db, Role, Unit, User, WithDocId } from '../lib/firebase/interfaces';
 import { filterNullableObject } from '../lib/functions';
-import { useAuthContext } from './use-auth-context';
+import { oldUseAuthContext } from './old-use-auth-context';
 
 type AuthData = {
   uid: string;
@@ -30,7 +30,7 @@ interface UseUserMethods {
 const useUserHook = (): [UseUserMethods, boolean, Error | undefined] => {
   const [error, setError] = useState<Error>();
   const [userLoading, setUserLoading] = useState<boolean>(false);
-  const { authUser } = useAuthContext();
+  const { authUser } = oldUseAuthContext();
 
   const getUser = useCallback<UseUserMethods['getUser']>(async docId => {
     setUserLoading(true);
