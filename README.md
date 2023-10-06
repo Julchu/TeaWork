@@ -66,8 +66,9 @@ yarn dev
 yarn export && firebase --project teaworkapp deploy
 ```
 
-### Launching the Firebase/Firestore emulator: open the emulator at localhost:4000/firestore
+### Launching the Firebase/Firestore emulator:
 
+- Open the emulator at localhost:4000/firestore
 - Also exports/imports emulator data to `./emulatorData`
 
 ```zsh
