@@ -1,12 +1,10 @@
 import { FC } from 'react';
-import Test from 'src/components/test/test';
-import MapTest from 'src/components/test/map-test';
+import Map from 'src/components/test/map';
 
 const Home: FC = () => {
   return (
     <main className="flex min-h-screen flex-col items-center justify-between p-24">
-      <Test />
-      <MapTest />
+      <Map />
     </main>
   );
 };

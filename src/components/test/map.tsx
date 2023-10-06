@@ -5,7 +5,7 @@ import * as React from 'react';
 import { FC, useEffect, useRef, useState } from 'react';
 import * as process from 'process';
 
-const MapTest: FC = () => {
+const Map: FC = () => {
   const mapContainer = useRef<any>(null);
   const map = useRef<mapBoxGL.Map | null>(null);
   const [lng, setLng] = useState(-70.9);
@@ -18,9 +18,9 @@ const MapTest: FC = () => {
     map.current = new mapBoxGL.Map({
       attributionControl: false,
       container: mapContainer.current,
-      style: 'mapbox://styles/mapbox/streets-v12',
+      // style: 'mapbox://styles/mapbox/streets-v12',
       // style: 'mapbox://styles/mapbox/basic-v8',
-      // style: 'mapbox://styles/mapbox/satellite-v8',
+      style: 'mapbox://styles/mapbox/satellite-v8',
       // style: 'mapbox://styles/mapbox/bright-v8',
       center: [lng, lat],
       zoom: zoom,
@@ -48,4 +48,4 @@ const MapTest: FC = () => {
   );
 };
 
-export default MapTest;
+export default Map;

@@ -1,10 +1,11 @@
-import { db } from 'src/lib/firebase/interfaces/generics';
-import { useCollectionData } from 'react-firebase-hooks/firestore';
+import { db } from "src/lib/firebase/interfaces/generics";
+import { useCollectionData } from "react-firebase-hooks/firestore";
 
+// Using React Firebase Hooks to retrieve real-time collection of documents data
 export const useGetReactFirebaseHookData = () => {
-  const reactFirebaseHookUserCollectionRef = db.userCollection;
-  const [reactFirebaseHooksData, reactFirebaseHooksLoading, reactFirebaseHooksError] =
-    useCollectionData(reactFirebaseHookUserCollectionRef);
+  const ref = db.userCollection;
 
-  return { reactFirebaseHooksData, reactFirebaseHooksLoading, reactFirebaseHooksError };
+  const [data, loading, error] = useCollectionData(ref);
+
+  return { data, loading, error };
 };
