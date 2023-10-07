@@ -2,7 +2,7 @@
 import "mapbox-gl/dist/mapbox-gl.css";
 import mapBoxGL from "mapbox-gl";
 import * as React from "react";
-import { FC, Suspense, useEffect, useRef, useState } from "react";
+import { FC, Suspense, useCallback, useEffect, useRef, useState } from "react";
 import { Button } from "src/components/ui/button";
 import * as process from "process";
 import Spinner from "src/components/ui/spinner";
@@ -12,6 +12,7 @@ import useDebouncedState from "src/hooks/use-debounced-hook";
  * style: 'mapbox://styles/mapbox/streets-v12',
  * style: 'mapbox://styles/mapbox/basic-v8',
  * style: 'mapbox://styles/mapbox/bright-v8',
+ * style: 'mapbox://styles/mapbox/satellite-v8',
  * */
 const Map: FC = () => {
   const mapContainer = useRef<any>(null);
@@ -27,7 +28,6 @@ const Map: FC = () => {
 
   useEffect(() => {
     if (navigator.geolocation) {
-      setLoading(true);
       navigator.geolocation.getCurrentPosition(position => {
         setLat(position.coords.latitude);
         setLng(position.coords.longitude);
@@ -36,12 +36,11 @@ const Map: FC = () => {
         map.current = new mapBoxGL.Map({
           attributionControl: false,
           container: mapContainer.current,
-          style: 'mapbox://styles/mapbox/satellite-v8',
+          style: 'mapbox://styles/jchumtl/clnfdhrsc080001qi3ye8e8mj',
           center: [lng, lat],
           zoom: zoom,
         });
       });
-      setLoading(false);
     }
 
     if (map.current) {
@@ -59,16 +58,17 @@ const Map: FC = () => {
     console.log('lat:', debouncedLat, 'long:', debouncedLong);
   }, [debouncedLat, debouncedLong, lat, lng]);
 
-  const flyTo = () => {
-    setLoading(true);
+  const flyTo = useCallback((lat: number, long: number, zoom: number = 15) => {
+    map.current?.flyTo({ center: [lat, long], zoom });
+  }, []);
+
+  const flyHome = () => {
     navigator.geolocation.getCurrentPosition(
       pos => {
-        // setCenter([pos.coords.longitude, pos.coords.latitude]);
-        map.current?.flyTo({ center: [pos.coords.longitude, pos.coords.latitude], zoom: 15 });
+        flyTo(pos.coords.latitude, pos.coords.longitude);
       },
       () => console.log(`can't get coords`),
     );
-    setLoading(false);
   };
 
   useEffect(() => {
@@ -80,7 +80,7 @@ const Map: FC = () => {
       <Suspense fallback={<Spinner />}>
         <div className={'w-full h-full'} ref={mapContainer} />
       </Suspense>
-      <Button className={'absolute top-5 right-5 opacity-50'} onClick={flyTo}>
+      <Button className={'absolute top-5 right-5 opacity-50'} onClick={flyHome}>
         {loading ? <Spinner /> : <h1>Get Current Location</h1>}
       </Button>
     </div>
