@@ -1,5 +1,5 @@
 import React, { FC, Suspense } from "react";
-import AuthWrapper from "src/components/test/firebase/auth-wrapper";
+import AuthWrapper from "src/components/auth/auth-wrapper";
 import ServerComponent from "src/components/test/firebase/server-component";
 import ReactFirebaseHook from "src/components/test/firebase/react-firebase-hook";
 import ClientComponent from "src/components/test/firebase/client-component";

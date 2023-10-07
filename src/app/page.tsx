@@ -3,7 +3,7 @@ import Map from 'src/components/test/map';
 
 const Home: FC = () => {
   return (
-    <main className="flex min-h-screen flex-col items-center justify-between p-24">
+    <main className="flex h-screen w-screen items-center justify-between p-6 bg-blue-700">
       <Map />
     </main>
   );
