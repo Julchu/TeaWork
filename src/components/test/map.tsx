@@ -2,7 +2,7 @@
 import "mapbox-gl/dist/mapbox-gl.css";
 import mapBoxGL from "mapbox-gl";
 import * as React from "react";
-import { FC, Suspense, useCallback, useEffect, useRef, useState } from "react";
+import { FC, useCallback, useEffect, useRef, useState } from "react";
 import * as process from "process";
 import useDebouncedState from "src/hooks/use-debounced-hook";
 import Spinner from "src/components/ui/spinner";
@@ -67,19 +67,9 @@ const Map: FC = () => {
     }
   }, [lat, lng, zoom]);
 
-  useEffect(() => {
-    console.log('lat:', debouncedLat, 'long:', debouncedLong);
-  }, [debouncedLat, debouncedLong, lat, lng]);
-
-  useEffect(() => {
-    console.log('loading', loading);
-  }, [loading]);
-
   return (
-    <div className={'overflow-hidden rounded-2xl h-full w-full relative'}>
-      <Suspense fallback={<Spinner />}>
-        <div className={'w-full h-full'} ref={mapContainer} />
-      </Suspense>
+    <div className={'overflow-hidden rounded-2xl h-full w-full relative bg-pink-600'}>
+      <div className={'w-full h-full'} ref={mapContainer} />
       <Button className={'absolute top-5 right-5 opacity-50'} onClick={flyHome}>
         {loading ? <Spinner /> : <h1>Get Current Location</h1>}
       </Button>
