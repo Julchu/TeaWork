@@ -147,7 +147,7 @@ const Map: FC = () => {
 
   return (
     <>
-      <div className={'w-full h-full'} ref={mapContainer} />
+      <div className={'w-full h-full drop-shadow-2xl'} ref={mapContainer} />
       {firstLoading ? (
         <div className={'absolute top-1/2 bottom-1/2 left-1/2 right-1/2 bg-none'}>
           <Spinner />
