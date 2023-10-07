@@ -3,10 +3,10 @@ import "mapbox-gl/dist/mapbox-gl.css";
 import mapBoxGL from "mapbox-gl";
 import * as React from "react";
 import { FC, Suspense, useCallback, useEffect, useRef, useState } from "react";
-import { Button } from "src/components/ui/button";
 import * as process from "process";
-import Spinner from "src/components/ui/spinner";
 import useDebouncedState from "src/hooks/use-debounced-hook";
+import Spinner from "src/components/ui/spinner";
+import { Button } from "src/components/ui/button";
 
 /* Other map styles
  * style: 'mapbox://styles/mapbox/streets-v12',
@@ -25,6 +25,19 @@ const Map: FC = () => {
   const debouncedLat = useDebouncedState(lat, 50);
   const [zoom, setZoom] = useState<number>(9);
   const [loading, setLoading] = useState<boolean>(false);
+
+  const flyTo = useCallback((lat: number, long: number, zoom: number = 15) => {
+    map.current?.flyTo({ center: [lat, long], zoom });
+  }, []);
+
+  const flyHome = () => {
+    navigator.geolocation.getCurrentPosition(
+      pos => {
+        flyTo(pos.coords.latitude, pos.coords.longitude);
+      },
+      () => console.log(`can't get coords`),
+    );
+  };
 
   useEffect(() => {
     if (navigator.geolocation) {
@@ -57,19 +70,6 @@ const Map: FC = () => {
   useEffect(() => {
     console.log('lat:', debouncedLat, 'long:', debouncedLong);
   }, [debouncedLat, debouncedLong, lat, lng]);
-
-  const flyTo = useCallback((lat: number, long: number, zoom: number = 15) => {
-    map.current?.flyTo({ center: [lat, long], zoom });
-  }, []);
-
-  const flyHome = () => {
-    navigator.geolocation.getCurrentPosition(
-      pos => {
-        flyTo(pos.coords.latitude, pos.coords.longitude);
-      },
-      () => console.log(`can't get coords`),
-    );
-  };
 
   useEffect(() => {
     console.log('loading', loading);
