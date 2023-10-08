@@ -70,6 +70,7 @@ const Map: FC = () => {
       center: [lng, lat],
       zoom,
     });
+    map.current.resize();
   }, [lat, lng, zoom]);
 
   // Additional map stylings
@@ -148,20 +149,20 @@ const Map: FC = () => {
   return (
     <>
       <div className={'w-full h-full drop-shadow-2xl'} ref={mapContainer} />
-      {firstLoading ? (
-        <div className={'absolute top-1/2 bottom-1/2 left-1/2 right-1/2 bg-none'}>
-          <Spinner />
-        </div>
-      ) : (
-        <>
-          <Button
-            className={'absolute top-5 right-5 opacity-50 w-[40px] h-[40px] p-0 rounded-full'}
-            onClick={flyHome}
-          >
-            {loading ? <Spinner /> : <LocationMarker />}
-          </Button>
-        </>
-      )}
+      {/*{firstLoading ? (*/}
+      {/*  <div className={'absolute top-1/2 bottom-1/2 left-1/2 right-1/2 bg-none'}>*/}
+      {/*    <Spinner />*/}
+      {/*  </div>*/}
+      {/*) : (*/}
+      {/*  <>*/}
+      <Button
+        className={'absolute top-5 right-5 opacity-50 w-[40px] h-[40px] p-0 rounded-full'}
+        onClick={flyHome}
+      >
+        {loading ? <Spinner /> : <LocationMarker />}
+      </Button>
+      {/*  </>*/}
+      {/*)}*/}
     </>
   );
 };
