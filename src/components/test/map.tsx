@@ -87,6 +87,7 @@ const Map: FC = () => {
     }
   }, []);
 
+  /*
   useEffect(() => {
     if (map.current) {
       map.current.on('style.load', () => {
@@ -138,13 +139,15 @@ const Map: FC = () => {
       });
     }
   }, []);
+*/
 
+/*
   useEffect(() => {
     setFirstLoading(true);
     map.current?.on('load', () => {
       setFirstLoading(false);
     });
-  }, []);
+  }, []);*/
 
   return (
     <>
