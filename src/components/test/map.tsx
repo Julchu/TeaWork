@@ -182,7 +182,7 @@ const Map: FC<{ loadHome?: LngLatLike }> = ({ loadHome }) => {
 
   useEffect(() => {
     setFirstLoading(true);
-    map.current?.on('load', async () => {
+    map.current?.on('load', () => {
       setFirstLoading(false);
     });
   }, []);
