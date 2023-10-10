@@ -18,17 +18,19 @@ import "./map.css";
  * style: 'mapbox://styles/mapbox/satellite-v8',
  * style: 'mapbox://styles/mapbox/outdoors-v12',
  * */
+
+// CN Tower long/lat: [-79.387054, 43.642567]
 const Map: FC<{ loadHome?: LngLatLike }> = ({ loadHome }) => {
   const mapContainer = useRef<any>(null);
   const map = useRef<mapBoxGL.Map | null>(null);
-  const [currentCoords, setCurrentCoords] = useState<LngLatLike>(loadHome || [-70.9, 42.35]);
+  const [initialCoords, setInitialCoords] = useState<LngLatLike>(loadHome || [-70.9, 42.35]);
 
-  const [home, setHome] = useState<LngLatLike | undefined>(loadHome);
+  const [currentCoords, setCurrentCoords] = useState<LngLatLike | undefined>(loadHome);
   const [firstLoading, setFirstLoading] = useState<boolean>(true);
   const [zoom, setZoom] = useState<number>(9);
 
   // If needed, debouncing lng/lat to slow down updates whenever map coordinates are moved
-  const debouncedLocation = useDebouncedState<LngLatLike>(currentCoords);
+  const debouncedLocation = useDebouncedState<LngLatLike>(initialCoords);
   const [loading, setLoading] = useState<boolean>(false);
 
   // Simple wrapper to trigger loading state
@@ -39,25 +41,40 @@ const Map: FC<{ loadHome?: LngLatLike }> = ({ loadHome }) => {
     });
   }, []);
 
+  // Add HTML marker
+  const addMarker = useCallback(
+    (htmlElement: string, currentMap: mapBoxGL.Map, coords: LngLatLike) => {
+      const el = document.createElement('div');
+      el.className = 'marker';
+      el.innerHTML = htmlElement;
+
+      // make a marker for each feature and add to the map
+      new mapBoxGL.Marker(el).setLngLat(coords).addTo(currentMap);
+    },
+    [],
+  );
+
   // Custom manual callback to fly to specific coordinates
   const flyTo = useCallback((center: LngLatLike, zoom: number = 15) => {
     map.current?.flyTo({ center, zoom });
   }, []);
 
-  const flyHome = useCallback(async () => {
+  // Flies home and sets marker
+  const flyToCurrentLocation = useCallback(async () => {
     setLoading(true);
 
-    if (home) flyTo(home, 15);
+    if (currentCoords) flyTo(currentCoords, 15);
 
     try {
       const pos = await getCurrentLocation();
       flyTo([pos.coords.longitude, pos.coords.latitude]);
-      setHome([pos.coords.longitude, pos.coords.latitude]);
+      setCurrentCoords([pos.coords.longitude, pos.coords.latitude]);
+
       setLoading(false);
     } catch (err) {
       console.log(`can't get coords because of ${err}`);
     }
-  }, [flyTo, getCurrentLocation, home]);
+  }, [flyTo, getCurrentLocation, currentCoords]);
 
   // Initial map loading
   useEffect(() => {
@@ -69,14 +86,11 @@ const Map: FC<{ loadHome?: LngLatLike }> = ({ loadHome }) => {
       container: mapContainer.current,
       // style: 'mapbox://styles/jchumtl/clnfdhrsc080001qi3ye8e8mj',
       style: 'mapbox://styles/mapbox/streets-v12',
-      center: currentCoords,
+      center: initialCoords,
       zoom,
     });
-    map.current.resize();
-    flyHome().then(() => {
-      setLoading(false);
-    });
 
+    // Need to add locator control to set current location marker
     const geolocator = new mapBoxGL.GeolocateControl({
       positionOptions: {
         enableHighAccuracy: true,
@@ -85,19 +99,25 @@ const Map: FC<{ loadHome?: LngLatLike }> = ({ loadHome }) => {
       showUserHeading: true,
     });
 
-    map.current.addControl(geolocator);
+    map.current?.addControl(geolocator);
 
-    map.current.on('load', () => {
+    map.current?.on('load', async () => {
+      setLoading(true);
       geolocator.trigger();
     });
-  }, [flyHome, currentCoords, zoom, home, getCurrentLocation]);
+
+    geolocator.on('geolocate', () => {
+      setLoading(false);
+    });
+    map.current?.resize();
+  }, [flyToCurrentLocation, initialCoords, zoom]);
 
   // If map exists, trigger tracking map's current location
   useEffect(() => {
     if (map.current) {
       map.current.on('move', () => {
         if (map.current) {
-          setCurrentCoords([
+          setInitialCoords([
             parseFloat(map.current.getCenter().lng.toFixed(4)),
             parseFloat(map.current.getCenter().lat.toFixed(4)),
           ]);
@@ -186,7 +206,7 @@ const Map: FC<{ loadHome?: LngLatLike }> = ({ loadHome }) => {
           {/* Location button */}
           <Button
             className={'absolute top-5 right-5 opacity-50 w-[40px] h-[40px] p-0 rounded-full'}
-            onClick={flyHome}
+            onClick={flyToCurrentLocation}
           >
             {loading ? <Spinner /> : <LocationMarkerIcon />}
           </Button>
@@ -198,6 +218,18 @@ const Map: FC<{ loadHome?: LngLatLike }> = ({ loadHome }) => {
 
 export default Map;
 
+// const htmlElement = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5">
+//         <path fill-rule="evenodd" d="M9.69 18.933l.003.001C9.89 19.02 10 19 10 19s.11.02.308-.066l.002-.001.006-.003.018-.008a5.741 5.741 0 00.281-.14c.186-.096.446-.24.757-.433.62-.384 1.445-.966 2.274-1.765C15.302 14.988 17 12.493 17 9A7 7 0 103 9c0 3.492 1.698 5.988 3.355 7.584a13.731 13.731 0 002.273 1.765 11.842 11.842 0 00.976.544l.062.029.018.008.006.003zM10 11.25a2.25 2.25 0 100-4.5 2.25 2.25 0 000 4.5z" clip-rule="evenodd" />
+//       </svg>`;
+//
+// const animatedHtmlElement = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5">
+//                 <path fill-rule="evenodd" d="M9.69 18.933l.003.001C9.89 19.02 10 19 10 19s.11.02.308-.066l.002-.001.006-.003.018-.008a5.741 5.741 0 00.281-.14c.186-.096.446-.24.757-.433.62-.384 1.445-.966 2.274-1.765C15.302 14.988 17 12.493 17 9A7 7 0 103 9c0 3.492 1.698 5.988 3.355 7.584a13.731 13.731 0 002.273 1.765 11.842 11.842 0 00.976.544l.062.029.018.008.006.003zM10 11.25a2.25 2.25 0 100-4.5 2.25 2.25 0 000 4.5z" clip-rule="evenodd" />
+//               </svg>`;
+//
+// if (map.current && currentCoords) {
+//   addMarker(htmlElement, map.current, currentCoords);
+//   addMarker(animatedHtmlElement, map.current, currentCoords);
+// }
 //
 // <div className={'absolute top-1/2 bottom-1/2 left-1/2 right-1/2'}>
 //   <Spinner />
