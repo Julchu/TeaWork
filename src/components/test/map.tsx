@@ -7,7 +7,9 @@ import useDebouncedState from "src/hooks/use-debounced-hook";
 import { Button } from "src/components/ui/button";
 import * as process from "process";
 import Spinner from "src/components/ui/spinner";
-import LocationMarker from "src/components/ui/location-marker";
+// import
+import { LocationMarkerIcon } from "src/components/ui/icons/location-marker";
+import "./map.css";
 
 /* Other map styles
  * style: 'mapbox://styles/mapbox/streets-v12',
@@ -16,28 +18,28 @@ import LocationMarker from "src/components/ui/location-marker";
  * style: 'mapbox://styles/mapbox/satellite-v8',
  * style: 'mapbox://styles/mapbox/outdoors-v12',
  * */
-const Map: FC = () => {
+const Map: FC<{ loadHome?: LngLatLike }> = ({ loadHome }) => {
   const mapContainer = useRef<any>(null);
   const map = useRef<mapBoxGL.Map | null>(null);
-  const [lng, setLng] = useState<number>(-70.9);
-  const [lat, setLat] = useState<number>(42.35);
-  const [home, setHome] = useState<LngLatLike>();
-  const [firstLoading, setFirstLoading] = useState<boolean>();
+  const [currentCoords, setCurrentCoords] = useState<LngLatLike>(loadHome || [-70.9, 42.35]);
+
+  const [home, setHome] = useState<LngLatLike | undefined>(loadHome);
+  const [firstLoading, setFirstLoading] = useState<boolean>(true);
+  const [zoom, setZoom] = useState<number>(9);
 
   // If needed, debouncing lng/lat to slow down updates whenever map coordinates are moved
-  const debouncedLong = useDebouncedState(lng, 50);
-  const debouncedLat = useDebouncedState(lat, 50);
-  const [zoom, setZoom] = useState<number>(9);
+  const debouncedLocation = useDebouncedState<LngLatLike>(currentCoords);
   const [loading, setLoading] = useState<boolean>(false);
 
   // Simple wrapper to trigger loading state
-  const getPosition = useCallback((): Promise<GeolocationPosition> => {
+  const getCurrentLocation = useCallback((): Promise<GeolocationPosition> => {
     setLoading(true);
     return new Promise((res, rej) => {
       navigator.geolocation.getCurrentPosition(res, rej, { enableHighAccuracy: true });
     });
   }, []);
 
+  // Custom manual callback to fly to specific coordinates
   const flyTo = useCallback((center: LngLatLike, zoom: number = 15) => {
     map.current?.flyTo({ center, zoom });
   }, []);
@@ -48,14 +50,14 @@ const Map: FC = () => {
     if (home) flyTo(home, 15);
 
     try {
-      const pos = await getPosition();
+      const pos = await getCurrentLocation();
       flyTo([pos.coords.longitude, pos.coords.latitude]);
       setHome([pos.coords.longitude, pos.coords.latitude]);
       setLoading(false);
     } catch (err) {
       console.log(`can't get coords because of ${err}`);
     }
-  }, [flyTo, getPosition, home]);
+  }, [flyTo, getCurrentLocation, home]);
 
   // Initial map loading
   useEffect(() => {
@@ -67,27 +69,45 @@ const Map: FC = () => {
       container: mapContainer.current,
       // style: 'mapbox://styles/jchumtl/clnfdhrsc080001qi3ye8e8mj',
       style: 'mapbox://styles/mapbox/streets-v12',
-      center: [lng, lat],
+      center: currentCoords,
       zoom,
     });
     map.current.resize();
-  }, [lat, lng, zoom]);
+    flyHome().then(() => {
+      setLoading(false);
+    });
 
-  // Additional map stylings
+    const geolocator = new mapBoxGL.GeolocateControl({
+      positionOptions: {
+        enableHighAccuracy: true,
+      },
+      trackUserLocation: true,
+      showUserHeading: true,
+    });
+
+    map.current.addControl(geolocator);
+
+    map.current.on('load', () => {
+      geolocator.trigger();
+    });
+  }, [flyHome, currentCoords, zoom, home, getCurrentLocation]);
+
+  // If map exists, trigger tracking map's current location
   useEffect(() => {
-    // If map exists, trigger tracking map's current location
     if (map.current) {
       map.current.on('move', () => {
         if (map.current) {
-          setLng(parseFloat(map.current.getCenter().lng.toFixed(4)));
-          setLat(parseFloat(map.current.getCenter().lat.toFixed(4)));
+          setCurrentCoords([
+            parseFloat(map.current.getCenter().lng.toFixed(4)),
+            parseFloat(map.current.getCenter().lat.toFixed(4)),
+          ]);
           setZoom(parseFloat(map.current.getZoom().toFixed(2)));
         }
       });
     }
   }, []);
 
-  
+  // Loading 3-D building styles
   useEffect(() => {
     if (map.current) {
       map.current.on('style.load', () => {
@@ -140,33 +160,39 @@ const Map: FC = () => {
     }
   }, []);
 
-
-
   useEffect(() => {
     setFirstLoading(true);
-    map.current?.on('load', () => {
+    map.current?.on('load', async () => {
       setFirstLoading(false);
     });
   }, []);
 
   return (
-    <>
+    <div
+      className={
+        'overflow-hidden rounded-xl h-full w-full relative drop-shadow-lg bg-gradient-to-r from-indigo-200 via-purple-500 to-pink-200'
+      }
+    >
+      {/* Actual map */}
       <div className={'w-full h-full drop-shadow-2xl'} ref={mapContainer} />
+
+      {/* Extra layers on map (buttons, controls) */}
       {firstLoading ? (
         <div className={'absolute top-1/2 bottom-1/2 left-1/2 right-1/2 bg-none'}>
           <Spinner />
         </div>
       ) : (
         <>
-      <Button
-        className={'absolute top-5 right-5 opacity-50 w-[40px] h-[40px] p-0 rounded-full'}
-        onClick={flyHome}
-      >
-        {loading ? <Spinner /> : <LocationMarker />}
-      </Button>
+          {/* Location button */}
+          <Button
+            className={'absolute top-5 right-5 opacity-50 w-[40px] h-[40px] p-0 rounded-full'}
+            onClick={flyHome}
+          >
+            {loading ? <Spinner /> : <LocationMarkerIcon />}
+          </Button>
         </>
       )}
-    </>
+    </div>
   );
 };
 

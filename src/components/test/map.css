@@ -17,3 +17,7 @@
     margin: 12px;
     border-radius: 4px;
 }
+
+.mapboxgl-ctrl-top-right {
+    display: none;
+}

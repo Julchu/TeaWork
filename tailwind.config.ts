@@ -74,6 +74,11 @@ const config: Config = {
         'accordion-down': 'accordion-down 0.2s ease-out',
         'accordion-up': 'accordion-up 0.2s ease-out',
       },
+      height: {
+        screen: '100vh',
+        'screen-small': '100svh',
+        'screen-large': '100lvh',
+      },
     },
   },
   plugins: [require('tailwindcss-animate')],
