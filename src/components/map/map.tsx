@@ -194,7 +194,7 @@ const Map: FC<{ loadHome?: LngLatLike }> = ({ loadHome }) => {
       }
     >
       {/* Actual map */}
-      <div className={'w-full h-full drop-shadow-2xl'} ref={mapContainer} />
+      <div className={'w-full h-full'} ref={mapContainer} />
 
       {/* Extra layers on map (buttons, controls) */}
       {firstLoading ? (

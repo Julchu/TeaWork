@@ -18,13 +18,15 @@ import Link from 'next/link';
 
 const AuthWrapper: FC<{ children: ReactNode }> = ({ children }) => {
   const { user } = useAuthContext();
-  const initials = useMemo(() => {
-    const names = user?.displayName?.split(' ');
-    if (names) return `${names[0][0].toUpperCase()}${names}`;
-    else return '';
-  }, [user?.displayName]);
+
   const [login, _, loading, error] = useSignInWithGoogle(authentication);
   const [logout] = useSignOut(authentication);
+
+  const initials = useMemo(() => {
+    const names = user?.displayName?.split(' ');
+    if (names) return `${names[0][0].toUpperCase()} ${names[names.length - 1][0].toUpperCase()}`;
+    else return '';
+  }, [user?.displayName]);
 
   const authHandler = useCallback(async () => {
     if (user) await logout();
@@ -42,7 +44,7 @@ const AuthWrapper: FC<{ children: ReactNode }> = ({ children }) => {
             {user ? (
               <>
                 <AvatarImage src="https://github.com/shadcn.png" />
-                <AvatarFallback>{user.displayName}</AvatarFallback>
+                <AvatarFallback>{initials}</AvatarFallback>
               </>
             ) : (
               <div className={'h-full w-full p-1 bg-gray-200'}>
