@@ -205,7 +205,7 @@ const Map: FC<{ loadHome?: LngLatLike }> = ({ loadHome }) => {
         <>
           {/* Location button */}
           <Button
-            className={'absolute top-5 right-5 opacity-50 w-[40px] h-[40px] p-0 rounded-full'}
+            className={'absolute bottom-5 right-5 opacity-50 w-[40px] h-[40px] p-0 rounded-full'}
             onClick={flyToCurrentLocation}
           >
             {loading ? <Spinner /> : <LocationMarkerIcon />}

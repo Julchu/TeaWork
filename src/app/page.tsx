@@ -1,5 +1,5 @@
 import { FC } from "react";
-import Map from "src/components/test/map";
+import Map from "src/components/map/map";
 
 // Simple wrapper to trigger loading state
 
