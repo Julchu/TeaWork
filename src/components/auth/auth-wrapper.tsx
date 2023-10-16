@@ -12,9 +12,9 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from 'src/components/ui/dropdown-menu';
-import { Avatar, AvatarFallback, AvatarImage } from 'src/components/ui/avatar';
 import PersonIcon from 'src/components/ui/icons/person';
 import Link from 'next/link';
+import { Button } from 'src/components/ui/button';
 
 const AuthWrapper: FC<{ children: ReactNode }> = ({ children }) => {
   const { user } = useAuthContext();
@@ -40,18 +40,19 @@ const AuthWrapper: FC<{ children: ReactNode }> = ({ children }) => {
       {/* Modal: false, in case PC users still want to scroll map while modal is open */}
       <DropdownMenu modal={false}>
         <DropdownMenuTrigger asChild>
-          <Avatar className={'absolute top-5 right-5 w-[40px] h-[40px] m-6 cursor-pointer'}>
+          <div className={'absolute top-5 right-5 w-[40px] h-[40px] m-6 cursor-pointer'}>
             {user ? (
               <>
-                <AvatarImage src="https://github.com/shadcn.png" />
-                <AvatarFallback>{initials}</AvatarFallback>
+                <Button className={'absolute opacity-50 w-full h-full p-0 rounded-full'}>
+                  {initials}
+                </Button>
               </>
             ) : (
-              <div className={'h-full w-full p-1 bg-gray-200'}>
+              <div className={'h-full w-full p-1 bg-gray-200 rounded-full'}>
                 <PersonIcon />
               </div>
             )}
-          </Avatar>
+          </div>
         </DropdownMenuTrigger>
 
         <DropdownMenuContent align={'end'} className={'border-0'}>

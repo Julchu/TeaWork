@@ -110,7 +110,7 @@ const Map: FC<{ loadHome?: LngLatLike }> = ({ loadHome }) => {
       setLoading(false);
     });
     map.current?.resize();
-  }, [flyToCurrentLocation, initialCoords, zoom]);
+  }, [initialCoords, zoom]);
 
   // If map exists, trigger tracking map's current location
   useEffect(() => {

@@ -6,7 +6,7 @@
 import { Skeleton } from 'src/components/ui/skeleton';
 
 const TestLoading = () => {
-  return <Skeleton className="h-[500px] w-[500px] rounded-full" />;
+  return <Skeleton className="h-full w-full rounded-full" />;
   // return (
   // <Alert className={'bg-blue-950 text-amber-200'}>
   //   <AlertTitle>Heads up!</AlertTitle>

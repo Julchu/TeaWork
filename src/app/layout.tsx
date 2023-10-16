@@ -1,10 +1,11 @@
 import './globals.css';
 import type { Metadata } from 'next';
 import { Amatic_SC, Inter, Montserrat, Poppins, Urbanist } from 'next/font/google';
-import { ReactNode } from 'react';
+import React, { ReactNode } from 'react';
 import { Analytics } from '@vercel/analytics/react';
 import AuthProvider from 'src/hooks/use-auth-context';
 import AuthWrapper from 'src/components/auth/auth-wrapper';
+import Logo from 'src/components/ui/logo';
 
 const montserrat = Montserrat({ subsets: ['latin'] });
 const urbanist = Urbanist({
@@ -31,6 +32,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
     <html lang="en">
       <body className={`${urbanist.className}`}>
         <AuthProvider>
+          <Logo />
           <AuthWrapper>{children}</AuthWrapper>
         </AuthProvider>
         <Analytics />

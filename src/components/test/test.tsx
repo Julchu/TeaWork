@@ -1,5 +1,5 @@
 'use client';
-import { FC, useEffect, useState } from 'react';
+import { FC } from 'react';
 import { Button } from 'src/components/ui/button';
 import { Label } from 'src/components/ui/label';
 import { addDoc } from '@firebase/firestore';
@@ -44,50 +44,34 @@ const Test: FC = () => {
 
   const [data2, loading2, error2] = useCollectionData(userCollectionRef);
 
-  const [ready, setReady] = useState(false);
-
-  const SuspenseTrigger = () => {
-    throw new Promise(() => {});
-  };
-
-  useEffect(() => {
-    setTimeout(() => setReady(true), 1000);
-  }, []);
-
   if (!user) return null;
 
   return (
     <>
-      {ready ? (
-        <>
-          {snapshot?.docs.map(doc => {
-            return <Label key={doc.id}>{JSON.stringify(doc.data())}</Label>;
-          })}
+      {snapshot?.docs.map(doc => {
+        return <Label key={doc.id}>{JSON.stringify(doc.data())}</Label>;
+      })}
 
-          <Button
-            className={'rounded-xl'}
-            onClick={() => {
-              test();
-            }}
-          >
-            Click me
-          </Button>
+      <Button
+        className={'rounded-xl'}
+        onClick={() => {
+          test();
+        }}
+      >
+        Click me
+      </Button>
 
-          <Link href={'/examples'}>
-            <Button>Go to example page</Button>
-          </Link>
+      <Link href={'/examples'}>
+        <Button>Go to example page</Button>
+      </Link>
 
-          <Button
-            onClick={async () => {
-              await test2();
-            }}
-          >
-            Click me too
-          </Button>
-        </>
-      ) : (
-        <SuspenseTrigger />
-      )}
+      <Button
+        onClick={async () => {
+          await test2();
+        }}
+      >
+        Click me too
+      </Button>
     </>
   );
 };
