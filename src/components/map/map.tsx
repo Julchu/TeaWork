@@ -15,8 +15,14 @@ import "./map.css";
  * style: 'mapbox://styles/mapbox/streets-v12',
  * style: 'mapbox://styles/mapbox/basic-v8',
  * style: 'mapbox://styles/mapbox/bright-v8',
- * style: 'mapbox://styles/mapbox/satellite-v8',
+ * style: 'mapbox://styles/mapbox/light-v11',
+ * style: 'mapbox://styles/mapbox/satellite-v9',
+ * style: 'mapbox://styles/mapbox/satellite-streets-v12',
  * style: 'mapbox://styles/mapbox/outdoors-v12',
+ * style: 'mapbox://styles/mapbox/dark-v11,
+ * style: 'mapbox://styles/mapbox/navigation-day-v1'
+ * style: 'mapbox://styles/mapbox/navigation-night-v1'
+ * style: 'mapbox://styles/jchumtl/clnfdhrsc080001qi3ye8e8mj',
  * */
 
 // CN Tower long/lat: [-79.387054, 43.642567]
@@ -84,8 +90,7 @@ const Map: FC<{ loadHome?: LngLatLike }> = ({ loadHome }) => {
     map.current = new mapBoxGL.Map({
       attributionControl: false,
       container: mapContainer.current,
-      // style: 'mapbox://styles/jchumtl/clnfdhrsc080001qi3ye8e8mj',
-      style: 'mapbox://styles/mapbox/streets-v12',
+      style: 'mapbox://styles/mapbox/dark-v11',
       center: initialCoords,
       zoom,
     });
