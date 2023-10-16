@@ -43,7 +43,9 @@ const AuthWrapper: FC<{ children: ReactNode }> = ({ children }) => {
           <div className={'absolute top-5 right-5 w-[40px] h-[40px] m-6 cursor-pointer'}>
             {user ? (
               <>
-                <Button className={'absolute opacity-50 w-full h-full p-0 rounded-full'}>
+                <Button
+                  className={'font-extrabold absolute opacity-50 w-full h-full p-0 rounded-full'}
+                >
                   {initials}
                 </Button>
               </>
