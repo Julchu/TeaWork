@@ -13,7 +13,6 @@ export const useAuthContext = (): AuthProps => useContext(AuthContext);
 const AuthProvider: FC<{ children: ReactNode }> = ({ children }) => {
   const [user] = useAuthState(authentication);
 
-  // {user ? <SignOut /> : <Login />}
   return <AuthContext.Provider value={{ user }}>{children}</AuthContext.Provider>;
 };
 

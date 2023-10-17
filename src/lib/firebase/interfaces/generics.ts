@@ -3,17 +3,27 @@ import {
   doc,
   DocumentData,
   DocumentReference,
+  FieldValue,
   FirestoreDataConverter,
   getDoc,
   getDocs,
   PartialWithFieldValue,
   QueryDocumentSnapshot,
   SnapshotOptions,
+  Timestamp,
 } from 'firebase/firestore';
 import { CollectionReference } from '@firebase/firestore';
 import { firestore } from 'src/lib/firebase';
+import { LngLatLike } from 'mapbox-gl';
 
-export type GenericsUser = { title: string; author: string };
+export type UserInfo = {
+  firestoreId: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  currentLocation?: LngLatLike;
+  createdAt?: Timestamp | FieldValue;
+};
 
 export const genericConverter = <T>(): FirestoreDataConverter<T> => ({
   toFirestore: (data: PartialWithFieldValue<T>) => {
@@ -30,14 +40,14 @@ const docPoint = <T>(collectionPath: string, ...extraPaths: string[]): DocumentR
   doc(firestore, collectionPath, ...extraPaths).withConverter(genericConverter<T>());
 
 export const db = {
-  userCollection: collectionPoint<GenericsUser>('users'),
-  userDoc: (...extraPaths: string[]) => docPoint<GenericsUser>('users', ...extraPaths),
+  userCollection: collectionPoint<UserInfo>('users'),
+  userDoc: (...extraPaths: string[]) => docPoint<UserInfo>('users', ...extraPaths),
 };
 
-const genericFunctions = async () => {
-  const usersSnapshot = await getDocs(db.userCollection);
-  const users = usersSnapshot.docs.map(doc => doc.data()); // has type Post[]
+const _genericFunctions = async () => {
+  const userCollectionSnapshot = await getDocs(db.userCollection);
+  const userCollection = userCollectionSnapshot.docs.map(doc => doc.data()); // has type Post[]
 
-  const userSnapshot = await getDoc(db.userDoc('1'));
-  const user = userSnapshot.data();
+  const userDocSnapshot = await getDoc(db.userDoc('1'));
+  const userDoc = userDocSnapshot.data();
 };

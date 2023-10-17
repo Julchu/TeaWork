@@ -17,6 +17,11 @@ const Test: FC = () => {
   const q = query(usersRef, where('first', '==', 'Ada'));
   const [snapshot, loading, error] = useCollection(q);
 
+  const userCollectionRef = collection(firestore, 'users').withConverter(
+    reactFirebaseHooksConverter,
+  );
+  const [snapshot2, loading2, error2] = useCollectionData(userCollectionRef);
+
   const test = async () => {
     try {
       const docRef = await addDoc(collection(firestore, 'users'), {
@@ -37,12 +42,6 @@ const Test: FC = () => {
       console.log(`${doc.id} => ${doc.data()}`);
     });
   };
-
-  const userCollectionRef = collection(firestore, 'users').withConverter(
-    reactFirebaseHooksConverter,
-  );
-
-  const [data2, loading2, error2] = useCollectionData(userCollectionRef);
 
   if (!user) return null;
 
