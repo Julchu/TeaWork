@@ -44,7 +44,6 @@ const useUserHook = (): [UserMethods, boolean, Error | undefined] => {
             email: user.email ? user.email : '',
             firstName: displayName ? displayName[0] : '',
             lastName: displayName && displayName.length > 1 ? displayName[1] : '',
-            firestoreId: user.uid,
             createdAt: serverTimestamp(),
           };
           await setDoc(db.userDoc(user.uid), newUser);
@@ -65,14 +64,13 @@ const useUserHook = (): [UserMethods, boolean, Error | undefined] => {
       setLoading(true);
 
       // Creating doc with auto-generated id
-      const userDocRef = db.userDoc();
+      const userDocRef = db.userDoc(user.uid);
 
       // Ensuring all fields are passed by typechecking Ingredient
       const newUser: UserInfo = {
         email,
         firstName,
         lastName,
-        firestoreId: user.uid,
         currentLocation,
         createdAt: serverTimestamp(),
       };

@@ -17,7 +17,6 @@ import { firestore } from 'src/lib/firebase';
 import { LngLatLike } from 'mapbox-gl';
 
 export type UserInfo = {
-  firestoreId: string;
   firstName: string;
   lastName: string;
   email: string;
