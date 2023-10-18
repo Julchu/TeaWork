@@ -148,7 +148,7 @@ const Map: FC = () => {
   const triggerNorth = useCallback(() => {
     // Need to add locator control to set current location marker
     map.current?.resetNorth({ duration: 2000 });
-  }, [geolocator]);
+  }, []);
 
   // If map exists, trigger tracking map's current location
   useEffect(() => {
