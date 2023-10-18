@@ -1,5 +1,5 @@
 'use client';
-import { FC, ReactNode, useCallback, useEffect, useMemo } from 'react';
+import { FC, ReactNode, useCallback, useMemo } from 'react';
 import { useAuthContext } from 'src/hooks/use-auth-context';
 import { useSignInWithGoogle, useSignOut } from 'react-firebase-hooks/auth';
 import { authentication } from 'src/lib/firebase';
@@ -15,7 +15,6 @@ import {
 import PersonIcon from 'src/components/ui/icons/person';
 import Link from 'next/link';
 import { Button } from 'src/components/ui/button';
-import { useUserContext } from 'src/hooks/use-user-context';
 
 const AuthWrapper: FC<{
   children: ReactNode;
@@ -36,11 +35,6 @@ const AuthWrapper: FC<{
 
 const MenuContent: FC = () => {
   const { user } = useAuthContext();
-  const { userInfo } = useUserContext();
-
-  useEffect(() => {
-    console.log('userInfo', userInfo);
-  }, [userInfo]);
 
   const [login, _user, _loading, _error] = useSignInWithGoogle(authentication);
   const [logout] = useSignOut(authentication);

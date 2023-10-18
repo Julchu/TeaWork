@@ -1,15 +1,14 @@
 'use client';
 import "mapbox-gl/dist/mapbox-gl.css";
+import "./map.css";
 import mapBoxGL, { LngLatLike } from "mapbox-gl";
 import * as React from "react";
-import { FC, useCallback, useEffect, useRef, useState } from "react";
+import { Dispatch, FC, SetStateAction, useCallback, useEffect, useRef, useState } from "react";
 import useDebouncedState from "src/hooks/use-debounced-hook";
 import { Button } from "src/components/ui/button";
 import * as process from "process";
 import Spinner from "src/components/ui/spinner";
-// import
 import { LocationMarkerIcon } from "src/components/ui/icons/location-marker";
-import "./map.css";
 import useUserHook from "src/hooks/use-user-firestore-hook";
 import { useUserContext } from "src/hooks/use-user-context";
 
@@ -28,75 +27,41 @@ import { useUserContext } from "src/hooks/use-user-context";
  * */
 
 // CN Tower long/lat: [-79.387054, 43.642567]
-const Map: FC<{ loadHome?: LngLatLike }> = ({ loadHome }) => {
+const Map: FC = () => {
+  const { userInfo } = useUserContext();
+  const { setUserInfo } = useUserContext();
+  const [{ updateUser }] = useUserHook();
+
   const mapContainer = useRef<any>(null);
   const map = useRef<mapBoxGL.Map | null>(null);
-  const [initialCoords, setInitialCoords] = useState<LngLatLike>(loadHome || [-70.9, 42.35]);
+  const [initialCoords, setInitialCoords] = useState<LngLatLike>(
+    userInfo?.currentLocation || [-70.9, 42.35],
+  );
 
-  const [currentCoords, setCurrentCoords] = useState<LngLatLike | undefined>(loadHome);
+  // Set map loading to true in oage load
   const [mapLoading, setMapLoading] = useState<boolean>(true);
-  const [zoom, setZoom] = useState<number>(9);
-
-  const { userInfo, setUserInfo } = useUserContext();
-  const [{ updateUser }] = useUserHook();
-  // If needed, debouncing lng/lat to slow down updates whenever map coordinates are moved
-  const debouncedLocation = useDebouncedState<LngLatLike>(initialCoords);
   const [locationLoading, setLocationLoading] = useState<boolean>(false);
 
-  // Simple wrapper to trigger loading state
-  const getCurrentLocation = useCallback((): Promise<GeolocationPosition> => {
-    setLocationLoading(true);
-    return new Promise((res, rej) => {
-      navigator.geolocation.getCurrentPosition(res, rej, { enableHighAccuracy: true });
-    });
-  }, []);
-
-  // Add HTML marker
-  const addMarker = useCallback(
-    (htmlElement: string, currentMap: mapBoxGL.Map, coords: LngLatLike) => {
-      const el = document.createElement('div');
-      el.className = 'marker';
-      el.innerHTML = htmlElement;
-
-      // make a marker for each feature and add to the map
-      new mapBoxGL.Marker(el).setLngLat(coords).addTo(currentMap);
-    },
-    [],
-  );
+  // If needed, debouncing lng/lat to slow down updates whenever map coordinates are moved
+  const debouncedLocation = useDebouncedState<LngLatLike>(initialCoords);
 
   // Custom manual callback to fly to specific coordinates
   const flyTo = useCallback((center: LngLatLike, zoom: number = 15) => {
     map.current?.flyTo({ center, zoom });
   }, []);
 
-  // Flies home and sets marker
-  const flyToCurrentLocation = useCallback(async () => {
-    setLocationLoading(true);
-
-    if (currentCoords) flyTo(currentCoords, 15);
-
-    try {
-      const pos = await getCurrentLocation();
-      flyTo([pos.coords.longitude, pos.coords.latitude]);
-      setCurrentCoords([pos.coords.longitude, pos.coords.latitude]);
-
-      setLocationLoading(false);
-    } catch (err) {
-      console.log(`can't get coords because of ${err}`);
-    }
-  }, [flyTo, getCurrentLocation, currentCoords]);
-
   // Initial map loading
   useEffect(() => {
     // Prevent re-creating a map if one already exists
     if (map.current) return;
+
     mapBoxGL.accessToken = process.env.NEXT_PUBLIC_MAPBOX_TOKEN || '';
     map.current = new mapBoxGL.Map({
       attributionControl: false,
       container: mapContainer.current,
       style: 'mapbox://styles/mapbox/dark-v11',
       center: initialCoords,
-      zoom,
+      zoom: 9,
     });
 
     // Need to add locator control to set current location marker
@@ -121,7 +86,7 @@ const Map: FC<{ loadHome?: LngLatLike }> = ({ loadHome }) => {
     });
 
     map.current?.resize();
-  }, [initialCoords, updateUser, zoom]);
+  }, [initialCoords, updateUser]);
 
   // If map exists, trigger tracking map's current location
   useEffect(() => {
@@ -132,7 +97,6 @@ const Map: FC<{ loadHome?: LngLatLike }> = ({ loadHome }) => {
             parseFloat(map.current.getCenter().lng.toFixed(4)),
             parseFloat(map.current.getCenter().lat.toFixed(4)),
           ]);
-          setZoom(parseFloat(map.current.getZoom().toFixed(2)));
         }
       });
     }
@@ -157,7 +121,7 @@ const Map: FC<{ loadHome?: LngLatLike }> = ({ loadHome }) => {
         )?.id;
 
         // The 'building' layer in the Mapbox Streets
-        // vector tileset contains building height data
+        // vector tile set contains building height data
         // from OpenStreetMap.
         map.current?.addLayer(
           {
@@ -216,26 +180,82 @@ const Map: FC<{ loadHome?: LngLatLike }> = ({ loadHome }) => {
       <div className={'w-full h-full'} ref={mapContainer} />
 
       {/* Extra layers on map (buttons, controls) */}
+      <LocationButton
+        mapLoading={mapLoading}
+        locationLoading={locationLoading}
+        setLocationLoading={setLocationLoading}
+        flyTo={flyTo}
+      />
+    </div>
+  );
+};
+
+const LocationButton: FC<{
+  mapLoading: boolean;
+  locationLoading: boolean;
+  setLocationLoading: Dispatch<SetStateAction<boolean>>;
+  flyTo: (center: LngLatLike, zoom?: number) => void;
+}> = ({ mapLoading, locationLoading, setLocationLoading, flyTo }) => {
+  const [currentCoords, setCurrentCoords] = useState<LngLatLike | undefined>();
+
+  // Simple wrapper to trigger loading state
+  const getCurrentLocation = useCallback((): Promise<GeolocationPosition> => {
+    setLocationLoading(true);
+    return new Promise((res, rej) => {
+      navigator.geolocation.getCurrentPosition(res, rej, { enableHighAccuracy: true });
+    });
+  }, [setLocationLoading]);
+
+  // Flies home and sets marker
+  const flyToCurrentLocation = useCallback(async () => {
+    setLocationLoading(true);
+
+    if (currentCoords) flyTo(currentCoords, 15);
+
+    try {
+      const pos = await getCurrentLocation();
+      flyTo([pos.coords.longitude, pos.coords.latitude]);
+      setCurrentCoords([pos.coords.longitude, pos.coords.latitude]);
+
+      setLocationLoading(false);
+    } catch (err) {
+      console.log(`can't get coords because of ${err}`);
+    }
+  }, [flyTo, getCurrentLocation, currentCoords]);
+
+  return (
+    <>
       {mapLoading ? (
         <div className={'absolute top-1/2 bottom-1/2 left-1/2 right-1/2 bg-none'}>
           <Spinner />
         </div>
       ) : (
-        <>
-          {/* Location button */}
-          <Button
-            className={'absolute bottom-5 right-5 opacity-50 w-[40px] h-[40px] p-0 rounded-full'}
-            onClick={flyToCurrentLocation}
-          >
-            {locationLoading ? <Spinner /> : <LocationMarkerIcon />}
-          </Button>
-        </>
+        <Button
+          // Location button
+          className={'absolute bottom-5 right-5 opacity-50 w-[40px] h-[40px] p-0 rounded-full'}
+          onClick={flyToCurrentLocation}
+        >
+          {locationLoading ? <Spinner /> : <LocationMarkerIcon />}
+        </Button>
       )}
-    </div>
+    </>
   );
 };
 
 export default Map;
+
+// Add HTML marker
+// const addMarker = useCallback(
+//   (htmlElement: string, currentMap: mapBoxGL.Map, coords: LngLatLike) => {
+//     const el = document.createElement('div');
+//     el.className = 'marker';
+//     el.innerHTML = htmlElement;
+//
+//     // make a marker for each feature and add to the map
+//     new mapBoxGL.Marker(el).setLngLat(coords).addTo(currentMap);
+//   },
+//   [],
+// );
 
 // const htmlElement = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5">
 //         <path fill-rule="evenodd" d="M9.69 18.933l.003.001C9.89 19.02 10 19 10 19s.11.02.308-.066l.002-.001.006-.003.018-.008a5.741 5.741 0 00.281-.14c.186-.096.446-.24.757-.433.62-.384 1.445-.966 2.274-1.765C15.302 14.988 17 12.493 17 9A7 7 0 103 9c0 3.492 1.698 5.988 3.355 7.584a13.731 13.731 0 002.273 1.765 11.842 11.842 0 00.976.544l.062.029.018.008.006.003zM10 11.25a2.25 2.25 0 100-4.5 2.25 2.25 0 000 4.5z" clip-rule="evenodd" />
