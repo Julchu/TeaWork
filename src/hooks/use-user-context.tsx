@@ -1,9 +1,17 @@
 'use client';
-import { createContext, Dispatch, FC, ReactNode, SetStateAction, useContext, useEffect, useState } from "react";
-import { UserInfo } from "src/lib/firebase/interfaces/generics";
-import { useAuthContext } from "src/hooks/use-auth-context";
-import useUserHook from "src/hooks/use-user-firestore-hook";
-// import { useGetReactFirebaseHookData } from 'src/app/api/react-firestore-hooks-example';
+import {
+  createContext,
+  Dispatch,
+  FC,
+  ReactNode,
+  SetStateAction,
+  useContext,
+  useEffect,
+  useState,
+} from 'react';
+import { UserInfo } from 'src/lib/firebase/interfaces/generics';
+import { useAuthContext } from 'src/hooks/use-auth-context';
+import useUserHook from 'src/hooks/use-user-firestore-hook';
 
 export const UserContext = createContext<UserProps>({
   userInfo: {},
@@ -48,3 +56,12 @@ const UserProvider: FC<{
 };
 
 export default UserProvider;
+
+// Live data updates to user state
+// useEffect(() => {
+//   const q = query(db.userCollection, where('firstName', '==', 'Julian'));
+//   if (user)
+//     onSnapshot(db.userDoc(user?.uid), doc => {
+//       setLiveData(doc.data());
+//     });
+// }, [user]);

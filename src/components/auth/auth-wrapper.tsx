@@ -75,7 +75,7 @@ const MenuTriggerButton: FC = () => {
   return (
     <DropdownMenuTrigger asChild>
       <div className={'absolute top-5 right-5 w-[40px] h-[40px] m-6 cursor-pointer'}>
-        {user ? (
+        {user && userInfo?.firstName ? (
           <>
             <Button className={'font-extrabold absolute opacity-50 w-full h-full p-0 rounded-full'}>
               {`${userInfo?.firstName?.[0].toUpperCase()} ${userInfo?.lastName?.[0].toUpperCase()}`}
