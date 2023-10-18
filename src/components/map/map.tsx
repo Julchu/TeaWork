@@ -39,7 +39,7 @@ const Map: FC = () => {
   const map = useRef<mapBoxGL.Map | null>(null);
   const [initialCoords, setInitialCoords] = useState<LngLatLike>([-79.387054, 43.642567]);
 
-  // Set map loading to true in oage load
+  // Set map loading to true in page load
   const [mapLoading, setMapLoading] = useState<boolean>(true);
   const [locationLoading, setLocationLoading] = useState<boolean>(false);
 
@@ -64,8 +64,6 @@ const Map: FC = () => {
       center: userInfo?.currentLocation || initialCoords,
       zoom: 9,
     });
-
-    // const geolocator = ;
 
     const currentGeolocator = new mapBoxGL.GeolocateControl({
       positionOptions: {
@@ -147,6 +145,11 @@ const Map: FC = () => {
     geolocator?.trigger();
   }, [geolocator]);
 
+  const triggerNorth = useCallback(() => {
+    // Need to add locator control to set current location marker
+    map.current?.resetNorth({ duration: 2000 });
+  }, [geolocator]);
+
   // If map exists, trigger tracking map's current location
   useEffect(() => {
     map.current?.on('move', () => {
@@ -190,19 +193,47 @@ const Map: FC = () => {
         locationLoading={locationLoading}
         setLocationLoading={setLocationLoading}
         flyTo={flyTo}
-        test={triggerGeolocator}
+        triggerGeolocator={triggerGeolocator}
       />
+
+      <NorthButton triggerNorth={triggerNorth} />
     </div>
   );
 };
 
+const NorthButton: FC<{ triggerNorth: () => void }> = ({ triggerNorth }) => {
+  return (
+    <Button
+      // Location button
+      className={'absolute bottom-20 right-5 opacity-50 w-[40px] h-[40px] p-0 rounded-full'}
+      onClick={() => {
+        triggerNorth();
+      }}
+    >
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        fill="none"
+        viewBox="0 0 24 24"
+        strokeWidth={1.5}
+        stroke="currentColor"
+        className="w-6 h-6"
+      >
+        <path
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          d="M15 11.25l-3-3m0 0l-3 3m3-3v7.5M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+        />
+      </svg>
+    </Button>
+  );
+};
 const LocationButton: FC<{
   mapLoading: boolean;
   locationLoading: boolean;
   setLocationLoading: Dispatch<SetStateAction<boolean>>;
   flyTo: (center: LngLatLike, zoom?: number) => void;
-  test: () => void;
-}> = ({ test, mapLoading, locationLoading, setLocationLoading, flyTo }) => {
+  triggerGeolocator: () => void;
+}> = ({ triggerGeolocator, mapLoading, locationLoading, setLocationLoading, flyTo }) => {
   const [currentCoords, setCurrentCoords] = useState<LngLatLike | undefined>();
 
   // Simple wrapper to trigger loading state
@@ -242,7 +273,7 @@ const LocationButton: FC<{
           className={'absolute bottom-5 right-5 opacity-50 w-[40px] h-[40px] p-0 rounded-full'}
           onClick={() => {
             flyToCurrentLocation();
-            test();
+            triggerGeolocator();
           }}
         >
           {locationLoading ? <Spinner /> : <LocationMarkerIcon />}
