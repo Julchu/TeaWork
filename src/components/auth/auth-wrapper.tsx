@@ -15,6 +15,7 @@ import {
 import PersonIcon from 'src/components/ui/icons/person';
 import Link from 'next/link';
 import { Button } from 'src/components/ui/button';
+import { useUserContext } from 'src/hooks/use-user-context';
 
 const AuthWrapper: FC<{
   children: ReactNode;
@@ -69,6 +70,7 @@ const MenuContent: FC = () => {
 };
 const MenuTriggerButton: FC = () => {
   const { user } = useAuthContext();
+  const { userInfo } = useUserContext();
 
   const initials = useMemo(() => {
     const names = user?.displayName?.split(' ');
@@ -82,7 +84,7 @@ const MenuTriggerButton: FC = () => {
         {user ? (
           <>
             <Button className={'font-extrabold absolute opacity-50 w-full h-full p-0 rounded-full'}>
-              {initials}
+              {`${userInfo?.firstName?.[0].toUpperCase()} ${userInfo?.lastName?.[0].toUpperCase()}`}
             </Button>
           </>
         ) : (

@@ -24,6 +24,7 @@ const UserProvider: FC<{
   const [{ getUser }] = useUserHook();
   const [userInfo, setUserInfo] = useState<Partial<UserInfo>>();
 
+  // Sets user object on auth changes (login/logout, page refresh)
   useEffect(() => {
     if (user) {
       getUser().then(userSnapshot => {

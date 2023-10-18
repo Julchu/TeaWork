@@ -11,6 +11,7 @@ import Spinner from "src/components/ui/spinner";
 import { LocationMarkerIcon } from "src/components/ui/icons/location-marker";
 import useUserHook from "src/hooks/use-user-firestore-hook";
 import { useUserContext } from "src/hooks/use-user-context";
+import { useAuthContext } from "src/hooks/use-auth-context";
 
 /* Other map styles
  * style: 'mapbox://styles/mapbox/streets-v12',
@@ -28,15 +29,15 @@ import { useUserContext } from "src/hooks/use-user-context";
 
 // CN Tower long/lat: [-79.387054, 43.642567]
 const Map: FC = () => {
+  const { user } = useAuthContext();
   const { userInfo } = useUserContext();
   const { setUserInfo } = useUserContext();
   const [{ updateUser }] = useUserHook();
 
   const mapContainer = useRef<any>(null);
+  const [geolocator, setGeolocator] = useState<mapBoxGL.GeolocateControl>();
   const map = useRef<mapBoxGL.Map | null>(null);
-  const [initialCoords, setInitialCoords] = useState<LngLatLike>(
-    userInfo?.currentLocation || [-70.9, 42.35],
-  );
+  const [initialCoords, setInitialCoords] = useState<LngLatLike>([-79.387054, 43.642567]);
 
   // Set map loading to true in oage load
   const [mapLoading, setMapLoading] = useState<boolean>(true);
@@ -60,12 +61,13 @@ const Map: FC = () => {
       attributionControl: false,
       container: mapContainer.current,
       style: 'mapbox://styles/mapbox/dark-v11',
-      center: initialCoords,
+      center: userInfo?.currentLocation || initialCoords,
       zoom: 9,
     });
 
-    // Need to add locator control to set current location marker
-    const geolocator = new mapBoxGL.GeolocateControl({
+    // const geolocator = ;
+
+    const currentGeolocator = new mapBoxGL.GeolocateControl({
       positionOptions: {
         enableHighAccuracy: true,
       },
@@ -73,95 +75,98 @@ const Map: FC = () => {
       showUserHeading: true,
     });
 
-    map.current?.addControl(geolocator);
+    map.current.addControl(currentGeolocator);
 
-    // map.current.
-    map.current?.on('load', async () => {
-      setLocationLoading(true);
-      geolocator.trigger();
-    });
+    // map.current.on('load',  () => {
+    //   setLocationLoading(true);
+    // Disabled for manual geolocation; prevent console error about automatically triggering geolocation
+    // geolocator?.trigger();
+    // });
 
-    geolocator.on('geolocate', async () => {
-      setLocationLoading(false);
+    // currentGeolocator.on('geolocate', async () => {
+    //   setLocationLoading(false);
+    // });
+
+    setGeolocator(currentGeolocator);
+
+    // Loading 3-D building styles
+    map.current.on('style.load', () => {
+      // Insert the layer beneath any symbol layer.
+      const layers = map.current?.getStyle().layers;
+      const labelLayerId = layers?.find(
+        layer => layer.type === 'symbol' && layer.layout?.['text-field'],
+      )?.id;
+
+      // The 'building' layer in the Mapbox Streets
+      // vector tile set contains building height data
+      // from OpenStreetMap.
+      map.current?.addLayer(
+        {
+          id: 'add-3d-buildings',
+          source: 'composite',
+          'source-layer': 'building',
+          filter: ['==', 'extrude', 'true'],
+          type: 'fill-extrusion',
+          paint: {
+            'fill-extrusion-color': '#aaa',
+
+            // Use an 'interpolate' expression to
+            // add a smooth transition effect to
+            // the buildings as the user zooms in.
+            'fill-extrusion-height': [
+              'interpolate',
+              ['linear'],
+              ['zoom'],
+              15,
+              0,
+              15.05,
+              ['get', 'height'],
+            ],
+            'fill-extrusion-base': [
+              'interpolate',
+              ['linear'],
+              ['zoom'],
+              15,
+              0,
+              15.05,
+              ['get', 'min_height'],
+            ],
+            'fill-extrusion-opacity': 0.6,
+          },
+        },
+        labelLayerId,
+      );
     });
 
     map.current?.resize();
-  }, [initialCoords, updateUser]);
+  }, [initialCoords, updateUser, userInfo?.currentLocation]);
+
+  // Manual geolocation triggering
+  const triggerGeolocator = useCallback(() => {
+    // Need to add locator control to set current location marker
+    geolocator?.trigger();
+  }, [geolocator]);
 
   // If map exists, trigger tracking map's current location
   useEffect(() => {
-    if (map.current) {
-      map.current.on('move', () => {
-        if (map.current) {
-          setInitialCoords([
-            parseFloat(map.current.getCenter().lng.toFixed(4)),
-            parseFloat(map.current.getCenter().lat.toFixed(4)),
-          ]);
-        }
-      });
-    }
-  }, []);
-
-  useEffect(() => {
-    updateUser({ currentLocation: debouncedLocation }).then(() => {
-      setUserInfo(currentInfo => {
-        return { ...currentInfo, currentLocation: debouncedLocation };
-      });
+    map.current?.on('move', () => {
+      if (map.current) {
+        setInitialCoords([
+          parseFloat(map.current.getCenter().lng.toFixed(4)),
+          parseFloat(map.current.getCenter().lat.toFixed(4)),
+        ]);
+      }
     });
-  }, [debouncedLocation, setUserInfo, updateUser]);
-
-  // Loading 3-D building styles
-  useEffect(() => {
-    if (map.current) {
-      map.current.on('style.load', () => {
-        // Insert the layer beneath any symbol layer.
-        const layers = map.current?.getStyle().layers;
-        const labelLayerId = layers?.find(
-          layer => layer.type === 'symbol' && layer.layout?.['text-field'],
-        )?.id;
-
-        // The 'building' layer in the Mapbox Streets
-        // vector tile set contains building height data
-        // from OpenStreetMap.
-        map.current?.addLayer(
-          {
-            id: 'add-3d-buildings',
-            source: 'composite',
-            'source-layer': 'building',
-            filter: ['==', 'extrude', 'true'],
-            type: 'fill-extrusion',
-            paint: {
-              'fill-extrusion-color': '#aaa',
-
-              // Use an 'interpolate' expression to
-              // add a smooth transition effect to
-              // the buildings as the user zooms in.
-              'fill-extrusion-height': [
-                'interpolate',
-                ['linear'],
-                ['zoom'],
-                15,
-                0,
-                15.05,
-                ['get', 'height'],
-              ],
-              'fill-extrusion-base': [
-                'interpolate',
-                ['linear'],
-                ['zoom'],
-                15,
-                0,
-                15.05,
-                ['get', 'min_height'],
-              ],
-              'fill-extrusion-opacity': 0.6,
-            },
-          },
-          labelLayerId,
-        );
-      });
-    }
   }, []);
+
+  useEffect(() => {
+    if (user)
+      updateUser({ currentLocation: debouncedLocation }).then(() => {
+        setUserInfo(currentInfo => {
+          return { ...currentInfo, currentLocation: debouncedLocation };
+        });
+      });
+  }, [user, debouncedLocation, setUserInfo, updateUser]);
 
   useEffect(() => {
     setMapLoading(true);
@@ -185,6 +190,7 @@ const Map: FC = () => {
         locationLoading={locationLoading}
         setLocationLoading={setLocationLoading}
         flyTo={flyTo}
+        test={triggerGeolocator}
       />
     </div>
   );
@@ -195,7 +201,8 @@ const LocationButton: FC<{
   locationLoading: boolean;
   setLocationLoading: Dispatch<SetStateAction<boolean>>;
   flyTo: (center: LngLatLike, zoom?: number) => void;
-}> = ({ mapLoading, locationLoading, setLocationLoading, flyTo }) => {
+  test: () => void;
+}> = ({ test, mapLoading, locationLoading, setLocationLoading, flyTo }) => {
   const [currentCoords, setCurrentCoords] = useState<LngLatLike | undefined>();
 
   // Simple wrapper to trigger loading state
@@ -221,7 +228,7 @@ const LocationButton: FC<{
     } catch (err) {
       console.log(`can't get coords because of ${err}`);
     }
-  }, [flyTo, getCurrentLocation, currentCoords]);
+  }, [setLocationLoading, currentCoords, flyTo, getCurrentLocation]);
 
   return (
     <>
@@ -233,7 +240,10 @@ const LocationButton: FC<{
         <Button
           // Location button
           className={'absolute bottom-5 right-5 opacity-50 w-[40px] h-[40px] p-0 rounded-full'}
-          onClick={flyToCurrentLocation}
+          onClick={() => {
+            flyToCurrentLocation();
+            test();
+          }}
         >
           {locationLoading ? <Spinner /> : <LocationMarkerIcon />}
         </Button>

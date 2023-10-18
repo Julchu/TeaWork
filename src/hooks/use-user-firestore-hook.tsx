@@ -95,7 +95,6 @@ const useUserHook = (): [UserMethods, boolean, Error | undefined] => {
 
       const userDocRef = db.userDoc(user.uid);
 
-      console.log('update');
       const updatedUser: Partial<UserInfo> = filterNullableObject({
         firstName,
         lastName,
