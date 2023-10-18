@@ -75,6 +75,7 @@ const MenuContent: FC = () => {
 };
 const MenuTriggerButton: FC = () => {
   const { user } = useAuthContext();
+
   const initials = useMemo(() => {
     const names = user?.displayName?.split(' ');
     if (names) return `${names[0][0].toUpperCase()} ${names[names.length - 1][0].toUpperCase()}`;

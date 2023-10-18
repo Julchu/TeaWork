@@ -13,15 +13,15 @@ import { LngLatLike } from 'mapbox-gl';
 import { filterNullableObject } from 'src/lib/functions';
 
 export type UserFormData = {
-  firstName: string;
-  lastName: string;
-  email: string;
+  firstName?: string;
+  lastName?: string;
+  email?: string;
   currentLocation?: LngLatLike;
 };
 
 type UserMethods = {
   addUser: (userData: UserFormData) => Promise<DocumentReference<UserInfo> | undefined>;
-  getUser: (userId: string) => Promise<DocumentSnapshot<UserInfo> | undefined>;
+  getUser: () => Promise<DocumentSnapshot<UserInfo> | undefined>;
   updateUser: (userData: Partial<UserFormData>) => Promise<DocumentReference<UserInfo> | undefined>;
 };
 
@@ -30,33 +30,30 @@ const useUserHook = (): [UserMethods, boolean, Error | undefined] => {
   const [error, setError] = useState<Error>();
   const { user } = useAuthContext();
 
-  const getUser = useCallback<UserMethods['getUser']>(
-    async userId => {
-      if (!user) return;
-      setLoading(true);
+  const getUser = useCallback<UserMethods['getUser']>(async () => {
+    if (!user) return;
+    setLoading(true);
 
-      const userDocRef = await getDoc(db.userDoc(userId));
+    const userDocRef = await getDoc(db.userDoc(user.uid));
 
-      try {
-        if (!userDocRef.exists()) {
-          const displayName = user.displayName?.split(' ');
-          const newUser: UserInfo = {
-            email: user.email ? user.email : '',
-            firstName: displayName ? displayName[0] : '',
-            lastName: displayName && displayName.length > 1 ? displayName[1] : '',
-            createdAt: serverTimestamp(),
-          };
-          await setDoc(db.userDoc(user.uid), newUser);
-        }
-      } catch (e) {
-        setError(e as Error);
+    try {
+      if (!userDocRef.exists()) {
+        const displayName = user.displayName?.split(' ');
+        const newUser: UserInfo = {
+          email: user.email ? user.email : '',
+          firstName: displayName ? displayName[0] : '',
+          lastName: displayName && displayName.length > 1 ? displayName[1] : '',
+          createdAt: serverTimestamp(),
+        };
+        await setDoc(db.userDoc(user.uid), newUser);
       }
+    } catch (e) {
+      setError(e as Error);
+    }
 
-      setLoading(false);
-      return userDocRef;
-    },
-    [user],
-  );
+    setLoading(false);
+    return userDocRef;
+  }, [user]);
 
   const addUser = useCallback<UserMethods['addUser']>(
     async ({ firstName, lastName, email, currentLocation }) => {
@@ -66,20 +63,21 @@ const useUserHook = (): [UserMethods, boolean, Error | undefined] => {
       // Creating doc with auto-generated id
       const userDocRef = db.userDoc(user.uid);
 
-      // Ensuring all fields are passed by typechecking Ingredient
-      const newUser: UserInfo = {
-        email,
-        firstName,
-        lastName,
-        currentLocation,
-        createdAt: serverTimestamp(),
-      };
-
       try {
-        /* If you want to auto generate an ID, use addDoc() + collection()
-         * If you want to manually set the ID, use setDoc() + doc()
-         */
-        await setDoc(userDocRef, newUser);
+        if (email && firstName && lastName) {
+          // Ensuring all fields are passed by typechecking Ingredient
+          const newUser: UserInfo = {
+            email,
+            firstName,
+            lastName,
+            currentLocation,
+            createdAt: serverTimestamp(),
+          };
+          /* If you want to auto generate an ID, use addDoc() + collection()
+           * If you want to manually set the ID, use setDoc() + doc()
+           */
+          await setDoc(userDocRef, newUser);
+        }
       } catch (e) {
         setError(e as Error);
       }
@@ -92,8 +90,12 @@ const useUserHook = (): [UserMethods, boolean, Error | undefined] => {
 
   const updateUser = useCallback<UserMethods['updateUser']>(
     async ({ firstName, lastName, email, currentLocation }) => {
-      const userDocRef = db.userDoc();
+      if (!user) return;
+      setLoading(true);
 
+      const userDocRef = db.userDoc(user.uid);
+
+      console.log('update');
       const updatedUser: Partial<UserInfo> = filterNullableObject({
         firstName,
         lastName,
@@ -107,9 +109,10 @@ const useUserHook = (): [UserMethods, boolean, Error | undefined] => {
         setError(e as Error);
       }
 
+      setLoading(false);
       return userDocRef;
     },
-    [],
+    [user],
   );
 
   return [{ getUser, addUser, updateUser }, loading, error];

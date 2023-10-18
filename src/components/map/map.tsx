@@ -10,6 +10,8 @@ import Spinner from "src/components/ui/spinner";
 // import
 import { LocationMarkerIcon } from "src/components/ui/icons/location-marker";
 import "./map.css";
+import useUserHook from "src/hooks/use-user-firestore-hook";
+import { useUserContext } from "src/hooks/use-user-context";
 
 /* Other map styles
  * style: 'mapbox://styles/mapbox/streets-v12',
@@ -32,16 +34,18 @@ const Map: FC<{ loadHome?: LngLatLike }> = ({ loadHome }) => {
   const [initialCoords, setInitialCoords] = useState<LngLatLike>(loadHome || [-70.9, 42.35]);
 
   const [currentCoords, setCurrentCoords] = useState<LngLatLike | undefined>(loadHome);
-  const [firstLoading, setFirstLoading] = useState<boolean>(true);
+  const [mapLoading, setMapLoading] = useState<boolean>(true);
   const [zoom, setZoom] = useState<number>(9);
 
+  const { userInfo, setUserInfo } = useUserContext();
+  const [{ updateUser }] = useUserHook();
   // If needed, debouncing lng/lat to slow down updates whenever map coordinates are moved
   const debouncedLocation = useDebouncedState<LngLatLike>(initialCoords);
-  const [loading, setLoading] = useState<boolean>(false);
+  const [locationLoading, setLocationLoading] = useState<boolean>(false);
 
   // Simple wrapper to trigger loading state
   const getCurrentLocation = useCallback((): Promise<GeolocationPosition> => {
-    setLoading(true);
+    setLocationLoading(true);
     return new Promise((res, rej) => {
       navigator.geolocation.getCurrentPosition(res, rej, { enableHighAccuracy: true });
     });
@@ -67,7 +71,7 @@ const Map: FC<{ loadHome?: LngLatLike }> = ({ loadHome }) => {
 
   // Flies home and sets marker
   const flyToCurrentLocation = useCallback(async () => {
-    setLoading(true);
+    setLocationLoading(true);
 
     if (currentCoords) flyTo(currentCoords, 15);
 
@@ -76,7 +80,7 @@ const Map: FC<{ loadHome?: LngLatLike }> = ({ loadHome }) => {
       flyTo([pos.coords.longitude, pos.coords.latitude]);
       setCurrentCoords([pos.coords.longitude, pos.coords.latitude]);
 
-      setLoading(false);
+      setLocationLoading(false);
     } catch (err) {
       console.log(`can't get coords because of ${err}`);
     }
@@ -106,16 +110,18 @@ const Map: FC<{ loadHome?: LngLatLike }> = ({ loadHome }) => {
 
     map.current?.addControl(geolocator);
 
+    // map.current.
     map.current?.on('load', async () => {
-      setLoading(true);
+      setLocationLoading(true);
       geolocator.trigger();
     });
 
-    geolocator.on('geolocate', () => {
-      setLoading(false);
+    geolocator.on('geolocate', async () => {
+      setLocationLoading(false);
     });
+
     map.current?.resize();
-  }, [initialCoords, zoom]);
+  }, [initialCoords, updateUser, zoom]);
 
   // If map exists, trigger tracking map's current location
   useEffect(() => {
@@ -131,6 +137,14 @@ const Map: FC<{ loadHome?: LngLatLike }> = ({ loadHome }) => {
       });
     }
   }, []);
+
+  useEffect(() => {
+    updateUser({ currentLocation: debouncedLocation }).then(() => {
+      setUserInfo(currentInfo => {
+        return { ...currentInfo, currentLocation: debouncedLocation };
+      });
+    });
+  }, [debouncedLocation, setUserInfo, updateUser]);
 
   // Loading 3-D building styles
   useEffect(() => {
@@ -186,9 +200,9 @@ const Map: FC<{ loadHome?: LngLatLike }> = ({ loadHome }) => {
   }, []);
 
   useEffect(() => {
-    setFirstLoading(true);
+    setMapLoading(true);
     map.current?.on('load', () => {
-      setFirstLoading(false);
+      setMapLoading(false);
     });
   }, []);
 
@@ -202,7 +216,7 @@ const Map: FC<{ loadHome?: LngLatLike }> = ({ loadHome }) => {
       <div className={'w-full h-full'} ref={mapContainer} />
 
       {/* Extra layers on map (buttons, controls) */}
-      {firstLoading ? (
+      {mapLoading ? (
         <div className={'absolute top-1/2 bottom-1/2 left-1/2 right-1/2 bg-none'}>
           <Spinner />
         </div>
@@ -213,7 +227,7 @@ const Map: FC<{ loadHome?: LngLatLike }> = ({ loadHome }) => {
             className={'absolute bottom-5 right-5 opacity-50 w-[40px] h-[40px] p-0 rounded-full'}
             onClick={flyToCurrentLocation}
           >
-            {loading ? <Spinner /> : <LocationMarkerIcon />}
+            {locationLoading ? <Spinner /> : <LocationMarkerIcon />}
           </Button>
         </>
       )}
