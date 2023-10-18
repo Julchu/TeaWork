@@ -70,6 +70,10 @@ const MenuContent: FC = () => {
 const MenuTriggerButton: FC = () => {
   const { user } = useAuthContext();
 
+  /* Using user displayName (and initials) instead of userInfo first/lastName
+   ** Currently userInfo name won't get updated because not using snapshot
+   ** If using user snapshot and updating userInfo in real time, then can use updated userInfo
+   */
   const initials = useMemo(() => {
     const names = user?.displayName?.split(' ');
     if (names) return `${names[0][0].toUpperCase()} ${names[names.length - 1][0].toUpperCase()}`;
