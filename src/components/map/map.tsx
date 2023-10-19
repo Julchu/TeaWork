@@ -41,6 +41,7 @@ const Map: FC<{ adminUser?: UserInfo }> = ({ adminUser }) => {
 
   // Set map loading to true in page load
   const [mapLoading, setMapLoading] = useState<boolean>(true);
+  const [firstLoading, setFirstLoading] = useState<boolean>(true);
   const [locationLoading, setLocationLoading] = useState<boolean>(false);
 
   // Custom manual callback to fly to specific coordinates
@@ -77,6 +78,15 @@ const Map: FC<{ adminUser?: UserInfo }> = ({ adminUser }) => {
     // setLocationLoading(true);
     map.current?.resetNorth({ duration: 2000 });
   }, []);
+
+  // On first map load, when authUser gets
+  useEffect(() => {
+    if (firstLoading && authUser && userInfo && currentCoords) {
+      updateUserLocation(currentCoords).then(() => {
+        setFirstLoading(false);
+      });
+    }
+  }, [authUser, currentCoords, firstLoading, updateUserLocation, userInfo]);
 
   // Initial map loading
   useEffect(() => {
