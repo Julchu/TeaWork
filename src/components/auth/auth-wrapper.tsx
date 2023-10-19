@@ -2,7 +2,7 @@
 import { FC, ReactNode, useCallback, useMemo } from 'react';
 import { useAuthContext } from 'src/hooks/use-auth-context';
 import { useSignInWithGoogle, useSignOut } from 'react-firebase-hooks/auth';
-import { authentication } from 'src/lib/firebase';
+import { authentication } from 'src/lib/firebase/firebase-config';
 import {
   DropdownMenu,
   DropdownMenuArrow,
@@ -34,26 +34,26 @@ const AuthWrapper: FC<{
 };
 
 const MenuContent: FC = () => {
-  const { user } = useAuthContext();
+  const { authUser } = useAuthContext();
 
   const [login, _user, _loading, _error] = useSignInWithGoogle(authentication);
   const [logout] = useSignOut(authentication);
 
   const authHandler = useCallback(async () => {
-    if (user) await logout();
+    if (authUser) await logout();
     else await login();
-  }, [login, logout, user]);
+  }, [login, logout, authUser]);
 
   return (
     <DropdownMenuContent align={'end'} className={'border-0'}>
-      {user?.displayName ? (
+      {authUser?.displayName ? (
         <>
-          <DropdownMenuLabel className={'text-center'}>{user?.displayName}</DropdownMenuLabel>
+          <DropdownMenuLabel className={'text-center'}>{authUser?.displayName}</DropdownMenuLabel>
           <DropdownMenuSeparator />
         </>
       ) : null}
 
-      {user ? (
+      {authUser ? (
         <>
           <DropdownMenuItem asChild>
             <Link href={'/other-examples'}>Settings</Link>
@@ -68,22 +68,22 @@ const MenuContent: FC = () => {
   );
 };
 const MenuTriggerButton: FC = () => {
-  const { user } = useAuthContext();
+  const { authUser } = useAuthContext();
 
   /* Using user displayName (and initials) instead of userInfo first/lastName
    ** Currently userInfo name won't get updated because not using snapshot
    ** If using user snapshot and updating userInfo in real time, then can use updated userInfo
    */
   const initials = useMemo(() => {
-    const names = user?.displayName?.split(' ');
+    const names = authUser?.displayName?.split(' ');
     if (names) return `${names[0][0].toUpperCase()} ${names[names.length - 1][0].toUpperCase()}`;
     else return '';
-  }, [user?.displayName]);
+  }, [authUser?.displayName]);
 
   return (
     <DropdownMenuTrigger asChild>
       <div className={'absolute top-5 right-5 w-[40px] h-[40px] m-6 cursor-pointer'}>
-        {user ? (
+        {authUser ? (
           <>
             <Button className={'font-extrabold absolute opacity-50 w-full h-full p-0 rounded-full'}>
               {initials}

@@ -61,9 +61,9 @@ cd teawork
 yarn install
 yarn dev
 
-# Deploying app to live; make sure to comment out lines to connect emulators in /lib/firebase/index.ts before deploying
+# Deploying app to live; make sure to comment out lines to connect emulators in /lib/firebase/firebase-config.ts before deploying
 # Optional flag: --except functions
-yarn export && firebase --project teaworkapp deploy
+yarn build && firebase --project teaworkapp deploy
 ```
 
 ### Launching the Firebase/Firestore emulator:

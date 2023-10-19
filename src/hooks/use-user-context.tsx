@@ -28,20 +28,20 @@ export const useUserContext = (): UserProps => useContext(UserContext);
 const UserProvider: FC<{
   children: ReactNode;
 }> = ({ children }) => {
-  const { user } = useAuthContext();
+  const { authUser } = useAuthContext();
   const [{ getUser }] = useUserHook();
   const [userInfo, setUserInfo] = useState<Partial<UserInfo>>();
 
   // Sets user object on auth changes (login/logout, page refresh)
   useEffect(() => {
-    if (user) {
+    if (authUser) {
       getUser().then(userSnapshot => {
         setUserInfo(userSnapshot?.data());
       });
     } else {
       setUserInfo({});
     }
-  }, [getUser, user]);
+  }, [getUser, authUser]);
 
   return (
     <UserContext.Provider

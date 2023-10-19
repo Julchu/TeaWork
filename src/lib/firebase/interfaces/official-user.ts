@@ -1,5 +1,5 @@
 import { collection, doc, FirestoreDataConverter, getDoc, getDocs } from 'firebase/firestore';
-import { firestore } from 'src/lib/firebase';
+import { firestore } from 'src/lib/firebase/firebase-config';
 
 export type OfficialUser = { title: string; author: string };
 

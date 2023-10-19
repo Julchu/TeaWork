@@ -3,8 +3,7 @@ import "mapbox-gl/dist/mapbox-gl.css";
 import "./map.css";
 import mapBoxGL, { LngLatLike } from "mapbox-gl";
 import * as React from "react";
-import { Dispatch, FC, SetStateAction, useCallback, useEffect, useRef, useState } from "react";
-import useDebouncedState from "src/hooks/use-debounced-hook";
+import { FC, useCallback, useEffect, useRef, useState } from "react";
 import { Button } from "src/components/ui/button";
 import * as process from "process";
 import Spinner from "src/components/ui/spinner";
@@ -12,6 +11,7 @@ import { LocationMarkerIcon } from "src/components/ui/icons/location-marker";
 import useUserHook from "src/hooks/use-user-firestore-hook";
 import { useUserContext } from "src/hooks/use-user-context";
 import { useAuthContext } from "src/hooks/use-auth-context";
+import { UserInfo } from "src/lib/firebase/interfaces/generics";
 
 /* Other map styles
  * style: 'mapbox://styles/mapbox/streets-v12',
@@ -28,64 +28,99 @@ import { useAuthContext } from "src/hooks/use-auth-context";
  * */
 
 // CN Tower long/lat: [-79.387054, 43.642567]
-const Map: FC = () => {
-  const { user } = useAuthContext();
+const Map: FC<{ adminUser?: UserInfo }> = ({ adminUser }) => {
+  const { authUser, userLoading } = useAuthContext();
   const { userInfo } = useUserContext();
   const { setUserInfo } = useUserContext();
   const [{ updateUser }] = useUserHook();
 
   const mapContainer = useRef<any>(null);
-  const [geolocator, setGeolocator] = useState<mapBoxGL.GeolocateControl>();
+  // Geolocator used to pass to external functions outside useEffect
   const map = useRef<mapBoxGL.Map | null>(null);
-  const [initialCoords, setInitialCoords] = useState<LngLatLike>([-79.387054, 43.642567]);
+  const [currentCoords, setCurrentCoords] = useState<LngLatLike>();
 
   // Set map loading to true in page load
   const [mapLoading, setMapLoading] = useState<boolean>(true);
   const [locationLoading, setLocationLoading] = useState<boolean>(false);
-
-  // If needed, debouncing lng/lat to slow down updates whenever map coordinates are moved
-  const debouncedLocation = useDebouncedState<LngLatLike>(initialCoords);
 
   // Custom manual callback to fly to specific coordinates
   const flyTo = useCallback((center: LngLatLike, zoom: number = 15) => {
     map.current?.flyTo({ center, zoom });
   }, []);
 
+  const updateUserLocation = useCallback(
+    async (coords: LngLatLike) => {
+      if (authUser) await updateUser({ lastLocation: coords });
+      setUserInfo(currentInfo => {
+        return { ...currentInfo, lastLocation: coords };
+      });
+    },
+    [authUser, setUserInfo, updateUser],
+  );
+
+  // Manual geolocation triggering
+  const triggerGeolocator = useCallback(() => {
+    setLocationLoading(true);
+    // geolocator?.trigger();
+    navigator.geolocation.getCurrentPosition(async pos => {
+      flyTo([pos.coords.longitude, pos.coords.latitude]);
+      await updateUserLocation([pos.coords.longitude, pos.coords.latitude]);
+    });
+
+    map.current?.once('movestart', async () => {
+      setLocationLoading(true);
+    });
+  }, [flyTo, updateUserLocation]);
+
+  const triggerNorth = useCallback(() => {
+    // Need to add locator control to set current location marker
+    // setLocationLoading(true);
+    map.current?.resetNorth({ duration: 2000 });
+  }, []);
+
   // Initial map loading
   useEffect(() => {
+    // console.log('user loading:', authUser);
     // Prevent re-creating a map if one already exists
     if (map.current) return;
+    setMapLoading(true);
 
     mapBoxGL.accessToken = process.env.NEXT_PUBLIC_MAPBOX_TOKEN || '';
     map.current = new mapBoxGL.Map({
       attributionControl: false,
       container: mapContainer.current,
       style: 'mapbox://styles/mapbox/dark-v11',
-      center: userInfo?.currentLocation || initialCoords,
+      // Default coords: CN Tower
+      center: userInfo?.lastLocation || [-79.387054, 43.642567],
       zoom: 9,
     });
 
+    // Automatically load geolocator/user's current location (with hidden built-in button)
     const currentGeolocator = new mapBoxGL.GeolocateControl({
       positionOptions: {
         enableHighAccuracy: true,
       },
-      trackUserLocation: true,
+      showUserLocation: true,
+      showAccuracyCircle: true,
       showUserHeading: true,
     });
 
     map.current.addControl(currentGeolocator);
 
-    // map.current.on('load',  () => {
-    //   setLocationLoading(true);
-    // Disabled for manual geolocation; prevent console error about automatically triggering geolocation
-    // geolocator?.trigger();
-    // });
-
-    // currentGeolocator.on('geolocate', async () => {
-    //   setLocationLoading(false);
-    // });
-
-    setGeolocator(currentGeolocator);
+    map.current
+      .on('load', () => {
+        currentGeolocator.trigger();
+        setLocationLoading(true);
+        setMapLoading(false);
+      })
+      .on('moveend', () => {
+        if (map.current)
+          setCurrentCoords([
+            parseFloat(map.current.getCenter().lng.toFixed(4)),
+            parseFloat(map.current.getCenter().lat.toFixed(4)),
+          ]);
+        setLocationLoading(false);
+      });
 
     // Loading 3-D building styles
     map.current.on('style.load', () => {
@@ -135,48 +170,7 @@ const Map: FC = () => {
         labelLayerId,
       );
     });
-
-    map.current?.resize();
-  }, [initialCoords, updateUser, userInfo?.currentLocation]);
-
-  // Manual geolocation triggering
-  const triggerGeolocator = useCallback(() => {
-    // Need to add locator control to set current location marker
-    geolocator?.trigger();
-  }, [geolocator]);
-
-  const triggerNorth = useCallback(() => {
-    // Need to add locator control to set current location marker
-    map.current?.resetNorth({ duration: 2000 });
-  }, []);
-
-  // If map exists, trigger tracking map's current location
-  useEffect(() => {
-    map.current?.on('move', () => {
-      if (map.current) {
-        setInitialCoords([
-          parseFloat(map.current.getCenter().lng.toFixed(4)),
-          parseFloat(map.current.getCenter().lat.toFixed(4)),
-        ]);
-      }
-    });
-  }, []);
-
-  useEffect(() => {
-    if (user)
-      updateUser({ currentLocation: debouncedLocation }).then(() => {
-        setUserInfo(currentInfo => {
-          return { ...currentInfo, currentLocation: debouncedLocation };
-        });
-      });
-  }, [user, debouncedLocation, setUserInfo, updateUser]);
-
-  useEffect(() => {
-    setMapLoading(true);
-    map.current?.on('load', () => {
-      setMapLoading(false);
-    });
-  }, []);
+  }, [userInfo?.lastLocation, userLoading]);
 
   return (
     <div
@@ -191,8 +185,6 @@ const Map: FC = () => {
       <LocationButton
         mapLoading={mapLoading}
         locationLoading={locationLoading}
-        setLocationLoading={setLocationLoading}
-        flyTo={flyTo}
         triggerGeolocator={triggerGeolocator}
       />
 
@@ -206,9 +198,7 @@ const NorthButton: FC<{ triggerNorth: () => void }> = ({ triggerNorth }) => {
     <Button
       // Location button
       className={'absolute bottom-20 right-5 opacity-50 w-[40px] h-[40px] p-0 rounded-full'}
-      onClick={() => {
-        triggerNorth();
-      }}
+      onClick={triggerNorth}
     >
       <svg
         xmlns="http://www.w3.org/2000/svg"
@@ -230,37 +220,8 @@ const NorthButton: FC<{ triggerNorth: () => void }> = ({ triggerNorth }) => {
 const LocationButton: FC<{
   mapLoading: boolean;
   locationLoading: boolean;
-  setLocationLoading: Dispatch<SetStateAction<boolean>>;
-  flyTo: (center: LngLatLike, zoom?: number) => void;
   triggerGeolocator: () => void;
-}> = ({ triggerGeolocator, mapLoading, locationLoading, setLocationLoading, flyTo }) => {
-  const [currentCoords, setCurrentCoords] = useState<LngLatLike | undefined>();
-
-  // Simple wrapper to trigger loading state
-  const getCurrentLocation = useCallback((): Promise<GeolocationPosition> => {
-    setLocationLoading(true);
-    return new Promise((res, rej) => {
-      navigator.geolocation.getCurrentPosition(res, rej, { enableHighAccuracy: true });
-    });
-  }, [setLocationLoading]);
-
-  // Flies home and sets marker
-  const flyToCurrentLocation = useCallback(async () => {
-    setLocationLoading(true);
-
-    if (currentCoords) flyTo(currentCoords, 15);
-
-    try {
-      const pos = await getCurrentLocation();
-      flyTo([pos.coords.longitude, pos.coords.latitude]);
-      setCurrentCoords([pos.coords.longitude, pos.coords.latitude]);
-
-      setLocationLoading(false);
-    } catch (err) {
-      console.log(`can't get coords because of ${err}`);
-    }
-  }, [setLocationLoading, currentCoords, flyTo, getCurrentLocation]);
-
+}> = ({ triggerGeolocator, mapLoading, locationLoading }) => {
   return (
     <>
       {mapLoading ? (
@@ -271,10 +232,7 @@ const LocationButton: FC<{
         <Button
           // Location button
           className={'absolute bottom-5 right-5 opacity-50 w-[40px] h-[40px] p-0 rounded-full'}
-          onClick={() => {
-            flyToCurrentLocation();
-            triggerGeolocator();
-          }}
+          onClick={triggerGeolocator}
         >
           {locationLoading ? <Spinner /> : <LocationMarkerIcon />}
         </Button>

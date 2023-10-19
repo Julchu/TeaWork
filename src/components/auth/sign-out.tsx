@@ -2,7 +2,7 @@
 import { FC } from 'react';
 import { Button } from 'src/components/ui/button';
 import { useSignOut } from 'react-firebase-hooks/auth';
-import { authentication } from 'src/lib/firebase';
+import { authentication } from 'src/lib/firebase/firebase-config';
 
 const SignOut: FC = () => {
   const [logout] = useSignOut(authentication);

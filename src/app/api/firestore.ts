@@ -1,5 +1,5 @@
 import { doc, getDoc, getDocs } from 'firebase/firestore';
-import { firestore } from 'src/lib/firebase';
+import { firestore } from 'src/lib/firebase/firebase-config';
 import { db } from 'src/lib/firebase/interfaces/generics';
 
 export const getData = async (pathSegment: string) => {

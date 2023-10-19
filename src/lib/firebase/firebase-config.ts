@@ -25,6 +25,7 @@ const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0
 // const storage = getStorage(app);
 
 const firestore = getFirestore(app);
+// const firestoreAdmin = getF
 const authentication = getAuth(app);
 
 if (process.env.NEXT_PUBLIC_EMULATOR_ENABLED === 'TRUE') {

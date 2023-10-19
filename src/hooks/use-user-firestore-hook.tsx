@@ -16,7 +16,7 @@ export type UserFormData = {
   firstName?: string;
   lastName?: string;
   email?: string;
-  currentLocation?: LngLatLike;
+  lastLocation?: LngLatLike;
 };
 
 type UserMethods = {
@@ -28,24 +28,24 @@ type UserMethods = {
 const useUserHook = (): [UserMethods, boolean, Error | undefined] => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<Error>();
-  const { user } = useAuthContext();
+  const { authUser } = useAuthContext();
 
   const getUser = useCallback<UserMethods['getUser']>(async () => {
-    if (!user) return;
+    if (!authUser) return;
     setLoading(true);
 
-    const userDocRef = await getDoc(db.userDoc(user.uid));
+    const userDocRef = await getDoc(db.userDoc(authUser.uid));
 
     try {
       if (!userDocRef.exists()) {
-        const displayName = user.displayName?.split(' ');
+        const displayName = authUser.displayName?.split(' ');
         const newUser: UserInfo = {
-          email: user.email ? user.email : '',
+          email: authUser.email ? authUser.email : '',
           firstName: displayName ? displayName[0] : '',
           lastName: displayName && displayName.length > 1 ? displayName[1] : '',
           createdAt: serverTimestamp(),
         };
-        await setDoc(db.userDoc(user.uid), newUser);
+        await setDoc(db.userDoc(authUser.uid), newUser);
       }
     } catch (e) {
       setError(e as Error);
@@ -53,15 +53,15 @@ const useUserHook = (): [UserMethods, boolean, Error | undefined] => {
 
     setLoading(false);
     return userDocRef;
-  }, [user]);
+  }, [authUser]);
 
   const addUser = useCallback<UserMethods['addUser']>(
-    async ({ firstName, lastName, email, currentLocation }) => {
-      if (!user) return;
+    async ({ firstName, lastName, email, lastLocation }) => {
+      if (!authUser) return;
       setLoading(true);
 
       // Creating doc with auto-generated id
-      const userDocRef = db.userDoc(user.uid);
+      const userDocRef = db.userDoc(authUser.uid);
 
       try {
         if (email && firstName && lastName) {
@@ -70,7 +70,7 @@ const useUserHook = (): [UserMethods, boolean, Error | undefined] => {
             email,
             firstName,
             lastName,
-            currentLocation,
+            lastLocation: lastLocation,
             createdAt: serverTimestamp(),
           };
           /* If you want to auto generate an ID, use addDoc() + collection()
@@ -85,21 +85,21 @@ const useUserHook = (): [UserMethods, boolean, Error | undefined] => {
       setLoading(false);
       return userDocRef;
     },
-    [user],
+    [authUser],
   );
 
   const updateUser = useCallback<UserMethods['updateUser']>(
-    async ({ firstName, lastName, email, currentLocation }) => {
-      if (!user) return;
+    async ({ firstName, lastName, email, lastLocation }) => {
+      if (!authUser) return;
       setLoading(true);
 
-      const userDocRef = db.userDoc(user.uid);
+      const userDocRef = db.userDoc(authUser.uid);
 
       const updatedUser: Partial<UserInfo> = filterNullableObject({
         firstName,
         lastName,
         email,
-        currentLocation,
+        lastLocation,
       });
 
       try {
@@ -111,7 +111,7 @@ const useUserHook = (): [UserMethods, boolean, Error | undefined] => {
       setLoading(false);
       return userDocRef;
     },
-    [user],
+    [authUser],
   );
 
   return [{ getUser, addUser, updateUser }, loading, error];
