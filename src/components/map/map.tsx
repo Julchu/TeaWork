@@ -110,7 +110,7 @@ const Map: FC<{ adminUser?: UserInfo }> = ({ adminUser }) => {
       positionOptions: {
         enableHighAccuracy: true,
       },
-      showUserLocation: true,
+      trackUserLocation: true,
       showAccuracyCircle: true,
       showUserHeading: true,
     });
