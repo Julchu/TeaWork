@@ -26,7 +26,10 @@ import { useAuthContext } from "src/hooks/use-auth-context";
  * */
 
 // CN Tower long/lat: [-79.387054, 43.642567]
-const Map: FC = () => {
+const Map: FC<{
+  latitude: number;
+  longitude: number;
+}> = ({ latitude, longitude }) => {
   const { authUser, userInfo, setUserInfo, userLoading } = useAuthContext();
   const [{ updateUser }] = useUserHook();
 
@@ -55,7 +58,9 @@ const Map: FC = () => {
           return { ...currentInfo, lastLocation: coords };
         });
       },
-      () => {},
+      error => {
+        console.log('Error geolocating', error);
+      },
       { enableHighAccuracy: false },
     );
   }, [authUser, flyTo, setUserInfo, updateUser]);
@@ -78,9 +83,10 @@ const Map: FC = () => {
   // On first map load, when authUser gets
   useEffect(() => {
     if (firstLoading && authUser && userInfo) {
-      updateUserLocation().then(() => setFirstLoading(false));
+      // updateUserLocation().then(() => setFirstLoading(false));
+      flyToCurrentLocation().then(() => setFirstLoading(false));
     }
-  }, [authUser, firstLoading, updateUserLocation, userInfo]);
+  }, [authUser, firstLoading, flyToCurrentLocation, updateUserLocation, userInfo]);
 
   // Initial map loading
   useEffect(() => {
@@ -95,7 +101,7 @@ const Map: FC = () => {
       container: mapContainer.current,
       style: 'mapbox://styles/mapbox/dark-v11',
       // Default coords: CN Tower
-      center: userInfo?.lastLocation || [-79.387054, 43.642567],
+      center: [longitude, latitude] || [-79.387054, 43.642567],
       zoom: 9,
     });
 
@@ -113,6 +119,7 @@ const Map: FC = () => {
 
     map.current
       .on('load', () => {
+        console.log('loaded');
         currentGeolocator.trigger();
         setLocationLoading(true);
         setMapLoading(false);
@@ -173,6 +180,7 @@ const Map: FC = () => {
         },
         labelLayerId,
       );
+      map.current?.resize();
     });
   }, [userInfo?.lastLocation, userLoading]);
 

@@ -1,13 +1,22 @@
-import { FC } from "react";
-import Map from "src/components/map/map";
+import { FC } from 'react';
+import Map from 'src/components/map/map';
+import * as process from 'process';
 
-// Simple wrapper to trigger loading state
+const Home: FC = async () => {
+  // const geolocationResponse = await fetch('https://geolocation-db.com/json');
+  // const { latitude, longitude, country_name, city } = await geolocationResponse.json();
 
-const Home: FC = () => {
+  const geolocationResponse = await fetch(
+    `https://www.googleapis.com/geolocation/v1/geolocate?key=${process.env.GEOLOCATION_API_KEY}`,
+  );
+  // console.log(geolocationResponse.status);
+  const {
+    location: { lat, lng },
+  } = await geolocationResponse.json();
   return (
     // bg-gradient-to-r from-indigo-200 via-purple-500 to-pink-200
     <main className="flex h-screen-small w-screen items-center justify-between p-6">
-      <Map />
+      <Map latitude={lat} longitude={lng} />
     </main>
   );
 };

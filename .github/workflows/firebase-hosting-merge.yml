@@ -17,6 +17,7 @@ env:
   NEXT_PUBLIC_EMULATOR_ENABLED: '${{ secrets.NEXT_PUBLIC_EMULATOR_ENABLED }}'
   NEXT_PUBLIC_MAPBOX_TOKEN: '${{ secrets.NEXT_PUBLIC_MAPBOX_TOKEN }}'
   FIREBASE_TOKEN: '${{ secrets.FIREBASE_TOKEN }}'
+  GEOLOCATION_API_KEY: '${{ secrets.GEOLOCATION_API_KEY }}'
 jobs:
   build_and_deploy:
     environment: production
