@@ -153,7 +153,6 @@ const Map: FC<{
   }, [latitude, longitude, userInfo]);
 
   const triggerPerformance = useCallback(() => {
-    console.log('trigger performance mode');
     setUserInfo(currentInfo => {
       return { ...currentInfo, performanceMode: !currentInfo?.performanceMode };
     });
