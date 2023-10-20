@@ -5,7 +5,6 @@ import { useSignInWithGoogle, useSignOut } from 'react-firebase-hooks/auth';
 import { authentication } from 'src/lib/firebase/firebase-config';
 import {
   DropdownMenu,
-  DropdownMenuArrow,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuLabel,
@@ -13,8 +12,8 @@ import {
   DropdownMenuTrigger,
 } from 'src/components/ui/dropdown-menu';
 import PersonIcon from 'src/components/ui/icons/person';
-import Link from 'next/link';
 import { Button } from 'src/components/ui/button';
+import Link from 'next/link';
 
 const AuthWrapper: FC<{
   children: ReactNode;
@@ -63,7 +62,6 @@ const MenuContent: FC = () => {
       ) : (
         <DropdownMenuItem onSelect={authHandler}>Login</DropdownMenuItem>
       )}
-      <DropdownMenuArrow fill={'white'} />
     </DropdownMenuContent>
   );
 };
@@ -85,7 +83,11 @@ const MenuTriggerButton: FC = () => {
       <div className={'absolute top-5 right-5 w-[40px] h-[40px] m-6 cursor-pointer'}>
         {authUser ? (
           <>
-            <Button className={'font-extrabold absolute opacity-50 w-full h-full p-0 rounded-full'}>
+            <Button
+              className={
+                'font-extrabold absolute opacity-60 bg-blue-600 w-full h-full p-0 rounded-full'
+              }
+            >
               {initials}
             </Button>
           </>

@@ -7,7 +7,7 @@ import { FC, useCallback, useEffect, useRef, useState } from "react";
 import { Button } from "src/components/ui/button";
 import * as process from "process";
 import Spinner from "src/components/ui/spinner";
-import { LocationMarkerIcon } from "src/components/ui/icons/location-marker";
+import { LocationMarkerIcon, NorthIcon } from "src/components/ui/icons/map-controls";
 import useUserHook from "src/hooks/use-user-firestore-hook";
 import { useAuthContext } from "src/hooks/use-auth-context";
 
@@ -186,46 +186,22 @@ const Map: FC = () => {
       <div className={'w-full h-full'} ref={mapContainer} />
 
       {/* Extra layers on map (buttons, controls) */}
-      <LocationButton
+      <Controls
         mapLoading={mapLoading}
         locationLoading={locationLoading}
         triggerGeolocator={flyToCurrentLocation}
+        triggerNorth={triggerNorth}
       />
-
-      <NorthButton triggerNorth={triggerNorth} />
     </div>
   );
 };
 
-const NorthButton: FC<{ triggerNorth: () => void }> = ({ triggerNorth }) => {
-  return (
-    <Button
-      // Location button
-      className={'absolute bottom-20 right-5 opacity-50 w-[40px] h-[40px] p-0 rounded-full'}
-      onClick={triggerNorth}
-    >
-      <svg
-        xmlns="http://www.w3.org/2000/svg"
-        fill="none"
-        viewBox="0 0 24 24"
-        strokeWidth={1.5}
-        stroke="currentColor"
-        className="w-6 h-6"
-      >
-        <path
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          d="M15 11.25l-3-3m0 0l-3 3m3-3v7.5M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-        />
-      </svg>
-    </Button>
-  );
-};
-const LocationButton: FC<{
+const Controls: FC<{
   mapLoading: boolean;
   locationLoading: boolean;
   triggerGeolocator: () => void;
-}> = ({ triggerGeolocator, mapLoading, locationLoading }) => {
+  triggerNorth: () => void;
+}> = ({ triggerGeolocator, triggerNorth, mapLoading, locationLoading }) => {
   return (
     <>
       {mapLoading ? (
@@ -233,13 +209,27 @@ const LocationButton: FC<{
           <Spinner />
         </div>
       ) : (
-        <Button
-          // Location button
-          className={'absolute bottom-5 right-5 opacity-50 w-[40px] h-[40px] p-0 rounded-full'}
-          onClick={triggerGeolocator}
-        >
-          {locationLoading ? <Spinner /> : <LocationMarkerIcon />}
-        </Button>
+        <>
+          <Button
+            // Location button
+            className={
+              'absolute bottom-20 right-5 opacity-60 bg-blue-600 w-[40px] h-[40px] p-0 rounded-full'
+            }
+            onClick={triggerNorth}
+          >
+            <NorthIcon />
+          </Button>
+
+          <Button
+            // Location button
+            className={
+              'absolute bottom-5 right-5 opacity-60 bg-blue-600 w-[40px] h-[40px] p-0 rounded-full'
+            }
+            onClick={triggerGeolocator}
+          >
+            {locationLoading ? <Spinner /> : <LocationMarkerIcon />}
+          </Button>
+        </>
       )}
     </>
   );
