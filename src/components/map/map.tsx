@@ -164,7 +164,7 @@ const Map: FC<{
   // Initial map loading
   useEffect(() => {
     // Prevent re-creating a map if one already exists
-    if (map.current) return;
+    if (map.current) map.current?.remove();
 
     setMapLoading(true);
     mapBoxGL.accessToken = process.env.NEXT_PUBLIC_MAPBOX_TOKEN || '';
@@ -190,7 +190,7 @@ const Map: FC<{
     map.current.addControl(currentGeolocator);
 
     map.current
-      .on('load', () => {
+      .once('load', () => {
         currentGeolocator.trigger();
         setLocationLoading(true);
         setMapLoading(false);
