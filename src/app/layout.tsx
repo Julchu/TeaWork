@@ -6,6 +6,7 @@ import { Analytics } from '@vercel/analytics/react';
 import AuthProvider from 'src/hooks/use-auth-context';
 import AuthWrapper from 'src/components/auth/auth-wrapper';
 import Logo from 'src/components/ui/logo';
+import UserProvider from 'src/hooks/use-user-context';
 
 const montserrat = Montserrat({ subsets: ['latin'] });
 const urbanist = Urbanist({
@@ -32,8 +33,10 @@ export default function RootLayout({ children }: { children: ReactNode }) {
     <html lang="en">
       <body className={`${urbanist.className}`}>
         <AuthProvider>
-          <Logo />
-          <AuthWrapper>{children}</AuthWrapper>
+          <UserProvider>
+            <Logo />
+            <AuthWrapper>{children}</AuthWrapper>
+          </UserProvider>
         </AuthProvider>
         <Analytics />
       </body>

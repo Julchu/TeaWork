@@ -1,51 +1,24 @@
 'use client';
-import {
-  createContext,
-  Dispatch,
-  FC,
-  ReactNode,
-  SetStateAction,
-  useContext,
-  useState,
-} from 'react';
+import { createContext, FC, ReactNode, useContext } from 'react';
 import { User } from 'firebase/auth';
 import { authentication } from 'src/lib/firebase/firebase-config';
 import { useAuthState } from 'react-firebase-hooks/auth';
-import { UserInfo } from 'src/lib/firebase/interfaces/generics';
-import useUserHook from 'src/hooks/use-user-firestore-hook';
 
-export const AuthContext = createContext<AuthProps>({
-  setUserInfo: () => void 0,
-  userLoading: false,
-});
+export const AuthContext = createContext<AuthProps>({});
 
 type AuthProps = {
   authUser?: User | null;
-  userInfo?: Partial<UserInfo | undefined>;
-  setUserInfo: Dispatch<SetStateAction<Partial<UserInfo | undefined>>>;
-  userLoading: boolean;
+  userLoading?: boolean;
   userError?: Error | null;
 };
 
 export const useAuthContext = (): AuthProps => useContext(AuthContext);
 
 const AuthProvider: FC<{ children: ReactNode }> = ({ children }) => {
-  const [{ getUser }] = useUserHook();
-  const [userInfo, setUserInfo] = useState<Partial<UserInfo>>();
-  const [authUser, userLoading, userError] = useAuthState(authentication, {
-    onUserChanged: async userCredentials => {
-      if (userCredentials) {
-        getUser().then(userSnapshot => {
-          setUserInfo(userSnapshot?.data());
-        });
-      } else {
-        setUserInfo({});
-      }
-    },
-  });
+  const [authUser, userLoading, userError] = useAuthState(authentication);
 
   return (
-    <AuthContext.Provider value={{ authUser, userLoading, userError, userInfo, setUserInfo }}>
+    <AuthContext.Provider value={{ authUser, userLoading, userError }}>
       {children}
     </AuthContext.Provider>
   );
