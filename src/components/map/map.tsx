@@ -49,29 +49,29 @@ const Map: FC<{ adminUser?: UserInfo }> = ({ adminUser }) => {
     map.current?.flyTo({ center, zoom });
   }, []);
 
-  const updateUserLocation = useCallback(
-    async (coords: LngLatLike) => {
-      if (authUser) await updateUser({ lastLocation: coords });
-      setUserInfo(currentInfo => {
-        return { ...currentInfo, lastLocation: coords };
-      });
-    },
-    [authUser, setUserInfo, updateUser],
-  );
+  const updateUserLocation = useCallback(async () => {
+    navigator.geolocation.getCurrentPosition(
+      async pos => {
+        const coords: LngLatLike = [pos.coords.longitude, pos.coords.latitude];
+        flyTo(coords);
+        if (authUser) await updateUser({ lastLocation: coords });
+        setUserInfo(currentInfo => {
+          return { ...currentInfo, lastLocation: coords };
+        });
+      },
+      () => {},
+      { enableHighAccuracy: false },
+    );
+  }, [authUser, flyTo, setUserInfo, updateUser]);
 
-  // Manual geolocation triggering
-  const triggerGeolocator = useCallback(() => {
+  const flyToCurrentLocation = useCallback(async () => {
     setLocationLoading(true);
-    // geolocator?.trigger();
-    navigator.geolocation.getCurrentPosition(async pos => {
-      flyTo([pos.coords.longitude, pos.coords.latitude]);
-      await updateUserLocation([pos.coords.longitude, pos.coords.latitude]);
-    });
+    await updateUserLocation();
 
     map.current?.once('movestart', async () => {
       setLocationLoading(true);
     });
-  }, [flyTo, updateUserLocation]);
+  }, [updateUserLocation]);
 
   const triggerNorth = useCallback(() => {
     // Need to add locator control to set current location marker
@@ -81,12 +81,10 @@ const Map: FC<{ adminUser?: UserInfo }> = ({ adminUser }) => {
 
   // On first map load, when authUser gets
   useEffect(() => {
-    if (firstLoading && authUser && userInfo && currentCoords) {
-      updateUserLocation(currentCoords).then(() => {
-        setFirstLoading(false);
-      });
+    if (firstLoading && authUser && userInfo) {
+      updateUserLocation().then(() => setFirstLoading(false));
     }
-  }, [authUser, currentCoords, firstLoading, updateUserLocation, userInfo]);
+  }, [authUser, firstLoading, updateUserLocation, userInfo]);
 
   // Initial map loading
   useEffect(() => {
@@ -108,7 +106,7 @@ const Map: FC<{ adminUser?: UserInfo }> = ({ adminUser }) => {
     // Automatically load geolocator/user's current location (with hidden built-in button)
     const currentGeolocator = new mapBoxGL.GeolocateControl({
       positionOptions: {
-        enableHighAccuracy: true,
+        enableHighAccuracy: false,
       },
       trackUserLocation: true,
       showAccuracyCircle: true,
@@ -195,7 +193,7 @@ const Map: FC<{ adminUser?: UserInfo }> = ({ adminUser }) => {
       <LocationButton
         mapLoading={mapLoading}
         locationLoading={locationLoading}
-        triggerGeolocator={triggerGeolocator}
+        triggerGeolocator={flyToCurrentLocation}
       />
 
       <NorthButton triggerNorth={triggerNorth} />
