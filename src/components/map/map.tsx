@@ -90,11 +90,68 @@ const Map: FC<{
     });
   }, [updateUserLocation]);
 
+  const addPerformanceLayer = useCallback(() => {
+    // Insert the layer beneath any symbol layer.
+    const layers = map.current?.getStyle().layers;
+    const labelLayerId = layers?.find(
+      layer => layer.type === 'symbol' && layer.layout?.['text-field'],
+    )?.id;
+
+    // The 'building' layer in the Mapbox Streets
+    // vector tile set contains building height data
+    // from OpenStreetMap.
+    map.current?.addLayer(
+      {
+        id: 'add-3d-buildings',
+        source: 'composite',
+        'source-layer': 'building',
+        filter: ['==', 'extrude', 'true'],
+        type: 'fill-extrusion',
+        paint: {
+          'fill-extrusion-color': '#aaa',
+
+          // Use an 'interpolate' expression to
+          // add a smooth transition effect to
+          // the buildings as the user zooms in.
+          'fill-extrusion-height': [
+            'interpolate',
+            ['linear'],
+            ['zoom'],
+            15,
+            0,
+            15.05,
+            ['get', 'height'],
+          ],
+          'fill-extrusion-base': [
+            'interpolate',
+            ['linear'],
+            ['zoom'],
+            15,
+            0,
+            15.05,
+            ['get', 'min_height'],
+          ],
+          'fill-extrusion-opacity': 0.6,
+        },
+      },
+      labelLayerId,
+    );
+  }, []);
+
   const triggerNorth = useCallback(() => {
-    // Need to add locator control to set current location marker
-    // setLocationLoading(true);
     map.current?.resetNorth({ duration: 2000 });
   }, []);
+
+  const triggerPerformance = useCallback(() => {
+    setUserInfo(currentInfo => {
+      return { ...currentInfo, performanceMode: !currentInfo?.performanceMode };
+    });
+
+    if (userInfo?.performanceMode) map.current?.removeLayer('add-3d-buildings');
+    else {
+      addPerformanceLayer();
+    }
+  }, [addPerformanceLayer, setUserInfo, userInfo?.performanceMode]);
 
   // On first map load, when authUser gets
   useEffect(() => {
@@ -106,7 +163,6 @@ const Map: FC<{
 
   // Initial map loading
   useEffect(() => {
-    // console.log('user loading:', authUser);
     // Prevent re-creating a map if one already exists
     if (map.current) return;
 
@@ -134,9 +190,14 @@ const Map: FC<{
 
       map.current.addControl(currentGeolocator);
 
+      map.current.on('style.load', () => {
+        if (userInfo.performanceMode) {
+          addPerformanceLayer();
+        }
+      });
+
       map.current
         .on('load', () => {
-          console.log(userInfo.lastLocation);
           currentGeolocator.trigger();
           setLocationLoading(true);
           setMapLoading(false);
@@ -150,66 +211,7 @@ const Map: FC<{
           setLocationLoading(false);
         });
     }
-  }, [latitude, longitude, userInfo]);
-
-  const triggerPerformance = useCallback(() => {
-    setUserInfo(currentInfo => {
-      return { ...currentInfo, performanceMode: !currentInfo?.performanceMode };
-    });
-
-    if (userInfo?.performanceMode) map.current?.removeLayer('add-3d-buildings');
-    else {
-      // Loading 3-D building styles
-      // Insert the layer beneath any symbol layer.
-      const layers = map.current?.getStyle().layers;
-      const labelLayerId = layers?.find(
-        layer => layer.type === 'symbol' && layer.layout?.['text-field'],
-      )?.id;
-
-      // The 'building' layer in the Mapbox Streets
-      // vector tile set contains building height data
-      // from OpenStreetMap.
-      map.current?.addLayer(
-        {
-          id: 'add-3d-buildings',
-          source: 'composite',
-          'source-layer': 'building',
-          filter: ['==', 'extrude', 'true'],
-          type: 'fill-extrusion',
-          paint: {
-            'fill-extrusion-color': '#aaa',
-
-            // Use an 'interpolate' expression to
-            // add a smooth transition effect to
-            // the buildings as the user zooms in.
-            'fill-extrusion-height': [
-              'interpolate',
-              ['linear'],
-              ['zoom'],
-              15,
-              0,
-              15.05,
-              ['get', 'height'],
-            ],
-            'fill-extrusion-base': [
-              'interpolate',
-              ['linear'],
-              ['zoom'],
-              15,
-              0,
-              15.05,
-              ['get', 'min_height'],
-            ],
-            'fill-extrusion-opacity': 0.6,
-          },
-        },
-        labelLayerId,
-      );
-    }
-
-    map.current?.resize();
-    map.current?.triggerRepaint();
-  }, [setUserInfo, userInfo?.performanceMode]);
+  }, [addPerformanceLayer, latitude, longitude, userInfo]);
 
   return (
     <div

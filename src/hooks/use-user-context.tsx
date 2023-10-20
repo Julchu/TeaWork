@@ -36,7 +36,9 @@ const UserProvider: FC<{
   useEffect(() => {
     if (authUser) {
       getUser().then(userSnapshot => {
-        setUserInfo(userSnapshot?.data());
+        setUserInfo({
+          ...userSnapshot?.data(),
+        });
       });
     } else {
       setUserInfo({});
