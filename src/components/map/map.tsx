@@ -164,7 +164,7 @@ const Map: FC<{
   // Initial map loading
   useEffect(() => {
     // Prevent re-creating a map if one already exists
-    if (map.current) map.current?.remove();
+    if (map.current) return;
 
     setMapLoading(true);
     mapBoxGL.accessToken = process.env.NEXT_PUBLIC_MAPBOX_TOKEN || '';
