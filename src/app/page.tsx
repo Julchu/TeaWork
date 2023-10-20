@@ -9,7 +9,7 @@ const Home: FC = async () => {
   );
 
   const {
-    location: { lat, lng },
+    location: { lat = null, lng = null },
   } = await geolocationResponse.json();
 
   return (
