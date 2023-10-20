@@ -22,6 +22,7 @@ export type UserInfo = {
   email: string;
   lastLocation?: LngLatLike;
   createdAt?: Timestamp | FieldValue;
+  performanceMode: boolean;
 };
 
 export const genericConverter = <T>(): FirestoreDataConverter<T> => ({

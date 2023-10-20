@@ -10,6 +10,8 @@ import Spinner from "src/components/ui/spinner";
 import { LocationMarkerIcon, NorthIcon } from "src/components/ui/icons/map-controls";
 import useUserHook from "src/hooks/use-user-firestore-hook";
 import { useAuthContext } from "src/hooks/use-auth-context";
+import { cn } from "src/lib/utils";
+import { useUserContext } from "src/hooks/use-user-context";
 
 /* Other map styles
  * style: 'mapbox://styles/mapbox/streets-v12',
@@ -24,13 +26,27 @@ import { useAuthContext } from "src/hooks/use-auth-context";
  * style: 'mapbox://styles/mapbox/navigation-night-v1'
  * style: 'mapbox://styles/jchumtl/clnfdhrsc080001qi3ye8e8mj',
  * */
+const mapStyles = {
+  streets: 'mapbox://styles/mapbox/streets-v12',
+  basic: 'mapbox://styles/mapbox/basic-v8',
+  bright: 'mapbox://styles/mapbox/bright-v8',
+  light: 'mapbox://styles/mapbox/light-v11',
+  dark: 'mapbox://styles/mapbox/dark-v11',
+  satellite: 'mapbox://styles/mapbox/satellite-v9',
+  satelliteStreets: 'mapbox://styles/mapbox/satellite-streets-v12',
+  outdoors: 'mapbox://styles/mapbox/outdoors-v12',
+  navDay: 'mapbox://styles/mapbox/navigation-day-v1',
+  navNight: 'mapbox://styles/mapbox/navigation-night-v1',
+  pink: 'mapbox://styles/jchumtl/clnfdhrsc080001qi3ye8e8mj',
+};
 
 // CN Tower long/lat: [-79.387054, 43.642567]
 const Map: FC<{
   latitude: number;
   longitude: number;
 }> = ({ latitude, longitude }) => {
-  const { authUser, userInfo, setUserInfo, userLoading } = useAuthContext();
+  const { userInfo, setUserInfo } = useUserContext();
+  const { authUser, userLoading } = useAuthContext();
   const [{ updateUser }] = useUserHook();
 
   const mapContainer = useRef<any>(null);
@@ -93,48 +109,58 @@ const Map: FC<{
     // console.log('user loading:', authUser);
     // Prevent re-creating a map if one already exists
     if (map.current) return;
-    setMapLoading(true);
 
-    mapBoxGL.accessToken = process.env.NEXT_PUBLIC_MAPBOX_TOKEN || '';
-    map.current = new mapBoxGL.Map({
-      attributionControl: false,
-      container: mapContainer.current,
-      style: 'mapbox://styles/mapbox/dark-v11',
-      // Default coords: CN Tower
-      center: [longitude, latitude] || [-79.387054, 43.642567],
-      zoom: 9,
-    });
-
-    // Automatically load geolocator/user's current location (with hidden built-in button)
-    const currentGeolocator = new mapBoxGL.GeolocateControl({
-      positionOptions: {
-        enableHighAccuracy: false,
-      },
-      trackUserLocation: true,
-      showAccuracyCircle: true,
-      showUserHeading: true,
-    });
-
-    map.current.addControl(currentGeolocator);
-
-    map.current
-      .on('load', () => {
-        console.log('loaded');
-        currentGeolocator.trigger();
-        setLocationLoading(true);
-        setMapLoading(false);
-      })
-      .on('moveend', () => {
-        if (map.current)
-          setCurrentCoords([
-            parseFloat(map.current.getCenter().lng.toFixed(4)),
-            parseFloat(map.current.getCenter().lat.toFixed(4)),
-          ]);
-        setLocationLoading(false);
+    if (userInfo?.lastLocation) {
+      setMapLoading(true);
+      mapBoxGL.accessToken = process.env.NEXT_PUBLIC_MAPBOX_TOKEN || '';
+      map.current = new mapBoxGL.Map({
+        attributionControl: false,
+        container: mapContainer.current,
+        style: 'mapbox://styles/mapbox/dark-v11',
+        // Default coords: CN Tower
+        center: [longitude, latitude] || [-79.387054, 43.642567],
+        zoom: 9,
       });
 
-    // Loading 3-D building styles
-    map.current.on('style.load', () => {
+      // Automatically load geolocator/user's current location (with hidden built-in button)
+      const currentGeolocator = new mapBoxGL.GeolocateControl({
+        positionOptions: {
+          enableHighAccuracy: false,
+        },
+        trackUserLocation: true,
+        showAccuracyCircle: true,
+        showUserHeading: true,
+      });
+
+      map.current.addControl(currentGeolocator);
+
+      map.current
+        .on('load', () => {
+          console.log(userInfo.lastLocation);
+          currentGeolocator.trigger();
+          setLocationLoading(true);
+          setMapLoading(false);
+        })
+        .on('moveend', () => {
+          if (map.current)
+            setCurrentCoords([
+              parseFloat(map.current.getCenter().lng.toFixed(4)),
+              parseFloat(map.current.getCenter().lat.toFixed(4)),
+            ]);
+          setLocationLoading(false);
+        });
+    }
+  }, [latitude, longitude, userInfo]);
+
+  const triggerPerformance = useCallback(() => {
+    console.log('trigger performance mode');
+    setUserInfo(currentInfo => {
+      return { ...currentInfo, performanceMode: !currentInfo?.performanceMode };
+    });
+
+    if (userInfo?.performanceMode) map.current?.removeLayer('add-3d-buildings');
+    else {
+      // Loading 3-D building styles
       // Insert the layer beneath any symbol layer.
       const layers = map.current?.getStyle().layers;
       const labelLayerId = layers?.find(
@@ -180,9 +206,11 @@ const Map: FC<{
         },
         labelLayerId,
       );
-      map.current?.resize();
-    });
-  }, [userInfo?.lastLocation, userLoading]);
+    }
+
+    map.current?.resize();
+    map.current?.triggerRepaint();
+  }, [setUserInfo, userInfo?.performanceMode]);
 
   return (
     <div
@@ -190,8 +218,15 @@ const Map: FC<{
         'overflow-hidden rounded-xl h-full w-full relative drop-shadow-lg bg-gradient-to-r from-indigo-200 via-purple-500 to-pink-200'
       }
     >
+      <Button className={'absolute bottom-5 left-5 z-50'} onClick={triggerPerformance}>
+        temp
+      </Button>
+
       {/* Actual map */}
-      <div className={'w-full h-full'} ref={mapContainer} />
+      <div
+        className={cn(`w-full h-full `, locationLoading && 'animate-pulse')}
+        ref={mapContainer}
+      />
 
       {/* Extra layers on map (buttons, controls) */}
       <Controls
