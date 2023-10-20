@@ -150,14 +150,13 @@ const Map: FC<{
 
     if (userInfo?.performanceMode) map.current?.removeLayer('add-3d-buildings');
     else {
-      addPerformanceLayer();
+      if (map.current?.getLayer('add-3d-buildings')) addPerformanceLayer();
     }
   }, [addPerformanceLayer, setUserInfo, userInfo?.performanceMode]);
 
   // On first map load, when authUser gets
   useEffect(() => {
     if (firstLoading && authUser && userInfo) {
-      // updateUserLocation().then(() => setFirstLoading(false));
       flyToCurrentLocation().then(() => setFirstLoading(false));
     }
   }, [authUser, firstLoading, flyToCurrentLocation, updateUserLocation, userInfo]);
@@ -167,52 +166,50 @@ const Map: FC<{
     // Prevent re-creating a map if one already exists
     if (map.current) return;
 
-    if (userInfo?.lastLocation) {
-      setMapLoading(true);
-      mapBoxGL.accessToken = process.env.NEXT_PUBLIC_MAPBOX_TOKEN || '';
-      map.current = new mapBoxGL.Map({
-        attributionControl: false,
-        container: mapContainer.current,
-        style: 'mapbox://styles/mapbox/dark-v11',
-        // Default coords: CN Tower
-        center: [longitude, latitude] || [-79.387054, 43.642567],
-        zoom: 9,
+    setMapLoading(true);
+    mapBoxGL.accessToken = process.env.NEXT_PUBLIC_MAPBOX_TOKEN || '';
+    map.current = new mapBoxGL.Map({
+      attributionControl: false,
+      container: mapContainer.current,
+      style: 'mapbox://styles/mapbox/dark-v11',
+      // Default coords: CN Tower
+      center: [longitude, latitude] || [-79.387054, 43.642567],
+      zoom: 9,
+    });
+
+    // Automatically load geolocator/user's current location (with hidden built-in button)
+    const currentGeolocator = new mapBoxGL.GeolocateControl({
+      positionOptions: {
+        enableHighAccuracy: false,
+      },
+      trackUserLocation: true,
+      showAccuracyCircle: true,
+      showUserHeading: true,
+    });
+
+    map.current.addControl(currentGeolocator);
+
+    map.current
+      .on('load', () => {
+        currentGeolocator.trigger();
+        setLocationLoading(true);
+        setMapLoading(false);
+      })
+      .on('moveend', () => {
+        if (map.current)
+          setCurrentCoords([
+            parseFloat(map.current.getCenter().lng.toFixed(4)),
+            parseFloat(map.current.getCenter().lat.toFixed(4)),
+          ]);
+        setLocationLoading(false);
       });
-
-      // Automatically load geolocator/user's current location (with hidden built-in button)
-      const currentGeolocator = new mapBoxGL.GeolocateControl({
-        positionOptions: {
-          enableHighAccuracy: false,
-        },
-        trackUserLocation: true,
-        showAccuracyCircle: true,
-        showUserHeading: true,
-      });
-
-      map.current.addControl(currentGeolocator);
-
-      map.current.on('style.load', () => {
-        if (userInfo.performanceMode) {
-          addPerformanceLayer();
-        }
-      });
-
-      map.current
-        .on('load', () => {
-          currentGeolocator.trigger();
-          setLocationLoading(true);
-          setMapLoading(false);
-        })
-        .on('moveend', () => {
-          if (map.current)
-            setCurrentCoords([
-              parseFloat(map.current.getCenter().lng.toFixed(4)),
-              parseFloat(map.current.getCenter().lat.toFixed(4)),
-            ]);
-          setLocationLoading(false);
-        });
-    }
   }, [addPerformanceLayer, latitude, longitude, userInfo]);
+
+  useEffect(() => {
+    if (userInfo?.performanceMode) {
+      addPerformanceLayer();
+    }
+  }, [addPerformanceLayer, userInfo?.performanceMode]);
 
   return (
     <div
