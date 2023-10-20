@@ -9,9 +9,7 @@ import * as process from "process";
 import Spinner from "src/components/ui/spinner";
 import { LocationMarkerIcon } from "src/components/ui/icons/location-marker";
 import useUserHook from "src/hooks/use-user-firestore-hook";
-import { useUserContext } from "src/hooks/use-user-context";
 import { useAuthContext } from "src/hooks/use-auth-context";
-import { UserInfo } from "src/lib/firebase/interfaces/generics";
 
 /* Other map styles
  * style: 'mapbox://styles/mapbox/streets-v12',
@@ -28,10 +26,8 @@ import { UserInfo } from "src/lib/firebase/interfaces/generics";
  * */
 
 // CN Tower long/lat: [-79.387054, 43.642567]
-const Map: FC<{ adminUser?: UserInfo }> = ({ adminUser }) => {
-  const { authUser, userLoading } = useAuthContext();
-  const { userInfo } = useUserContext();
-  const { setUserInfo } = useUserContext();
+const Map: FC = () => {
+  const { authUser, userInfo, setUserInfo, userLoading } = useAuthContext();
   const [{ updateUser }] = useUserHook();
 
   const mapContainer = useRef<any>(null);

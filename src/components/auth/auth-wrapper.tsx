@@ -56,7 +56,7 @@ const MenuContent: FC = () => {
       {authUser ? (
         <>
           <DropdownMenuItem asChild>
-            <Link href={'/other-examples'}>Settings</Link>
+            <Link href={'/settings'}>Settings</Link>
           </DropdownMenuItem>
           <DropdownMenuItem onSelect={authHandler}>Logout</DropdownMenuItem>
         </>
