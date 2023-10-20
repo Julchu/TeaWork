@@ -43,8 +43,8 @@ const mapStyles = {
 
 // CN Tower long/lat: [-79.387054, 43.642567]
 const Map: FC<{
-  latitude: number;
-  longitude: number;
+  latitude: number | null;
+  longitude: number | null;
 }> = ({ latitude, longitude }) => {
   const { userInfo, setUserInfo } = useUserContext();
   const { authUser, userLoading } = useAuthContext();
@@ -173,7 +173,7 @@ const Map: FC<{
       container: mapContainer.current,
       style: 'mapbox://styles/mapbox/dark-v11',
       // Default coords: CN Tower
-      center: [longitude, latitude] || [-79.387054, 43.642567],
+      center: longitude && latitude ? [longitude, latitude] : [-79.387054, 43.642567],
       zoom: 9,
     });
 
