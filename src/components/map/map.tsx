@@ -12,6 +12,7 @@ import useUserHook from "src/hooks/use-user-firestore-hook";
 import { useAuthContext } from "src/hooks/use-auth-context";
 import { cn } from "src/lib/utils";
 import { useUserContext } from "src/hooks/use-user-context";
+import { NoPowerIcon, PowerIcon } from "src/components/ui/icons/power";
 
 /* Other map styles
  * style: 'mapbox://styles/mapbox/streets-v12',
@@ -219,15 +220,8 @@ const Map: FC<{
         'overflow-hidden rounded-xl h-full w-full relative drop-shadow-lg bg-gradient-to-r from-indigo-200 via-purple-500 to-pink-200'
       }
     >
-      <Button className={'absolute bottom-5 left-5 z-50'} onClick={triggerPerformance}>
-        temp
-      </Button>
-
       {/* Actual map */}
-      <div
-        className={cn(`w-full h-full `, locationLoading && 'animate-pulse')}
-        ref={mapContainer}
-      />
+      <div className={cn(`w-full h-full`, locationLoading && 'animate-pulse')} ref={mapContainer} />
 
       {/* Extra layers on map (buttons, controls) */}
       <Controls
@@ -235,6 +229,7 @@ const Map: FC<{
         locationLoading={locationLoading}
         triggerGeolocator={flyToCurrentLocation}
         triggerNorth={triggerNorth}
+        triggerPerformance={triggerPerformance}
       />
     </div>
   );
@@ -245,7 +240,9 @@ const Controls: FC<{
   locationLoading: boolean;
   triggerGeolocator: () => void;
   triggerNorth: () => void;
-}> = ({ triggerGeolocator, triggerNorth, mapLoading, locationLoading }) => {
+  triggerPerformance: () => void;
+}> = ({ triggerGeolocator, triggerNorth, triggerPerformance, mapLoading, locationLoading }) => {
+  const { userInfo } = useUserContext();
   return (
     <>
       {mapLoading ? (
@@ -255,7 +252,17 @@ const Controls: FC<{
       ) : (
         <>
           <Button
-            // Location button
+            // Performance button
+            className={
+              'absolute bottom-5 left-5 opacity-60 bg-blue-600 w-[40px] h-[40px] p-0 rounded-full'
+            }
+            onClick={triggerPerformance}
+          >
+            {userInfo?.performanceMode ? <PowerIcon /> : <NoPowerIcon />}
+          </Button>
+
+          <Button
+            // North button
             className={
               'absolute bottom-20 right-5 opacity-60 bg-blue-600 w-[40px] h-[40px] p-0 rounded-full'
             }
@@ -267,7 +274,7 @@ const Controls: FC<{
           <Button
             // Location button
             className={
-              'absolute bottom-5 right-5 opacity-60 bg-blue-600 w-[40px] h-[40px] p-0 rounded-full'
+              'absolute bottom-5 opacity-60 bg-blue-600 right-5 w-[40px] h-[40px] p-0 rounded-full'
             }
             onClick={triggerGeolocator}
           >
