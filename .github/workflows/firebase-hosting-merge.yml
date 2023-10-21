@@ -24,10 +24,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - run: 'yarn install && yarn run build && firebase --project teaworkapp deploy'
-      - uses: FirebaseExtended/action-hosting-deploy@v0
-        with:
-          repoToken: '${{ secrets.GITHUB_TOKEN }}'
-          firebaseServiceAccount: '${{ secrets.FIREBASE_SERVICE_ACCOUNT_TEAWORKAPP }}'
-          channelId: live
-          projectId: teaworkapp
+      - run: 'yarn install && yarn build && firebase deploy'
+#      - uses: FirebaseExtended/action-hosting-deploy@v0
+#        with:
+#          repoToken: '${{ secrets.GITHUB_TOKEN }}'
+#          firebaseServiceAccount: '${{ secrets.FIREBASE_SERVICE_ACCOUNT_TEAWORKAPP }}'
+#          channelId: live
+#          projectId: teaworkapp
