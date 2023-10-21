@@ -110,7 +110,7 @@ const Map: FC<{
       el.onclick = flyToCurrentLocation;
 
       // make a marker for each feature and add to the map
-      const marker = new mapBoxGL.Marker(el, {}).setLngLat(coords).addTo(currentMap);
+      new mapBoxGL.Marker(el).setLngLat(coords).addTo(currentMap);
     },
     [flyToCurrentLocation],
   );
