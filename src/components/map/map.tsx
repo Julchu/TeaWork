@@ -42,7 +42,7 @@ const mapStyles = {
 };
 
 // CN Tower long/lat: [-79.387054, 43.642567]
-const Map: FC<{}> = () => {
+const Map: FC<{ longitude: number; latitude: number }> = ({ longitude, latitude }) => {
   const { userInfo, setUserInfo } = useUserContext();
   const { authUser, userLoading } = useAuthContext();
   const [{ updateUser }] = useUserHook();
@@ -191,46 +191,47 @@ const Map: FC<{}> = () => {
     // Prevent re-creating a map if one already exists
     if (map.current) return;
 
-    if (userInfo) {
-      setMapLoading(true);
-      mapBoxGL.accessToken = process.env.NEXT_PUBLIC_MAPBOX_TOKEN || '';
-      map.current = new mapBoxGL.Map({
-        attributionControl: false,
-        container: mapContainer.current,
-        style: 'mapbox://styles/mapbox/dark-v11',
-        // Default coords: CN Tower
-        center: userInfo.lastLocation || [-79.387054, 43.642567],
-        zoom: 9,
+    // if (userInfo && userInfo?.lastLocation !== [undefined, undefined]) {
+    console.log('userinfo', userInfo);
+    setMapLoading(true);
+    mapBoxGL.accessToken = process.env.NEXT_PUBLIC_MAPBOX_TOKEN || '';
+    map.current = new mapBoxGL.Map({
+      attributionControl: false,
+      container: mapContainer.current,
+      style: 'mapbox://styles/mapbox/dark-v11',
+      // Default coords: CN Tower
+      center: [longitude, latitude],
+      zoom: 9,
+    });
+
+    // Automatically load geolocator/user's current location (with hidden built-in button)
+    const currentGeolocator = new mapBoxGL.GeolocateControl({
+      positionOptions: {
+        enableHighAccuracy: false,
+      },
+      trackUserLocation: true,
+      showAccuracyCircle: true,
+      showUserHeading: true,
+    });
+
+    map.current.addControl(currentGeolocator);
+
+    map.current
+      .once('load', () => {
+        currentGeolocator.trigger();
+        setLocationLoading(true);
+        setMapLoading(false);
+      })
+      .on('moveend', () => {
+        if (map.current)
+          setCurrentCoords([
+            parseFloat(map.current.getCenter().lng.toFixed(4)),
+            parseFloat(map.current.getCenter().lat.toFixed(4)),
+          ]);
+        setLocationLoading(false);
       });
-
-      // Automatically load geolocator/user's current location (with hidden built-in button)
-      const currentGeolocator = new mapBoxGL.GeolocateControl({
-        positionOptions: {
-          enableHighAccuracy: false,
-        },
-        trackUserLocation: true,
-        showAccuracyCircle: true,
-        showUserHeading: true,
-      });
-
-      map.current.addControl(currentGeolocator);
-
-      map.current
-        .once('load', () => {
-          currentGeolocator.trigger();
-          setLocationLoading(true);
-          setMapLoading(false);
-        })
-        .on('moveend', () => {
-          if (map.current)
-            setCurrentCoords([
-              parseFloat(map.current.getCenter().lng.toFixed(4)),
-              parseFloat(map.current.getCenter().lat.toFixed(4)),
-            ]);
-          setLocationLoading(false);
-        });
-    }
-  }, [addPerformanceLayer, userInfo]);
+    // }
+  }, [addPerformanceLayer, userInfo?.lastLocation]);
 
   useEffect(() => {
     if (userInfo?.performanceMode) {

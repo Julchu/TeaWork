@@ -47,8 +47,7 @@ const UserProvider: FC<{
         { method: 'POST' },
       ).then(async response => {
         response.json().then(location => {
-          console.log(location);
-          // setUserInfo({ lastLocation: [location.lng, location.lat] });
+          setUserInfo({ lastLocation: { lng: location.lng, lat: location.lat } });
         });
       });
     }
