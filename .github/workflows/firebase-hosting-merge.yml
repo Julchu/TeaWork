@@ -23,8 +23,8 @@ jobs:
     environment: production
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
       - run: 'yarn install && yarn next build && firebase deploy'
+#      - uses: actions/checkout@v3
 #      - uses: FirebaseExtended/action-hosting-deploy@v0
 #        with:
 #          repoToken: '${{ secrets.GITHUB_TOKEN }}'
