@@ -14,13 +14,12 @@ import {
 } from 'firebase/firestore';
 import { CollectionReference } from '@firebase/firestore';
 import { firestore } from 'src/lib/firebase/firebase-config';
-import { LngLatLike } from 'mapbox-gl';
 
 export type UserInfo = {
   firstName: string;
   lastName: string;
   email: string;
-  lastLocation?: LngLatLike;
+  lastLocation?: { lat: number; lng: number };
   createdAt?: Timestamp | FieldValue;
   performanceMode?: boolean;
 };

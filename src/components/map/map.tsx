@@ -42,10 +42,25 @@ const mapStyles = {
 };
 
 // CN Tower long/lat: [-79.387054, 43.642567]
-const Map: FC<{ longitude: number; latitude: number }> = ({ longitude, latitude }) => {
+const Map: FC = () => {
   const { userInfo, setUserInfo } = useUserContext();
   const { authUser, userLoading } = useAuthContext();
   const [{ updateUser }] = useUserHook();
+
+  const [currentLocation, setCurrentLocation] = useState<LngLatLike>();
+
+  useEffect(() => {
+    fetch(
+      `https://www.googleapis.com/geolocation/v1/geolocate?key=${process.env.NEXT_PUBLIC_GEOLOCATION_API_KEY}`,
+      { method: 'POST' },
+    ).then(async response => {
+      const locationObj = await response.json();
+      const {
+        location: { lng, lat },
+      } = locationObj;
+      setCurrentLocation([lng, lat]);
+    });
+  }, []);
 
   const mapContainer = useRef<any>(null);
   // Geolocator used to pass to external functions outside useEffect
@@ -67,9 +82,9 @@ const Map: FC<{ longitude: number; latitude: number }> = ({ longitude, latitude 
       async pos => {
         const coords: LngLatLike = [pos.coords.longitude, pos.coords.latitude];
         flyTo(coords);
-        if (authUser) await updateUser({ lastLocation: coords });
+        if (authUser) await updateUser({ lastLocation: { lng: coords[0], lat: coords[1] } });
         setUserInfo(currentInfo => {
-          return { ...currentInfo, lastLocation: coords };
+          return { ...currentInfo, lastLocation: { lng: coords[0], lat: coords[1] } };
         });
       },
       error => {
@@ -191,47 +206,46 @@ const Map: FC<{ longitude: number; latitude: number }> = ({ longitude, latitude 
     // Prevent re-creating a map if one already exists
     if (map.current) return;
 
-    // if (userInfo && userInfo?.lastLocation !== [undefined, undefined]) {
-    console.log('userinfo', userInfo);
-    setMapLoading(true);
-    mapBoxGL.accessToken = process.env.NEXT_PUBLIC_MAPBOX_TOKEN || '';
-    map.current = new mapBoxGL.Map({
-      attributionControl: false,
-      container: mapContainer.current,
-      style: 'mapbox://styles/mapbox/dark-v11',
-      // Default coords: CN Tower
-      center: [longitude, latitude],
-      zoom: 9,
-    });
-
-    // Automatically load geolocator/user's current location (with hidden built-in button)
-    const currentGeolocator = new mapBoxGL.GeolocateControl({
-      positionOptions: {
-        enableHighAccuracy: false,
-      },
-      trackUserLocation: true,
-      showAccuracyCircle: true,
-      showUserHeading: true,
-    });
-
-    map.current.addControl(currentGeolocator);
-
-    map.current
-      .once('load', () => {
-        currentGeolocator.trigger();
-        setLocationLoading(true);
-        setMapLoading(false);
-      })
-      .on('moveend', () => {
-        if (map.current)
-          setCurrentCoords([
-            parseFloat(map.current.getCenter().lng.toFixed(4)),
-            parseFloat(map.current.getCenter().lat.toFixed(4)),
-          ]);
-        setLocationLoading(false);
+    if (userInfo?.lastLocation) {
+      setMapLoading(true);
+      mapBoxGL.accessToken = process.env.NEXT_PUBLIC_MAPBOX_TOKEN || '';
+      map.current = new mapBoxGL.Map({
+        attributionControl: false,
+        container: mapContainer.current,
+        style: 'mapbox://styles/mapbox/dark-v11',
+        // Default coords: CN Tower
+        center: [userInfo.lastLocation.lng, userInfo.lastLocation.lat],
+        zoom: 9,
       });
-    // }
-  }, [addPerformanceLayer, userInfo?.lastLocation]);
+
+      // Automatically load geolocator/user's current location (with hidden built-in button)
+      const currentGeolocator = new mapBoxGL.GeolocateControl({
+        positionOptions: {
+          enableHighAccuracy: false,
+        },
+        trackUserLocation: true,
+        showAccuracyCircle: true,
+        showUserHeading: true,
+      });
+
+      map.current.addControl(currentGeolocator);
+
+      map.current
+        .once('load', () => {
+          currentGeolocator.trigger();
+          setLocationLoading(true);
+          setMapLoading(false);
+        })
+        .on('moveend', () => {
+          if (map.current)
+            setCurrentCoords([
+              parseFloat(map.current.getCenter().lng.toFixed(4)),
+              parseFloat(map.current.getCenter().lat.toFixed(4)),
+            ]);
+          setLocationLoading(false);
+        });
+    }
+  }, [addPerformanceLayer, currentLocation, userInfo?.lastLocation]);
 
   useEffect(() => {
     if (userInfo?.performanceMode) {

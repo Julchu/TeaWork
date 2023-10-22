@@ -46,9 +46,11 @@ const UserProvider: FC<{
         `https://www.googleapis.com/geolocation/v1/geolocate?key=${process.env.NEXT_PUBLIC_GEOLOCATION_API_KEY}`,
         { method: 'POST' },
       ).then(async response => {
-        response.json().then(location => {
-          setUserInfo({ lastLocation: { lng: location.lng, lat: location.lat } });
-        });
+        const locationObj = await response.json();
+        const {
+          location: { lng, lat },
+        } = locationObj;
+        setUserInfo({ lastLocation: { lng, lat } });
       });
     }
   }, [getUser, authUser]);

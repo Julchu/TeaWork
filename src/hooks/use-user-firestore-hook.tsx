@@ -9,14 +9,13 @@ import {
 import { useCallback, useState } from 'react';
 import { useAuthContext } from 'src/hooks/use-auth-context';
 import { db, UserInfo } from 'src/lib/firebase/interfaces/generics';
-import { LngLatLike } from 'mapbox-gl';
 import { filterNullableObject } from 'src/lib/functions';
 
 export type UserFormData = {
   firstName?: string;
   lastName?: string;
   email?: string;
-  lastLocation?: LngLatLike;
+  lastLocation?: { lng: number; lat: number };
 };
 
 type UserMethods = {
