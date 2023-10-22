@@ -245,7 +245,7 @@ const Map: FC = () => {
           setLocationLoading(false);
         });
     }
-  }, [addPerformanceLayer, currentLocation, userInfo?.lastLocation]);
+  }, [userInfo?.lastLocation]);
 
   useEffect(() => {
     if (userInfo?.performanceMode) {
