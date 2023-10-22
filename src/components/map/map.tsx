@@ -58,6 +58,8 @@ const Map: FC = () => {
   const [firstLoading, setFirstLoading] = useState<boolean>(true);
   const [locationLoading, setLocationLoading] = useState<boolean>(false);
 
+  const [styleLoaded, setStyleLoaded] = useState<boolean>(false);
+
   // Custom manual callback to fly to specific coordinates
   const flyTo = useCallback((coords: Coordinates, zoom: number = 15) => {
     map.current?.flyTo({ center: [coords.lng, coords.lat], zoom });
@@ -161,15 +163,17 @@ const Map: FC = () => {
   }, []);
 
   const triggerPerformance = useCallback(() => {
-    setUserInfo(currentInfo => {
-      return { ...currentInfo, performanceMode: !currentInfo?.performanceMode };
-    });
-
-    if (userInfo?.performanceMode) map.current?.removeLayer('add-3d-buildings');
-    else {
-      if (map.current?.getLayer('add-3d-buildings')) addPerformanceLayer();
+    if (map.current && map.current.isStyleLoaded()) {
+      setUserInfo(currentInfo => {
+        if (currentInfo?.performanceMode && map.current?.getLayer('add-3d-buildings')) {
+          map.current?.removeLayer('add-3d-buildings');
+        } else {
+          addPerformanceLayer();
+        }
+        return { ...currentInfo, performanceMode: !currentInfo?.performanceMode };
+      });
     }
-  }, [addPerformanceLayer, setUserInfo, userInfo?.performanceMode]);
+  }, [addPerformanceLayer, setUserInfo]);
 
   // Initial map loading
   useEffect(() => {
@@ -221,14 +225,22 @@ const Map: FC = () => {
           console.log(mouseEvent.lngLat);
         }
       });
+
+      map.current.on('style.load', () => {
+        setStyleLoaded(true);
+      });
     }
   }, [addMarker, htmlElement, userInfo?.lastLocation]);
 
   useEffect(() => {
-    if (userInfo?.performanceMode) {
-      addPerformanceLayer();
+    if (styleLoaded) {
+      if (!map.current?.getLayer('add-3d-buildings')) {
+        if (userInfo?.performanceMode) {
+          addPerformanceLayer();
+        }
+      }
     }
-  }, [addPerformanceLayer, userInfo?.performanceMode]);
+  }, [addPerformanceLayer, styleLoaded, userInfo?.performanceMode]);
 
   // On first map load, when authUser gets
   useEffect(() => {
