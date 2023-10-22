@@ -110,15 +110,6 @@ const Map: FC = () => {
     [flyToCurrentLocation],
   );
 
-  useEffect(() => {
-    map.current?.on('click', mouseEvent => {
-      if (map.current) {
-        addMarker(htmlElement, map.current, mouseEvent.lngLat);
-        console.log(mouseEvent.lngLat);
-      }
-    });
-  }, [addMarker, htmlElement]);
-
   const addPerformanceLayer = useCallback(() => {
     // Insert the layer beneath any symbol layer.
     const layers = map.current?.getStyle().layers;
@@ -180,13 +171,6 @@ const Map: FC = () => {
     }
   }, [addPerformanceLayer, setUserInfo, userInfo?.performanceMode]);
 
-  // On first map load, when authUser gets
-  useEffect(() => {
-    if (firstLoading && authUser && userInfo) {
-      flyToCurrentLocation().then(() => setFirstLoading(false));
-    }
-  }, [authUser, firstLoading, flyToCurrentLocation, updateUserLocation, userInfo]);
-
   // Initial map loading
   useEffect(() => {
     // Prevent re-creating a map if one already exists
@@ -230,14 +214,28 @@ const Map: FC = () => {
             ]);
           setLocationLoading(false);
         });
+
+      map.current?.on('click', mouseEvent => {
+        if (map.current) {
+          addMarker(htmlElement, map.current, mouseEvent.lngLat);
+          console.log(mouseEvent.lngLat);
+        }
+      });
     }
-  }, [userInfo?.lastLocation]);
+  }, [addMarker, htmlElement, userInfo?.lastLocation]);
 
   useEffect(() => {
     if (userInfo?.performanceMode) {
       addPerformanceLayer();
     }
   }, [addPerformanceLayer, userInfo?.performanceMode]);
+
+  // On first map load, when authUser gets
+  useEffect(() => {
+    if (firstLoading && authUser && userInfo) {
+      flyToCurrentLocation().then(() => setFirstLoading(false));
+    }
+  }, [authUser, firstLoading, flyToCurrentLocation, updateUserLocation, userInfo]);
 
   return (
     <div
