@@ -5,8 +5,6 @@ import {
   DocumentReference,
   FieldValue,
   FirestoreDataConverter,
-  getDoc,
-  getDocs,
   PartialWithFieldValue,
   QueryDocumentSnapshot,
   SnapshotOptions,
@@ -15,11 +13,13 @@ import {
 import { CollectionReference } from '@firebase/firestore';
 import { firestore } from 'src/lib/firebase/firebase-config';
 
+export type Coordinates = { lat: number; lng: number };
+
 export type UserInfo = {
   firstName: string;
   lastName: string;
   email: string;
-  lastLocation?: { lat: number; lng: number };
+  lastLocation?: Coordinates;
   createdAt?: Timestamp | FieldValue;
   performanceMode?: boolean;
 };
@@ -43,10 +43,12 @@ export const db = {
   userDoc: (...extraPaths: string[]) => docPoint<UserInfo>('users', ...extraPaths),
 };
 
-const _genericFunctions = async () => {
+/*
+const genericFunctionsExamples = async () => {
   const userCollectionSnapshot = await getDocs(db.userCollection);
   const userCollection = userCollectionSnapshot.docs.map(doc => doc.data()); // has type Post[]
 
   const userDocSnapshot = await getDoc(db.userDoc('1'));
   const userDoc = userDocSnapshot.data();
 };
+*/

@@ -8,14 +8,15 @@ import {
 } from 'firebase/firestore';
 import { useCallback, useState } from 'react';
 import { useAuthContext } from 'src/hooks/use-auth-context';
-import { db, UserInfo } from 'src/lib/firebase/interfaces/generics';
+import { Coordinates, db, UserInfo } from 'src/lib/firebase/interfaces/generics';
 import { filterNullableObject } from 'src/lib/functions';
 
 export type UserFormData = {
   firstName?: string;
   lastName?: string;
   email?: string;
-  lastLocation?: { lng: number; lat: number };
+  lastLocation?: Coordinates;
+  performanceMode?: boolean;
 };
 
 type UserMethods = {
@@ -88,7 +89,7 @@ const useUserHook = (): [UserMethods, boolean, Error | undefined] => {
   );
 
   const updateUser = useCallback<UserMethods['updateUser']>(
-    async ({ firstName, lastName, email, lastLocation }) => {
+    async ({ firstName, lastName, email, lastLocation, performanceMode }) => {
       if (!authUser) return;
       setLoading(true);
 
@@ -99,6 +100,7 @@ const useUserHook = (): [UserMethods, boolean, Error | undefined] => {
         lastName,
         email,
         lastLocation,
+        performanceMode,
       });
 
       try {

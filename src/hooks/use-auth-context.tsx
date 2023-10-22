@@ -8,17 +8,17 @@ export const AuthContext = createContext<AuthProps>({});
 
 type AuthProps = {
   authUser?: User | null;
-  userLoading?: boolean;
-  userError?: Error | null;
+  authLoading?: boolean;
+  authError?: Error | null;
 };
 
 export const useAuthContext = (): AuthProps => useContext(AuthContext);
 
 const AuthProvider: FC<{ children: ReactNode }> = ({ children }) => {
-  const [authUser, userLoading, userError] = useAuthState(authentication);
+  const [authUser, authLoading, authError] = useAuthState(authentication);
 
   return (
-    <AuthContext.Provider value={{ authUser, userLoading, userError }}>
+    <AuthContext.Provider value={{ authUser, authLoading, authError }}>
       {children}
     </AuthContext.Provider>
   );

@@ -13,6 +13,7 @@ import { useAuthContext } from "src/hooks/use-auth-context";
 import { cn } from "src/lib/utils";
 import { useUserContext } from "src/hooks/use-user-context";
 import { NoPowerIcon, PowerIcon } from "src/components/ui/icons/power";
+import { Coordinates } from "src/lib/firebase/interfaces/generics";
 
 /* Other map styles
  * style: 'mapbox://styles/mapbox/streets-v12',
@@ -44,23 +45,8 @@ const mapStyles = {
 // CN Tower long/lat: [-79.387054, 43.642567]
 const Map: FC = () => {
   const { userInfo, setUserInfo } = useUserContext();
-  const { authUser, userLoading } = useAuthContext();
+  const { authUser } = useAuthContext();
   const [{ updateUser }] = useUserHook();
-
-  const [currentLocation, setCurrentLocation] = useState<LngLatLike>();
-
-  useEffect(() => {
-    fetch(
-      `https://www.googleapis.com/geolocation/v1/geolocate?key=${process.env.NEXT_PUBLIC_GEOLOCATION_API_KEY}`,
-      { method: 'POST' },
-    ).then(async response => {
-      const locationObj = await response.json();
-      const {
-        location: { lng, lat },
-      } = locationObj;
-      setCurrentLocation([lng, lat]);
-    });
-  }, []);
 
   const mapContainer = useRef<any>(null);
   // Geolocator used to pass to external functions outside useEffect
@@ -73,18 +59,18 @@ const Map: FC = () => {
   const [locationLoading, setLocationLoading] = useState<boolean>(false);
 
   // Custom manual callback to fly to specific coordinates
-  const flyTo = useCallback((center: LngLatLike, zoom: number = 15) => {
-    map.current?.flyTo({ center, zoom });
+  const flyTo = useCallback((coords: Coordinates, zoom: number = 15) => {
+    map.current?.flyTo({ center: [coords.lng, coords.lat], zoom });
   }, []);
 
   const updateUserLocation = useCallback(async () => {
     navigator.geolocation.getCurrentPosition(
       async pos => {
-        const coords: LngLatLike = [pos.coords.longitude, pos.coords.latitude];
+        const coords: Coordinates = { lng: pos.coords.longitude, lat: pos.coords.latitude };
         flyTo(coords);
-        if (authUser) await updateUser({ lastLocation: { lng: coords[0], lat: coords[1] } });
+        if (authUser) await updateUser({ lastLocation: coords });
         setUserInfo(currentInfo => {
-          return { ...currentInfo, lastLocation: { lng: coords[0], lat: coords[1] } };
+          return { ...currentInfo, lastLocation: coords };
         });
       },
       error => {
