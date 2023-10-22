@@ -12,6 +12,7 @@ import {
 import { UserInfo } from 'src/lib/firebase/interfaces/generics';
 import { useAuthContext } from 'src/hooks/use-auth-context';
 import useUserHook from 'src/hooks/use-user-firestore-hook';
+import process from 'process';
 
 export const UserContext = createContext<UserProps>({
   userInfo: {},
@@ -41,7 +42,15 @@ const UserProvider: FC<{
         });
       });
     } else {
-      setUserInfo({});
+      fetch(
+        `https://www.googleapis.com/geolocation/v1/geolocate?key=${process.env.NEXT_PUBLIC_GEOLOCATION_API_KEY}`,
+        { method: 'POST' },
+      ).then(async response => {
+        response.json().then(location => {
+          console.log(location);
+          // setUserInfo({ lastLocation: [location.lng, location.lat] });
+        });
+      });
     }
   }, [getUser, authUser]);
 
