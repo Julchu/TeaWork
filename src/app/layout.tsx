@@ -30,7 +30,7 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   const currentTime = new Date();
-  const shouldUseDarkMode = currentTime.getHours() > 12;
+  const shouldUseDarkMode = currentTime.getHours() >= 18;
   return (
     <html lang="en">
       <body className={`${urbanist.className} ${shouldUseDarkMode ? 'bg-black' : ''}`}>

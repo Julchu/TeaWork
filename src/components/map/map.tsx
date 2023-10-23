@@ -204,7 +204,7 @@ const Map: FC<{ shouldUseDarkMode: boolean }> = ({ shouldUseDarkMode }) => {
       map.current = new mapBoxGL.Map({
         attributionControl: false,
         container: mapContainer.current,
-        style: `${shouldUseDarkMode ? mapStyles.dark : mapStyles.dark}`,
+        style: `${shouldUseDarkMode ? mapStyles.dark : mapStyles.light}`,
         // Default coords: CN Tower
         center: [userInfo.lastLocation.lng, userInfo.lastLocation.lat],
         zoom: 9,
@@ -274,17 +274,18 @@ const Map: FC<{ shouldUseDarkMode: boolean }> = ({ shouldUseDarkMode }) => {
     }
   }, [addPerformanceLayer, mapLoading, userInfo?.performanceMode]);
 
-  // On first map load, or on authUser change
+  // On first map load, or on authUser change, fly home
   useEffect(() => {
     if (firstLoading && authUser && userInfo) {
-      console.log('On first map load, when authUser gets');
       flyToCurrentLocation().then(() => setFirstLoading(false));
     }
   }, [authUser, firstLoading, flyToCurrentLocation, userInfo]);
 
   return (
     <div
-      className={`overflow-hidden rounded-xl h-full w-full relative drop-shadow-lg bg-slate-800`}
+      className={`overflow-hidden rounded-xl h-full w-full relative drop-shadow-lg ${
+        shouldUseDarkMode ? 'bg-slate-800' : 'bg-gray-100'
+      }`}
     >
       {/* Actual map */}
       <div className={cn(`w-full h-full`, locationLoading && 'animate-pulse')} ref={mapContainer} />
