@@ -29,9 +29,11 @@ export const metadata: Metadata = {
 };
 
 export default function RootLayout({ children }: { children: ReactNode }) {
+  const currentTime = new Date();
+  const shouldUseDarkMode = currentTime.getHours() > 12;
   return (
     <html lang="en">
-      <body className={`${urbanist.className}`}>
+      <body className={`${urbanist.className} ${shouldUseDarkMode ? 'bg-black' : ''}`}>
         <AuthProvider>
           <UserProvider>
             <Logo />

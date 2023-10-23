@@ -27,6 +27,7 @@ import { Coordinates } from "src/lib/firebase/interfaces/generics";
  * style: 'mapbox://styles/mapbox/navigation-day-v1'
  * style: 'mapbox://styles/mapbox/navigation-night-v1'
  * style: 'mapbox://styles/jchumtl/clnfdhrsc080001qi3ye8e8mj',
+ * style: 'mapbox://styles/mapbox/standard-beta',
  * */
 const mapStyles = {
   streets: 'mapbox://styles/mapbox/streets-v12',
@@ -40,10 +41,11 @@ const mapStyles = {
   navDay: 'mapbox://styles/mapbox/navigation-day-v1',
   navNight: 'mapbox://styles/mapbox/navigation-night-v1',
   pink: 'mapbox://styles/jchumtl/clnfdhrsc080001qi3ye8e8mj',
+  standard: 'mapbox://styles/mapbox/standard-beta',
 };
 
 // CN Tower long/lat: [-79.387054, 43.642567]
-const Map: FC = () => {
+const Map: FC<{ shouldUseDarkMode: boolean }> = ({ shouldUseDarkMode }) => {
   const { userInfo, setUserInfo } = useUserContext();
   const { authUser } = useAuthContext();
   const [{ updateUser }] = useUserHook();
@@ -54,7 +56,7 @@ const Map: FC = () => {
   const [currentCoords, setCurrentCoords] = useState<LngLatLike>();
 
   // Set map loading to true in page load
-  const [mapLoaded, setMapLoaded] = useState<boolean>(false);
+  const [mapLoading, setMapLoading] = useState<boolean>(true);
   const [firstLoading, setFirstLoading] = useState<boolean>(true);
   const [locationLoading, setLocationLoading] = useState<boolean>(false);
 
@@ -90,9 +92,32 @@ const Map: FC = () => {
   }, [updateUserLocation]);
 
   const htmlElement = useMemo(() => {
-    return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="white" class="w-5 h-5 animate-ping">
+    return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="white" class="w-5 h-5 absolute">
+        <path fill-rule="evenodd" d="M9.69 18.933l.003.001C9.89 19.02 10 19 10 19s.11.02.308-.066l.002-.001.006-.003.018-.008a5.741 5.741 0 00.281-.14c.186-.096.446-.24.757-.433.62-.384 1.445-.966 2.274-1.765C15.302 14.988 17 12.493 17 9A7 7 0 103 9c0 3.492 1.698 5.988 3.355 7.584a13.731 13.731 0 002.273 1.765 11.842 11.842 0 00.976.544l.062.029.018.008.006.003zM10 11.25a2.25 2.25 0 100-4.5 2.25 2.25 0 000 4.5z" clip-rule="evenodd" />
+      </svg>
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="white" class="w-5 h-5 animate-ping">
         <path fill-rule="evenodd" d="M9.69 18.933l.003.001C9.89 19.02 10 19 10 19s.11.02.308-.066l.002-.001.006-.003.018-.008a5.741 5.741 0 00.281-.14c.186-.096.446-.24.757-.433.62-.384 1.445-.966 2.274-1.765C15.302 14.988 17 12.493 17 9A7 7 0 103 9c0 3.492 1.698 5.988 3.355 7.584a13.731 13.731 0 002.273 1.765 11.842 11.842 0 00.976.544l.062.029.018.008.006.003zM10 11.25a2.25 2.25 0 100-4.5 2.25 2.25 0 000 4.5z" clip-rule="evenodd" />
       </svg>`;
+  }, []);
+
+  const testElement = useMemo(() => {
+    return `
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="white" class="w-6 h-6 absolute">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 3.75v4.5m0-4.5h4.5m-4.5 0L9 9M3.75 20.25v-4.5m0 4.5h4.5m-4.5 0L9 15M20.25 3.75h-4.5m4.5 0v4.5m0-4.5L15 9m5.25 11.25h-4.5m4.5 0v-4.5m0 4.5L15 15" />
+      </svg>
+      
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="white" class="w-6 h-6 animate-ping">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 3.75v4.5m0-4.5h4.5m-4.5 0L9 9M3.75 20.25v-4.5m0 4.5h4.5m-4.5 0L9 15M20.25 3.75h-4.5m4.5 0v4.5m0-4.5L15 9m5.25 11.25h-4.5m4.5 0v-4.5m0 4.5L15 15" />
+      </svg>`;
+  }, []);
+
+  const testElement2 = useMemo(() => {
+    return `
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="white" class="w-6 h-6 absolute">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
+      </svg>
+      <svg class="w-6 h-6 animate-ping" width="15" height="15" viewBox="0 0 15 15" stroke="white" xmlns="http://www.w3.org/2000/svg"><path d="M0.877075 7.49991C0.877075 3.84222 3.84222 0.877075 7.49991 0.877075C11.1576 0.877075 14.1227 3.84222 14.1227 7.49991C14.1227 11.1576 11.1576 14.1227 7.49991 14.1227C3.84222 14.1227 0.877075 11.1576 0.877075 7.49991ZM7.49991 1.82708C4.36689 1.82708 1.82708 4.36689 1.82708 7.49991C1.82708 10.6329 4.36689 13.1727 7.49991 13.1727C10.6329 13.1727 13.1727 10.6329 13.1727 7.49991C13.1727 4.36689 10.6329 1.82708 7.49991 1.82708Z" fill="currentColor" fill-rule="evenodd" clip-rule="evenodd"></path></svg>
+    `;
   }, []);
 
   // Add HTML marker
@@ -159,13 +184,13 @@ const Map: FC = () => {
   }, []);
 
   const triggerPerformance = useCallback(() => {
-    if (mapLoaded) {
+    if (!mapLoading) {
       setUserInfo(currentInfo => ({
         ...currentInfo,
         performanceMode: !currentInfo?.performanceMode,
       }));
     }
-  }, [mapLoaded, setUserInfo]);
+  }, [mapLoading, setUserInfo]);
 
   // Initial map loading
   useEffect(() => {
@@ -175,10 +200,11 @@ const Map: FC = () => {
     // Workaround to spawn user near their location rather than in a random location and flying over
     if (userInfo?.lastLocation && 'performanceMode' in userInfo) {
       mapBoxGL.accessToken = process.env.NEXT_PUBLIC_MAPBOX_TOKEN || '';
+
       map.current = new mapBoxGL.Map({
         attributionControl: false,
         container: mapContainer.current,
-        style: 'mapbox://styles/mapbox/dark-v11',
+        style: `${shouldUseDarkMode ? mapStyles.dark : mapStyles.dark}`,
         // Default coords: CN Tower
         center: [userInfo.lastLocation.lng, userInfo.lastLocation.lat],
         zoom: 9,
@@ -198,9 +224,27 @@ const Map: FC = () => {
 
       map.current
         .once('style.load', () => {
-          currentGeolocator.trigger();
+          setMapLoading(false);
           setLocationLoading(true);
-          setMapLoaded(true);
+          currentGeolocator.trigger();
+
+          // TODO: current location marker to replace currentGeolocator
+          // if (userInfo.lastLocation) {
+          //   map.current?.addSource('my location', {
+          //     type: 'geojson',
+          //     data: {
+          //       type: 'Feature',
+          //       geometry: {
+          //         type: 'Point',
+          //         coordinates: [userInfo.lastLocation.lng, userInfo.lastLocation.lat],
+          //       },
+          //       properties: {
+          //         title: 'Mapbox DC',
+          //         'marker-symbol': 'monument',
+          //       },
+          //     },
+          //   });
+          // }
         })
         .on('moveend', () => {
           if (map.current)
@@ -221,14 +265,14 @@ const Map: FC = () => {
   }, [addMarker, htmlElement, userInfo]);
 
   useEffect(() => {
-    if (mapLoaded) {
+    if (!mapLoading) {
       if (!map.current?.getLayer('add-3d-buildings') && userInfo?.performanceMode) {
         addPerformanceLayer();
       } else if (map.current?.getLayer('add-3d-buildings') && !userInfo?.performanceMode) {
         map.current?.removeLayer('add-3d-buildings');
       }
     }
-  }, [addPerformanceLayer, mapLoaded, userInfo?.performanceMode]);
+  }, [addPerformanceLayer, mapLoading, userInfo?.performanceMode]);
 
   // On first map load, or on authUser change
   useEffect(() => {
@@ -239,13 +283,15 @@ const Map: FC = () => {
   }, [authUser, firstLoading, flyToCurrentLocation, userInfo]);
 
   return (
-    <div className={'overflow-hidden rounded-xl h-full w-full relative drop-shadow-lg '}>
+    <div
+      className={`overflow-hidden rounded-xl h-full w-full relative drop-shadow-lg bg-slate-800`}
+    >
       {/* Actual map */}
       <div className={cn(`w-full h-full`, locationLoading && 'animate-pulse')} ref={mapContainer} />
 
       {/* Extra layers on map (buttons, controls) */}
       <Controls
-        mapLoaded={mapLoaded}
+        mapLoading={mapLoading}
         locationLoading={locationLoading}
         triggerGeolocator={flyToCurrentLocation}
         triggerNorth={triggerNorth}
@@ -256,15 +302,15 @@ const Map: FC = () => {
 };
 
 const Controls: FC<{
-  mapLoaded: boolean;
+  mapLoading: boolean;
   locationLoading: boolean;
   triggerGeolocator: () => void;
   triggerNorth: () => void;
   triggerPerformance: () => void;
-}> = ({ triggerGeolocator, triggerNorth, triggerPerformance, mapLoaded, locationLoading }) => {
+}> = ({ triggerGeolocator, triggerNorth, triggerPerformance, mapLoading, locationLoading }) => {
   const { userInfo } = useUserContext();
 
-  if (!mapLoaded)
+  if (mapLoading)
     return (
       <div className={'absolute top-1/2 bottom-1/2 left-1/2 right-1/2 bg-none'}>
         <Spinner />
