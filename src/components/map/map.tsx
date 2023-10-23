@@ -54,11 +54,9 @@ const Map: FC = () => {
   const [currentCoords, setCurrentCoords] = useState<LngLatLike>();
 
   // Set map loading to true in page load
-  const [mapLoading, setMapLoading] = useState<boolean>(true);
+  const [mapLoaded, setMapLoaded] = useState<boolean>(false);
   const [firstLoading, setFirstLoading] = useState<boolean>(true);
   const [locationLoading, setLocationLoading] = useState<boolean>(false);
-
-  const [styleLoaded, setStyleLoaded] = useState<boolean>(false);
 
   // Custom manual callback to fly to specific coordinates
   const flyTo = useCallback((coords: Coordinates, zoom: number = 15) => {
@@ -104,12 +102,10 @@ const Map: FC = () => {
       el.className = 'marker';
       el.innerHTML = htmlElement;
 
-      el.onclick = flyToCurrentLocation;
-
       // make a marker for each feature and add to the map
       new mapBoxGL.Marker(el).setLngLat(coords).addTo(currentMap);
     },
-    [flyToCurrentLocation],
+    [],
   );
 
   const addPerformanceLayer = useCallback(() => {
@@ -163,25 +159,21 @@ const Map: FC = () => {
   }, []);
 
   const triggerPerformance = useCallback(() => {
-    if (map.current && map.current.isStyleLoaded()) {
-      setUserInfo(currentInfo => {
-        if (currentInfo?.performanceMode && map.current?.getLayer('add-3d-buildings')) {
-          map.current?.removeLayer('add-3d-buildings');
-        } else {
-          addPerformanceLayer();
-        }
-        return { ...currentInfo, performanceMode: !currentInfo?.performanceMode };
-      });
+    if (mapLoaded) {
+      setUserInfo(currentInfo => ({
+        ...currentInfo,
+        performanceMode: !currentInfo?.performanceMode,
+      }));
     }
-  }, [addPerformanceLayer, setUserInfo]);
+  }, [mapLoaded, setUserInfo]);
 
   // Initial map loading
   useEffect(() => {
     // Prevent re-creating a map if one already exists
     if (map.current) return;
 
-    if (userInfo?.lastLocation) {
-      setMapLoading(true);
+    // Workaround to spawn user near their location rather than in a random location and flying over
+    if (userInfo?.lastLocation && 'performanceMode' in userInfo) {
       mapBoxGL.accessToken = process.env.NEXT_PUBLIC_MAPBOX_TOKEN || '';
       map.current = new mapBoxGL.Map({
         attributionControl: false,
@@ -205,10 +197,10 @@ const Map: FC = () => {
       map.current.addControl(currentGeolocator);
 
       map.current
-        .once('load', () => {
+        .once('style.load', () => {
           currentGeolocator.trigger();
           setLocationLoading(true);
-          setMapLoading(false);
+          setMapLoaded(true);
         })
         .on('moveend', () => {
           if (map.current)
@@ -225,42 +217,35 @@ const Map: FC = () => {
           console.log(mouseEvent.lngLat);
         }
       });
-
-      map.current.on('style.load', () => {
-        setStyleLoaded(true);
-      });
     }
-  }, [addMarker, htmlElement, userInfo?.lastLocation]);
+  }, [addMarker, htmlElement, userInfo]);
 
   useEffect(() => {
-    if (styleLoaded) {
-      if (!map.current?.getLayer('add-3d-buildings')) {
-        if (userInfo?.performanceMode) {
-          addPerformanceLayer();
-        }
+    if (mapLoaded) {
+      if (!map.current?.getLayer('add-3d-buildings') && userInfo?.performanceMode) {
+        addPerformanceLayer();
+      } else if (map.current?.getLayer('add-3d-buildings') && !userInfo?.performanceMode) {
+        map.current?.removeLayer('add-3d-buildings');
       }
     }
-  }, [addPerformanceLayer, styleLoaded, userInfo?.performanceMode]);
+  }, [addPerformanceLayer, mapLoaded, userInfo?.performanceMode]);
 
-  // On first map load, when authUser gets
+  // On first map load, or on authUser change
   useEffect(() => {
     if (firstLoading && authUser && userInfo) {
+      console.log('On first map load, when authUser gets');
       flyToCurrentLocation().then(() => setFirstLoading(false));
     }
-  }, [authUser, firstLoading, flyToCurrentLocation, updateUserLocation, userInfo]);
+  }, [authUser, firstLoading, flyToCurrentLocation, userInfo]);
 
   return (
-    <div
-      className={
-        'overflow-hidden rounded-xl h-full w-full relative drop-shadow-lg bg-gradient-to-r from-indigo-200 via-purple-500 to-pink-200'
-      }
-    >
+    <div className={'overflow-hidden rounded-xl h-full w-full relative drop-shadow-lg '}>
       {/* Actual map */}
       <div className={cn(`w-full h-full`, locationLoading && 'animate-pulse')} ref={mapContainer} />
 
       {/* Extra layers on map (buttons, controls) */}
       <Controls
-        mapLoading={mapLoading}
+        mapLoaded={mapLoaded}
         locationLoading={locationLoading}
         triggerGeolocator={flyToCurrentLocation}
         triggerNorth={triggerNorth}
@@ -271,52 +256,51 @@ const Map: FC = () => {
 };
 
 const Controls: FC<{
-  mapLoading: boolean;
+  mapLoaded: boolean;
   locationLoading: boolean;
   triggerGeolocator: () => void;
   triggerNorth: () => void;
   triggerPerformance: () => void;
-}> = ({ triggerGeolocator, triggerNorth, triggerPerformance, mapLoading, locationLoading }) => {
+}> = ({ triggerGeolocator, triggerNorth, triggerPerformance, mapLoaded, locationLoading }) => {
   const { userInfo } = useUserContext();
+
+  if (!mapLoaded)
+    return (
+      <div className={'absolute top-1/2 bottom-1/2 left-1/2 right-1/2 bg-none'}>
+        <Spinner />
+      </div>
+    );
   return (
     <>
-      {mapLoading ? (
-        <div className={'absolute top-1/2 bottom-1/2 left-1/2 right-1/2 bg-none'}>
-          <Spinner />
-        </div>
-      ) : (
-        <>
-          <Button
-            // Performance button
-            className={
-              'absolute bottom-5 left-5 opacity-60 bg-blue-600 w-[40px] h-[40px] p-0 rounded-full'
-            }
-            onClick={triggerPerformance}
-          >
-            {userInfo?.performanceMode ? <PowerIcon /> : <NoPowerIcon />}
-          </Button>
+      <Button
+        // Performance button
+        className={
+          'absolute bottom-5 left-5 opacity-60 bg-blue-600 w-[40px] h-[40px] p-0 rounded-full'
+        }
+        onClick={triggerPerformance}
+      >
+        {userInfo?.performanceMode ? <PowerIcon /> : <NoPowerIcon />}
+      </Button>
 
-          <Button
-            // North button
-            className={
-              'absolute bottom-20 right-5 opacity-60 bg-blue-600 w-[40px] h-[40px] p-0 rounded-full'
-            }
-            onClick={triggerNorth}
-          >
-            <NorthIcon />
-          </Button>
+      <Button
+        // North button
+        className={
+          'absolute bottom-20 right-5 opacity-60 bg-blue-600 w-[40px] h-[40px] p-0 rounded-full'
+        }
+        onClick={triggerNorth}
+      >
+        <NorthIcon />
+      </Button>
 
-          <Button
-            // Location button
-            className={
-              'absolute bottom-5 opacity-60 bg-blue-600 right-5 w-[40px] h-[40px] p-0 rounded-full'
-            }
-            onClick={triggerGeolocator}
-          >
-            {locationLoading ? <Spinner /> : <LocationMarkerIcon />}
-          </Button>
-        </>
-      )}
+      <Button
+        // Location button
+        className={
+          'absolute bottom-5 opacity-60 bg-blue-600 right-5 w-[40px] h-[40px] p-0 rounded-full'
+        }
+        onClick={triggerGeolocator}
+      >
+        {locationLoading ? <Spinner /> : <LocationMarkerIcon />}
+      </Button>
     </>
   );
 };

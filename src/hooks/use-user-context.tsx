@@ -50,7 +50,7 @@ const UserProvider: FC<{
         const {
           location: { lng, lat },
         } = locationObj;
-        setUserInfo({ lastLocation: { lng, lat } });
+        setUserInfo({ lastLocation: { lng, lat }, performanceMode: false });
       });
     }
   }, [getUser, authUser]);
