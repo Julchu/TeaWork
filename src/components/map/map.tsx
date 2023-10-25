@@ -1,7 +1,7 @@
 'use client';
 import "mapbox-gl/dist/mapbox-gl.css";
 import "./map.css";
-import mapBoxGL, { LngLatLike } from "mapbox-gl";
+import mapBoxGL, { LngLatLike, Marker } from "mapbox-gl";
 import * as React from "react";
 import { FC, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Button } from "src/components/ui/button";
@@ -46,6 +46,7 @@ const mapStyles = {
 
 // CN Tower long/lat: [-79.387054, 43.642567]
 const Map: FC<{ shouldUseDarkMode: boolean }> = ({ shouldUseDarkMode }) => {
+  const [currentMarker, setCurrentMarker] = useState<Marker>();
   const { userInfo, setUserInfo } = useUserContext();
   const { authUser } = useAuthContext();
   const [{ updateUser }] = useUserHook();
@@ -65,48 +66,71 @@ const Map: FC<{ shouldUseDarkMode: boolean }> = ({ shouldUseDarkMode }) => {
     map.current?.flyTo({ center: [coords.lng, coords.lat], zoom });
   }, []);
 
-  const updateUserLocation = useCallback(async () => {
-    navigator.geolocation.getCurrentPosition(
-      async pos => {
-        const coords: Coordinates = { lng: pos.coords.longitude, lat: pos.coords.latitude };
-        flyTo(coords);
-        if (authUser) await updateUser({ lastLocation: coords });
-        setUserInfo(currentInfo => {
-          return { ...currentInfo, lastLocation: coords };
-        });
-      },
-      error => {
-        console.log('Error geolocating', error);
-      },
-      { enableHighAccuracy: false },
-    );
-  }, [authUser, flyTo, setUserInfo, updateUser]);
+  const updateUserLocation = useCallback(
+    async (coords: Coordinates) => {
+      if (authUser) await updateUser({ lastLocation: coords });
+      setUserInfo(currentInfo => {
+        return { ...currentInfo, lastLocation: coords };
+      });
+    },
+    [authUser, setUserInfo, updateUser],
+  );
 
-  const flyToCurrentLocation = useCallback(async () => {
-    setLocationLoading(true);
-    await updateUserLocation();
-
-    map.current?.once('movestart', async () => {
+  const flyToCurrentLocation = useCallback(
+    async (save?: boolean) => {
       setLocationLoading(true);
-    });
-  }, [updateUserLocation]);
 
-  const htmlElement = useMemo(() => {
-    return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="white" class="w-5 h-5 absolute">
+      navigator.geolocation.getCurrentPosition(
+        async pos => {
+          const coords: Coordinates = { lng: pos.coords.longitude, lat: pos.coords.latitude };
+          flyTo(coords);
+
+          await updateUserLocation(coords);
+
+          if (map.current) addMarker(locationMarker, map.current, coords, save);
+
+          map.current?.once('movestart', async () => {
+            setLocationLoading(true);
+          });
+        },
+        error => {
+          console.log('Error geolocating', error);
+        },
+        { enableHighAccuracy: false },
+      );
+    },
+    [addMarker, flyTo, locationMarker, updateUserLocation],
+  );
+
+  const locationMarker = useMemo(() => {
+    return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="" class="w-5 h-5 absolute fill-blue-600">
         <path fill-rule="evenodd" d="M9.69 18.933l.003.001C9.89 19.02 10 19 10 19s.11.02.308-.066l.002-.001.006-.003.018-.008a5.741 5.741 0 00.281-.14c.186-.096.446-.24.757-.433.62-.384 1.445-.966 2.274-1.765C15.302 14.988 17 12.493 17 9A7 7 0 103 9c0 3.492 1.698 5.988 3.355 7.584a13.731 13.731 0 002.273 1.765 11.842 11.842 0 00.976.544l.062.029.018.008.006.003zM10 11.25a2.25 2.25 0 100-4.5 2.25 2.25 0 000 4.5z" clip-rule="evenodd" />
       </svg>
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="white" class="w-5 h-5 animate-ping">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="" class="w-5 h-5 animate-ping ${
+        shouldUseDarkMode ? 'fill-blue-600' : 'fill-blue-600'
+      }">
         <path fill-rule="evenodd" d="M9.69 18.933l.003.001C9.89 19.02 10 19 10 19s.11.02.308-.066l.002-.001.006-.003.018-.008a5.741 5.741 0 00.281-.14c.186-.096.446-.24.757-.433.62-.384 1.445-.966 2.274-1.765C15.302 14.988 17 12.493 17 9A7 7 0 103 9c0 3.492 1.698 5.988 3.355 7.584a13.731 13.731 0 002.273 1.765 11.842 11.842 0 00.976.544l.062.029.018.008.006.003zM10 11.25a2.25 2.25 0 100-4.5 2.25 2.25 0 000 4.5z" clip-rule="evenodd" />
+      </svg>`;
+  }, [shouldUseDarkMode]);
+
+  const locationBalloon = useMemo(() => {
+    return `
+      <svg  viewBox="0 0 24 24" fill="white" xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 absolute">
+        <path d="M12 15C15.3137 15 18 12.3137 18 9C18 5.68629 15.3137 3 12 3C8.68629 3 6 5.68629 6 9C6 12.3137 8.68629 15 12 15ZM12 15V21M9.5 9C9.5 8.33696 9.76339 7.70107 10.2322 7.23223C10.7011 6.76339 11.337 6.5 12 6.5" stroke="#2F2F38" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+  
+      <svg  viewBox="0 0 24 24" fill="white" xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 animate-ping">
+        <path d="M12 15C15.3137 15 18 12.3137 18 9C18 5.68629 15.3137 3 12 3C8.68629 3 6 5.68629 6 9C6 12.3137 8.68629 15 12 15ZM12 15V21M9.5 9C9.5 8.33696 9.76339 7.70107 10.2322 7.23223C10.7011 6.76339 11.337 6.5 12 6.5" stroke="#2F2F38" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
       </svg>`;
   }, []);
 
   const testElement = useMemo(() => {
     return `
-      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="white" class="w-6 h-6 absolute">
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1" stroke="white" class="w-6 h-6 absolute">
         <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 3.75v4.5m0-4.5h4.5m-4.5 0L9 9M3.75 20.25v-4.5m0 4.5h4.5m-4.5 0L9 15M20.25 3.75h-4.5m4.5 0v4.5m0-4.5L15 9m5.25 11.25h-4.5m4.5 0v-4.5m0 4.5L15 15" />
       </svg>
       
-      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="white" class="w-6 h-6 animate-ping">
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1" stroke="white" class="w-6 h-6 animate-ping">
         <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 3.75v4.5m0-4.5h4.5m-4.5 0L9 9M3.75 20.25v-4.5m0 4.5h4.5m-4.5 0L9 15M20.25 3.75h-4.5m4.5 0v4.5m0-4.5L15 9m5.25 11.25h-4.5m4.5 0v-4.5m0 4.5L15 15" />
       </svg>`;
   }, []);
@@ -122,13 +146,14 @@ const Map: FC<{ shouldUseDarkMode: boolean }> = ({ shouldUseDarkMode }) => {
 
   // Add HTML marker
   const addMarker = useCallback(
-    (htmlElement: string, currentMap: mapBoxGL.Map, coords: LngLatLike) => {
+    (htmlElement: string, currentMap: mapBoxGL.Map, coords: Coordinates, save?: boolean) => {
       const el = document.createElement('div');
       el.className = 'marker';
       el.innerHTML = htmlElement;
 
       // make a marker for each feature and add to the map
-      new mapBoxGL.Marker(el).setLngLat(coords).addTo(currentMap);
+      const marker = new mapBoxGL.Marker(el).setLngLat([coords.lng, coords.lat]).addTo(currentMap);
+      if (save) setCurrentMarker(marker);
     },
     [],
   );
@@ -192,6 +217,22 @@ const Map: FC<{ shouldUseDarkMode: boolean }> = ({ shouldUseDarkMode }) => {
     }
   }, [mapLoading, setUserInfo]);
 
+  const triggerPink = useCallback(() => {
+    if (!mapLoading) {
+      // if (map.current.)
+      map.current?.setStyle(mapStyles.light);
+      map.current?.on('style.load', () => {
+        console.log('test');
+        if (userInfo?.performanceMode) {
+          addPerformanceLayer();
+          map.current?.triggerRepaint();
+          map.current?.resize();
+          // map.current?.setLight({color: 'red'})
+        }
+      });
+    }
+  }, [addPerformanceLayer, mapLoading, userInfo]);
+
   // Initial map loading
   useEffect(() => {
     // Prevent re-creating a map if one already exists
@@ -226,7 +267,7 @@ const Map: FC<{ shouldUseDarkMode: boolean }> = ({ shouldUseDarkMode }) => {
         .once('style.load', () => {
           setMapLoading(false);
           setLocationLoading(true);
-          currentGeolocator.trigger();
+          // currentGeolocator.trigger();
 
           // TODO: current location marker to replace currentGeolocator
           // if (userInfo.lastLocation) {
@@ -257,12 +298,12 @@ const Map: FC<{ shouldUseDarkMode: boolean }> = ({ shouldUseDarkMode }) => {
 
       map.current?.on('click', mouseEvent => {
         if (map.current) {
-          addMarker(htmlElement, map.current, mouseEvent.lngLat);
+          addMarker(locationMarker, map.current, mouseEvent.lngLat);
           console.log(mouseEvent.lngLat);
         }
       });
     }
-  }, [addMarker, htmlElement, userInfo]);
+  }, [addMarker, locationMarker, shouldUseDarkMode, userInfo]);
 
   useEffect(() => {
     if (!mapLoading) {
@@ -277,7 +318,7 @@ const Map: FC<{ shouldUseDarkMode: boolean }> = ({ shouldUseDarkMode }) => {
   // On first map load, or on authUser change, fly home
   useEffect(() => {
     if (firstLoading && authUser && userInfo) {
-      flyToCurrentLocation().then(() => setFirstLoading(false));
+      flyToCurrentLocation(true).then(() => setFirstLoading(false));
     }
   }, [authUser, firstLoading, flyToCurrentLocation, userInfo]);
 
@@ -297,6 +338,8 @@ const Map: FC<{ shouldUseDarkMode: boolean }> = ({ shouldUseDarkMode }) => {
         triggerGeolocator={flyToCurrentLocation}
         triggerNorth={triggerNorth}
         triggerPerformance={triggerPerformance}
+        triggerPink={triggerPink}
+        shouldUseDarkMode={shouldUseDarkMode}
       />
     </div>
   );
@@ -308,17 +351,39 @@ const Controls: FC<{
   triggerGeolocator: () => void;
   triggerNorth: () => void;
   triggerPerformance: () => void;
-}> = ({ triggerGeolocator, triggerNorth, triggerPerformance, mapLoading, locationLoading }) => {
+  triggerPink: () => void;
+  shouldUseDarkMode: boolean;
+}> = ({
+  mapLoading,
+  locationLoading,
+  triggerGeolocator,
+  triggerNorth,
+  triggerPerformance,
+  triggerPink,
+  shouldUseDarkMode,
+}) => {
   const { userInfo } = useUserContext();
 
   if (mapLoading)
     return (
       <div className={'absolute top-1/2 bottom-1/2 left-1/2 right-1/2 bg-none'}>
-        <Spinner />
+        <Spinner shouldUseDarkMode={shouldUseDarkMode} />
       </div>
     );
   return (
     <>
+      <Button
+        // map.current?.setStyle(mapStyles.pink)
+
+        // Performance button
+        className={
+          'absolute bottom-20 left-5 opacity-60 bg-blue-600 w-[40px] h-[40px] p-0 rounded-full'
+        }
+        onClick={triggerPink}
+      >
+        <Pink />
+      </Button>
+
       <Button
         // Performance button
         className={
@@ -349,6 +414,25 @@ const Controls: FC<{
         {locationLoading ? <Spinner /> : <LocationMarkerIcon />}
       </Button>
     </>
+  );
+};
+
+const Pink: FC = () => {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      fill="none"
+      viewBox="0 0 24 24"
+      strokeWidth={1.5}
+      stroke="currentColor"
+      className="w-6 h-6"
+    >
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        d="M4.098 19.902a3.75 3.75 0 005.304 0l6.401-6.402M6.75 21A3.75 3.75 0 013 17.25V4.125C3 3.504 3.504 3 4.125 3h5.25c.621 0 1.125.504 1.125 1.125v4.072M6.75 21a3.75 3.75 0 003.75-3.75V8.197M6.75 21h13.125c.621 0 1.125-.504 1.125-1.125v-5.25c0-.621-.504-1.125-1.125-1.125h-4.072M10.5 8.197l2.88-2.88c.438-.439 1.15-.439 1.59 0l3.712 3.713c.44.44.44 1.152 0 1.59l-2.879 2.88M6.75 17.25h.008v.008H6.75v-.008z"
+      />
+    </svg>
   );
 };
 
