@@ -22,6 +22,7 @@ export type UserInfo = {
   lastLocation?: Coordinates;
   createdAt?: Timestamp | FieldValue;
   performanceMode?: boolean;
+  mapStyle?: boolean;
 };
 
 export const genericConverter = <T>(): FirestoreDataConverter<T> => ({

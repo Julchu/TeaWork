@@ -8,6 +8,7 @@ const config: Config = {
     './src/**/*.{js,ts,jsx,tsx,mdx}',
   ],
   theme: {
+    darkMode: 'class',
     container: {
       center: true,
       padding: '2rem',
