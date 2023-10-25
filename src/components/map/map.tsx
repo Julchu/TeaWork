@@ -258,7 +258,7 @@ const Map: FC<{ shouldUseDarkMode: boolean }> = ({ shouldUseDarkMode }) => {
         style: `${shouldUseDarkMode ? mapStyles.dark : mapStyles.light}`,
         // Default coords: CN Tower
         center: [userInfo.lastLocation.lng, userInfo.lastLocation.lat],
-        zoom: 9,
+        zoom: 15,
       });
 
       // Automatically load geolocator/user's current location (with hidden built-in button)
@@ -276,26 +276,25 @@ const Map: FC<{ shouldUseDarkMode: boolean }> = ({ shouldUseDarkMode }) => {
       map.current
         .once('style.load', () => {
           setMapLoading(false);
-          setLocationLoading(true);
-          // currentGeolocator.trigger();
 
           // TODO: current location marker to replace currentGeolocator
-          // if (userInfo.lastLocation) {
-          //   map.current?.addSource('my location', {
-          //     type: 'geojson',
-          //     data: {
-          //       type: 'Feature',
-          //       geometry: {
-          //         type: 'Point',
-          //         coordinates: [userInfo.lastLocation.lng, userInfo.lastLocation.lat],
-          //       },
-          //       properties: {
-          //         title: 'Mapbox DC',
-          //         'marker-symbol': 'monument',
-          //       },
-          //     },
-          //   });
-          // }
+          if (userInfo.lastLocation && map.current) {
+            addMarker(locationMarker, map.current, userInfo.lastLocation, true);
+            // map.current?.addSource('my location', {
+            //   type: 'geojson',
+            //   data: {
+            //     type: 'Feature',
+            //     geometry: {
+            //       type: 'Point',
+            //       coordinates: [userInfo.lastLocation.lng, userInfo.lastLocation.lat],
+            //     },
+            //     properties: {
+            //       title: 'Mapbox DC',
+            //       'marker-symbol': 'monument',
+            //     },
+            //   },
+            // });
+          }
         })
         .on('moveend', () => {
           if (map.current)
@@ -324,13 +323,6 @@ const Map: FC<{ shouldUseDarkMode: boolean }> = ({ shouldUseDarkMode }) => {
       }
     }
   }, [addPerformanceLayer, mapLoading, userInfo?.performanceMode]);
-
-  // On first map load, or on authUser change, fly home
-  useEffect(() => {
-    if (firstLoading) {
-      flyToCurrentLocation(true).then(() => setFirstLoading(false));
-    }
-  }, [firstLoading, flyToCurrentLocation]);
 
   return (
     <div

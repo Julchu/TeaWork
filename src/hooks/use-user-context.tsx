@@ -29,31 +29,32 @@ export const useUserContext = (): UserProps => useContext(UserContext);
 const UserProvider: FC<{
   children: ReactNode;
 }> = ({ children }) => {
-  const { authUser } = useAuthContext();
+  const { authUser, authLoading, authError } = useAuthContext();
   const [{ getUser }] = useUserHook();
   const [userInfo, setUserInfo] = useState<Partial<UserInfo>>();
 
   // Sets user object on auth changes (login/logout, page refresh)
   useEffect(() => {
-    if (authUser) {
-      getUser().then(userSnapshot => {
-        setUserInfo({
-          ...userSnapshot?.data(),
+    if (!authLoading)
+      if (authUser) {
+        getUser().then(userSnapshot => {
+          setUserInfo({
+            ...userSnapshot?.data(),
+          });
         });
-      });
-    } else {
-      fetch(
-        `https://www.googleapis.com/geolocation/v1/geolocate?key=${process.env.NEXT_PUBLIC_GEOLOCATION_API_KEY}`,
-        { method: 'POST' },
-      ).then(async response => {
-        const locationObj = await response.json();
-        const {
-          location: { lng, lat },
-        } = locationObj;
-        setUserInfo({ lastLocation: { lng, lat }, performanceMode: false });
-      });
-    }
-  }, [getUser, authUser]);
+      } else {
+        fetch(
+          `https://www.googleapis.com/geolocation/v1/geolocate?key=${process.env.NEXT_PUBLIC_GEOLOCATION_API_KEY}`,
+          { method: 'POST' },
+        ).then(async response => {
+          const locationObj = await response.json();
+          const {
+            location: { lng, lat },
+          } = locationObj;
+          setUserInfo({ lastLocation: { lng, lat }, performanceMode: false });
+        });
+      }
+  }, [getUser, authUser, authLoading]);
 
   return (
     <UserContext.Provider
