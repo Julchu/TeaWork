@@ -1,13 +1,13 @@
 'use client';
 import "mapbox-gl/dist/mapbox-gl.css";
 import "./map.css";
-import mapBoxGL, { LngLatLike, Marker } from "mapbox-gl";
+import mapBoxGL, { Marker } from "mapbox-gl";
 import * as React from "react";
 import { FC, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Button } from "src/components/ui/button";
 import * as process from "process";
 import Spinner from "src/components/ui/spinner";
-import { LocationMarkerIcon, NorthIcon } from "src/components/ui/icons/map-controls";
+import { LocationIcon, NorthIcon } from "src/components/ui/icons/map-controls";
 import useUserHook from "src/hooks/use-user-firestore-hook";
 import { useAuthContext } from "src/hooks/use-auth-context";
 import { cn } from "src/lib/utils";
@@ -54,53 +54,13 @@ const Map: FC<{ shouldUseDarkMode: boolean }> = ({ shouldUseDarkMode }) => {
   const mapContainer = useRef<any>(null);
   // Geolocator used to pass to external functions outside useEffect
   const map = useRef<mapBoxGL.Map | null>(null);
-  const [currentCoords, setCurrentCoords] = useState<LngLatLike>();
+  const [currentCoords, setCurrentCoords] = useState<Coordinates>();
+  const [viewingCoords, setViewingCoords] = useState<Coordinates>();
 
   // Set map loading to true in page load
   const [mapLoading, setMapLoading] = useState<boolean>(true);
   const [firstLoading, setFirstLoading] = useState<boolean>(true);
   const [locationLoading, setLocationLoading] = useState<boolean>(false);
-
-  // Custom manual callback to fly to specific coordinates
-  const flyTo = useCallback((coords: Coordinates, zoom: number = 15) => {
-    map.current?.flyTo({ center: [coords.lng, coords.lat], zoom });
-  }, []);
-
-  const updateUserLocation = useCallback(
-    async (coords: Coordinates) => {
-      if (authUser) await updateUser({ lastLocation: coords });
-      setUserInfo(currentInfo => {
-        return { ...currentInfo, lastLocation: coords };
-      });
-    },
-    [authUser, setUserInfo, updateUser],
-  );
-
-  const flyToCurrentLocation = useCallback(
-    async (save?: boolean) => {
-      setLocationLoading(true);
-
-      navigator.geolocation.getCurrentPosition(
-        async pos => {
-          const coords: Coordinates = { lng: pos.coords.longitude, lat: pos.coords.latitude };
-          flyTo(coords);
-
-          await updateUserLocation(coords);
-
-          if (map.current) addMarker(locationMarker, map.current, coords, save);
-
-          map.current?.once('movestart', async () => {
-            setLocationLoading(true);
-          });
-        },
-        error => {
-          console.log('Error geolocating', error);
-        },
-        { enableHighAccuracy: false },
-      );
-    },
-    [addMarker, flyTo, locationMarker, updateUserLocation],
-  );
 
   const locationMarker = useMemo(() => {
     return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="" class="w-5 h-5 absolute fill-blue-600">
@@ -152,10 +112,60 @@ const Map: FC<{ shouldUseDarkMode: boolean }> = ({ shouldUseDarkMode }) => {
       el.innerHTML = htmlElement;
 
       // make a marker for each feature and add to the map
-      const marker = new mapBoxGL.Marker(el).setLngLat([coords.lng, coords.lat]).addTo(currentMap);
-      if (save) setCurrentMarker(marker);
+      const marker = new mapBoxGL.Marker(el).setLngLat([coords.lng, coords.lat]);
+
+      if (save) {
+        if (currentMarker) currentMarker.setLngLat([coords.lng, coords.lat]);
+        else {
+          setCurrentMarker(marker);
+          marker.addTo(currentMap);
+        }
+      } else marker.addTo(currentMap);
     },
-    [],
+    [currentMarker],
+  );
+
+  // Custom manual callback to fly to specific coordinates
+  const flyTo = useCallback((coords: Coordinates, zoom: number = 15) => {
+    map.current?.flyTo({ center: [coords.lng, coords.lat], zoom });
+  }, []);
+
+  const updateUserLocation = useCallback(
+    async (coords: Coordinates) => {
+      if (authUser) await updateUser({ lastLocation: coords });
+      setUserInfo(currentInfo => {
+        return { ...currentInfo, lastLocation: coords };
+      });
+    },
+    [authUser, setUserInfo, updateUser],
+  );
+
+  const flyToCurrentLocation = useCallback(
+    async (save?: boolean) => {
+      setLocationLoading(true);
+
+      navigator.geolocation.getCurrentPosition(
+        async pos => {
+          const coords: Coordinates = { lng: pos.coords.longitude, lat: pos.coords.latitude };
+
+          flyTo(coords);
+
+          await updateUserLocation(coords);
+          setCurrentCoords(coords);
+
+          if (map.current) addMarker(locationMarker, map.current, coords, save);
+
+          map.current?.once('movestart', async () => {
+            setLocationLoading(true);
+          });
+        },
+        error => {
+          console.log('Error geolocating', error);
+        },
+        { enableHighAccuracy: false },
+      );
+    },
+    [addMarker, flyTo, locationMarker, updateUserLocation],
   );
 
   const addPerformanceLayer = useCallback(() => {
@@ -289,10 +299,10 @@ const Map: FC<{ shouldUseDarkMode: boolean }> = ({ shouldUseDarkMode }) => {
         })
         .on('moveend', () => {
           if (map.current)
-            setCurrentCoords([
-              parseFloat(map.current.getCenter().lng.toFixed(4)),
-              parseFloat(map.current.getCenter().lat.toFixed(4)),
-            ]);
+            setViewingCoords({
+              lng: parseFloat(map.current.getCenter().lng.toFixed(4)),
+              lat: parseFloat(map.current.getCenter().lat.toFixed(4)),
+            });
           setLocationLoading(false);
         });
 
@@ -317,10 +327,10 @@ const Map: FC<{ shouldUseDarkMode: boolean }> = ({ shouldUseDarkMode }) => {
 
   // On first map load, or on authUser change, fly home
   useEffect(() => {
-    if (firstLoading && authUser && userInfo) {
+    if (firstLoading) {
       flyToCurrentLocation(true).then(() => setFirstLoading(false));
     }
-  }, [authUser, firstLoading, flyToCurrentLocation, userInfo]);
+  }, [firstLoading, flyToCurrentLocation]);
 
   return (
     <div
@@ -411,7 +421,8 @@ const Controls: FC<{
         }
         onClick={triggerGeolocator}
       >
-        {locationLoading ? <Spinner /> : <LocationMarkerIcon />}
+        <LocationIcon className={`absolute`} />
+        <LocationIcon className={`absolute ${locationLoading ? 'animate-ping' : ''}`} />
       </Button>
     </>
   );

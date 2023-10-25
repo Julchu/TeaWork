@@ -1,6 +1,7 @@
 import { FC } from 'react';
+import { TailwindIcon } from 'src/components/ui/icons/index';
 
-const PersonIcon: FC = () => {
+const PersonIcon: FC<TailwindIcon> = ({ className }) => {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -8,7 +9,7 @@ const PersonIcon: FC = () => {
       viewBox="0 0 24 24"
       strokeWidth="1.5"
       stroke="currentColor"
-      className="w-[inherit] h-[inherit]"
+      className={'w-[inherit] h-[inherit] ' + className}
     >
       <path
         strokeLinecap="round"
