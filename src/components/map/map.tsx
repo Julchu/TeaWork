@@ -31,7 +31,7 @@ const Map: FC<{ shouldUseDarkMode: boolean }> = ({ shouldUseDarkMode }) => {
   const [firstLoading, setFirstLoading] = useState<boolean>(true);
   const [locationLoading, setLocationLoading] = useState<boolean>(false);
 
-  const [{ mapStyles, addPerformanceLayer }] = useMapHook(map, mapLoading);
+  const [{ mapStyles, addPerformanceLayer, triggerPink }] = useMapHook(map, mapLoading);
 
   const locationMarker = useMemo(() => {
     return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="" class="w-5 h-5 absolute fill-blue-600">
@@ -139,10 +139,6 @@ const Map: FC<{ shouldUseDarkMode: boolean }> = ({ shouldUseDarkMode }) => {
     [addMarker, flyTo, locationMarker, updateUserLocation],
   );
 
-  // const addPerformanceLayer = useCallback(() => {
-  //
-  // }, []);
-
   const triggerNorth = useCallback(() => {
     map.current?.resetNorth({ duration: 2000 });
   }, []);
@@ -155,22 +151,6 @@ const Map: FC<{ shouldUseDarkMode: boolean }> = ({ shouldUseDarkMode }) => {
       }));
     }
   }, [mapLoading, setUserInfo]);
-
-  const triggerPink = useCallback(() => {
-    if (!mapLoading) {
-      // if (map.current.)
-      map.current?.setStyle(mapStyles.light);
-      map.current?.on('style.load', () => {
-        console.log('test');
-        if (userInfo?.performanceMode) {
-          addPerformanceLayer();
-          map.current?.triggerRepaint();
-          map.current?.resize();
-          // map.current?.setLight({color: 'red'})
-        }
-      });
-    }
-  }, [addPerformanceLayer, mapLoading, mapStyles.light, userInfo?.performanceMode]);
 
   // Initial map loading
   useEffect(() => {
@@ -193,6 +173,9 @@ const Map: FC<{ shouldUseDarkMode: boolean }> = ({ shouldUseDarkMode }) => {
       map.current
         .once('style.load', () => {
           setMapLoading(false);
+
+          // @ts-ignore
+          // if (shouldUseDarkMode) map.current.setConfigProperty('basemap', 'lightPreset', 'dusk');
 
           // TODO: current location marker to replace currentGeolocator
           if (userInfo.lastLocation && map.current) {

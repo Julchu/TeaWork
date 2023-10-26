@@ -29,8 +29,8 @@ const useMapHook = (
       satellite: 'mapbox://styles/mapbox/satellite-v9',
       satelliteStreets: 'mapbox://styles/mapbox/satellite-streets-v12',
       outdoors: 'mapbox://styles/mapbox/outdoors-v12',
-      navDay: 'mapbox://styles/mapbox/navigation-day-v1',
-      navNight: 'mapbox://styles/mapbox/navigation-night-v1',
+      navLight: 'mapbox://styles/mapbox/navigation-day-v1',
+      navDark: 'mapbox://styles/mapbox/navigation-night-v1',
       pink: 'mapbox://styles/jchumtl/clnfdhrsc080001qi3ye8e8mj',
       standard: 'mapbox://styles/mapbox/standard-beta',
     };
