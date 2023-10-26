@@ -258,7 +258,7 @@ const Map: FC<{ shouldUseDarkMode: boolean }> = ({ shouldUseDarkMode }) => {
         style: `${shouldUseDarkMode ? mapStyles.dark : mapStyles.light}`,
         // Default coords: CN Tower
         center: [userInfo.lastLocation.lng, userInfo.lastLocation.lat],
-        zoom: 15,
+        zoom: 9,
       });
 
       // Automatically load geolocator/user's current location (with hidden built-in button)
@@ -276,6 +276,7 @@ const Map: FC<{ shouldUseDarkMode: boolean }> = ({ shouldUseDarkMode }) => {
       map.current
         .once('style.load', () => {
           setMapLoading(false);
+          currentGeolocator.trigger();
 
           // TODO: current location marker to replace currentGeolocator
           if (userInfo.lastLocation && map.current) {
