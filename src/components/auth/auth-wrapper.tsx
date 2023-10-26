@@ -85,7 +85,7 @@ const MenuTriggerButton: FC = () => {
         {authUser ? (
           <>
             <Button
-              className={`font-bold absolute opacity-60 bg-blue-600 w-full h-full p-0 rounded-full tracking-widest ${urbanist.className}`}
+              className={`font-bold absolute opacity-60 bg-blue-600 w-full h-full p-0 rounded-full ${urbanist.className}`}
             >
               {initials}
             </Button>

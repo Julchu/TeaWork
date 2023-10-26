@@ -1,31 +1,17 @@
 'use client';
-import 'mapbox-gl/dist/mapbox-gl.css';
-import './map.css';
-import mapBoxGL, { Marker } from 'mapbox-gl';
-import * as React from 'react';
-import { FC, useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import * as process from 'process';
-import useUserHook from 'src/hooks/use-user-firestore-hook';
-import { useAuthContext } from 'src/hooks/use-auth-context';
-import { cn } from 'src/lib/utils';
-import { useUserContext } from 'src/hooks/use-user-context';
-import { Coordinates } from 'src/lib/firebase/interfaces/generics';
-import Controls from 'src/components/map/controls';
-
-const mapStyles = {
-  streets: 'mapbox://styles/mapbox/streets-v12',
-  basic: 'mapbox://styles/mapbox/basic-v8',
-  bright: 'mapbox://styles/mapbox/bright-v8',
-  light: 'mapbox://styles/mapbox/light-v11',
-  dark: 'mapbox://styles/mapbox/dark-v11',
-  satellite: 'mapbox://styles/mapbox/satellite-v9',
-  satelliteStreets: 'mapbox://styles/mapbox/satellite-streets-v12',
-  outdoors: 'mapbox://styles/mapbox/outdoors-v12',
-  navDay: 'mapbox://styles/mapbox/navigation-day-v1',
-  navNight: 'mapbox://styles/mapbox/navigation-night-v1',
-  pink: 'mapbox://styles/jchumtl/clnfdhrsc080001qi3ye8e8mj',
-  standard: 'mapbox://styles/mapbox/standard-beta',
-};
+import "mapbox-gl/dist/mapbox-gl.css";
+import "./map.css";
+import mapBoxGL, { Marker } from "mapbox-gl";
+import * as React from "react";
+import { FC, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import * as process from "process";
+import useUserHook from "src/hooks/use-user-firestore-hook";
+import { useAuthContext } from "src/hooks/use-auth-context";
+import { cn } from "src/lib/utils";
+import { useUserContext } from "src/hooks/use-user-context";
+import { Coordinates } from "src/lib/firebase/interfaces/generics";
+import Controls from "src/components/map/controls";
+import useMapHook from "src/hooks/use-map-hook";
 
 // CN Tower long/lat: [-79.387054, 43.642567]
 const Map: FC<{ shouldUseDarkMode: boolean }> = ({ shouldUseDarkMode }) => {
@@ -44,6 +30,8 @@ const Map: FC<{ shouldUseDarkMode: boolean }> = ({ shouldUseDarkMode }) => {
   const [mapLoading, setMapLoading] = useState<boolean>(true);
   const [firstLoading, setFirstLoading] = useState<boolean>(true);
   const [locationLoading, setLocationLoading] = useState<boolean>(false);
+
+  const [{ mapStyles, addPerformanceLayer }] = useMapHook(map, mapLoading);
 
   const locationMarker = useMemo(() => {
     return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="" class="w-5 h-5 absolute fill-blue-600">
@@ -151,51 +139,9 @@ const Map: FC<{ shouldUseDarkMode: boolean }> = ({ shouldUseDarkMode }) => {
     [addMarker, flyTo, locationMarker, updateUserLocation],
   );
 
-  const addPerformanceLayer = useCallback(() => {
-    // Insert the layer beneath any symbol layer.
-    const layers = map.current?.getStyle().layers;
-    const labelLayerId = layers?.find(
-      layer => layer.type === 'symbol' && layer.layout?.['text-field'],
-    )?.id;
-
-    // The 'building' layer in the Mapbox Streets vector tile set contains building height data from OpenStreetMap.
-    map.current?.addLayer(
-      {
-        id: 'add-3d-buildings',
-        source: 'composite',
-        'source-layer': 'building',
-        filter: ['==', 'extrude', 'true'],
-        type: 'fill-extrusion',
-        paint: {
-          'fill-extrusion-color': '#aaa',
-
-          // Use an 'interpolate' expression to
-          // add a smooth transition effect to
-          // the buildings as the user zooms in.
-          'fill-extrusion-height': [
-            'interpolate',
-            ['linear'],
-            ['zoom'],
-            15,
-            0,
-            15.05,
-            ['get', 'height'],
-          ],
-          'fill-extrusion-base': [
-            'interpolate',
-            ['linear'],
-            ['zoom'],
-            15,
-            0,
-            15.05,
-            ['get', 'min_height'],
-          ],
-          'fill-extrusion-opacity': 0.6,
-        },
-      },
-      labelLayerId,
-    );
-  }, []);
+  // const addPerformanceLayer = useCallback(() => {
+  //
+  // }, []);
 
   const triggerNorth = useCallback(() => {
     map.current?.resetNorth({ duration: 2000 });
@@ -224,7 +170,7 @@ const Map: FC<{ shouldUseDarkMode: boolean }> = ({ shouldUseDarkMode }) => {
         }
       });
     }
-  }, [addPerformanceLayer, mapLoading, userInfo]);
+  }, [addPerformanceLayer, mapLoading, mapStyles.light, userInfo?.performanceMode]);
 
   // Initial map loading
   useEffect(() => {
@@ -283,7 +229,7 @@ const Map: FC<{ shouldUseDarkMode: boolean }> = ({ shouldUseDarkMode }) => {
         }
       });
     }
-  }, [addMarker, locationMarker, shouldUseDarkMode, userInfo]);
+  }, [addMarker, locationMarker, mapStyles.dark, mapStyles.light, shouldUseDarkMode, userInfo]);
 
   useEffect(() => {
     if (!mapLoading) {
