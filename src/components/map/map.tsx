@@ -261,22 +261,9 @@ const Map: FC<{ shouldUseDarkMode: boolean }> = ({ shouldUseDarkMode }) => {
         zoom: 9,
       });
 
-      // Automatically load geolocator/user's current location (with hidden built-in button)
-      const currentGeolocator = new mapBoxGL.GeolocateControl({
-        positionOptions: {
-          enableHighAccuracy: false,
-        },
-        trackUserLocation: true,
-        showAccuracyCircle: true,
-        showUserHeading: true,
-      });
-
-      map.current.addControl(currentGeolocator);
-
       map.current
         .once('style.load', () => {
           setMapLoading(false);
-          currentGeolocator.trigger();
 
           // TODO: current location marker to replace currentGeolocator
           if (userInfo.lastLocation && map.current) {
