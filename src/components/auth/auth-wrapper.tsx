@@ -14,6 +14,7 @@ import {
 import PersonIcon from 'src/components/ui/icons/person';
 import { Button } from 'src/components/ui/button';
 import Link from 'next/link';
+import { amaticSC } from 'src/components/ui/fonts';
 
 const AuthWrapper: FC<{
   children: ReactNode;
@@ -54,9 +55,9 @@ const MenuContent: FC = () => {
 
       {authUser ? (
         <>
-          <DropdownMenuItem asChild>
-            <Link href={'/settings'}>Settings</Link>
-          </DropdownMenuItem>
+          <Link href={'/settings'}>
+            <DropdownMenuItem>Settings</DropdownMenuItem>
+          </Link>
           <DropdownMenuItem onSelect={authHandler}>Logout</DropdownMenuItem>
         </>
       ) : (
@@ -85,14 +86,19 @@ const MenuTriggerButton: FC = () => {
           <>
             <Button
               className={
-                'font-extrabold absolute opacity-60 bg-blue-600 w-full h-full p-0 rounded-full'
+                'font-extrabold absolute opacity-60 bg-blue-600 w-full h-full p-0 rounded-full' +
+                amaticSC.className
               }
             >
               {initials}
             </Button>
           </>
         ) : (
-          <div className={'h-full w-full p-1 bg-gray-200 rounded-full'}>
+          <div
+            className={
+              'h-full w-full p-1 opacity-60 bg-blue-600 rounded-full flex justify-center items-center'
+            }
+          >
             <PersonIcon />
           </div>
         )}
