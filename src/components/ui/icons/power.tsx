@@ -8,7 +8,7 @@ export const PowerIcon: FC<TailwindIcon> = ({ className }) => (
     viewBox="0 0 24 24"
     strokeWidth={1.5}
     stroke="currentColor"
-    className={'w-6 h-6 ' + className}
+    className={`w-6 h-6 ${className}`}
   >
     <path
       strokeLinecap="round"
@@ -25,7 +25,7 @@ export const NoPowerIcon: FC<TailwindIcon> = ({ className }) => (
     viewBox="0 0 24 24"
     strokeWidth={1.5}
     stroke="currentColor"
-    className={'w-6 h-6 ' + className}
+    className={`w-6 h-6 ${className}`}
   >
     <path
       strokeLinecap="round"

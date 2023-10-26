@@ -44,17 +44,17 @@ const Controls: FC<{
     );
   return (
     <>
-      <Button
-        // map.current?.setStyle(mapStyles.pink)
+      {/*<Button*/}
+      {/*  // map.current?.setStyle(mapStyles.pink)*/}
 
-        // Performance button
-        className={
-          'absolute bottom-20 left-5 opacity-60 bg-blue-600 w-[40px] h-[40px] p-0 rounded-full'
-        }
-        onClick={triggerPink}
-      >
-        <Pink />
-      </Button>
+      {/*  // Performance button*/}
+      {/*  className={*/}
+      {/*    'absolute bottom-20 left-5 opacity-60 bg-blue-600 w-[40px] h-[40px] p-0 rounded-full'*/}
+      {/*  }*/}
+      {/*  onClick={triggerPink}*/}
+      {/*>*/}
+      {/*  <Pink />*/}
+      {/*</Button>*/}
 
       <Button
         // Performance button

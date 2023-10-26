@@ -14,7 +14,7 @@ import {
 import PersonIcon from 'src/components/ui/icons/person';
 import { Button } from 'src/components/ui/button';
 import Link from 'next/link';
-import { amaticSC } from 'src/components/ui/fonts';
+import { urbanist } from 'src/components/ui/fonts';
 
 const AuthWrapper: FC<{
   children: ReactNode;
@@ -85,10 +85,7 @@ const MenuTriggerButton: FC = () => {
         {authUser ? (
           <>
             <Button
-              className={
-                'font-extrabold absolute opacity-60 bg-blue-600 w-full h-full p-0 rounded-full' +
-                amaticSC.className
-              }
+              className={`font-bold absolute opacity-60 bg-blue-600 w-full h-full p-0 rounded-full tracking-widest ${urbanist.className}`}
             >
               {initials}
             </Button>
