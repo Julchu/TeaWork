@@ -17,7 +17,7 @@ env:
   NEXT_PUBLIC_GEOLOCATION_API_KEY: '${{ secrets.NEXT_PUBLIC_GEOLOCATION_API_KEY }}'
 jobs:
   build_and_preview:
-    environment: production
+    environment: preview
     if: '${{ github.event.pull_request.head.repo.full_name == github.repository }}'
     runs-on: ubuntu-latest
     steps:
@@ -34,7 +34,7 @@ jobs:
       - name: Deploy to Firebase
         uses: w9jds/firebase-action@master
         with:
-          args: deploy
+          args: hosting:channel:deploy preview
         env:
           FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
           repoToken: '${{ secrets.GITHUB_TOKEN }}'
