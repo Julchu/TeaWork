@@ -14,7 +14,13 @@ import Controls from "src/components/map/controls";
 import useMapHook from "src/hooks/use-map-hook";
 
 // CN Tower long/lat: [-79.387054, 43.642567]
-const Map: FC<{ shouldUseDarkMode: boolean }> = ({ shouldUseDarkMode }) => {
+const Map: FC<{ shouldUseDarkMode: boolean; headerCoords?: Coordinates }> = ({
+  shouldUseDarkMode,
+  headerCoords,
+}) => {
+  useEffect(() => {
+    console.log(headerCoords);
+  }, [headerCoords]);
   const [currentMarker, setCurrentMarker] = useState<Marker>();
   const { userInfo, setUserInfo } = useUserContext();
   const { authUser } = useAuthContext();
@@ -165,7 +171,7 @@ const Map: FC<{ shouldUseDarkMode: boolean }> = ({ shouldUseDarkMode }) => {
         attributionControl: false,
         container: mapContainer.current,
         style: `${shouldUseDarkMode ? mapStyles.dark : mapStyles.light}`,
-        // Default coords: CN Tower
+        // Default headerCoords: CN Tower
         center: [userInfo.lastLocation.lng, userInfo.lastLocation.lat],
         zoom: 9,
       });
