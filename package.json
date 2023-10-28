@@ -28,7 +28,7 @@
     "encoding": "^0.1.13",
     "firebase": "^10.4.0",
     "mapbox-gl": "3.0.0-beta.5",
-    "next": "latest",
+    "next": "^14.0.0",
     "react": "latest",
     "react-dom": "latest",
     "react-firebase-hooks": "^5.1.1",
