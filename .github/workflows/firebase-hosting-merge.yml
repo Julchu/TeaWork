@@ -20,7 +20,7 @@ env:
   NEXT_PUBLIC_GEOLOCATION_API_KEY: '${{ secrets.NEXT_PUBLIC_GEOLOCATION_API_KEY }}'
 jobs:
   build_and_deploy:
-    environment: production
+    environment: preview
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Repo
@@ -28,7 +28,7 @@ jobs:
       - name: Install node
         uses: actions/setup-node@v3
         with:
-          node-version: 18
+          node-version: 20
       - name: Install Dependencies
         run: yarn
       - name: Build
