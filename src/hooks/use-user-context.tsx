@@ -12,7 +12,6 @@ import {
 import { UserInfo } from 'src/lib/firebase/interfaces/generics';
 import { useAuthContext } from 'src/hooks/use-auth-context';
 import useUserHook from 'src/hooks/use-user-firestore-hook';
-import process from 'process';
 
 export const UserContext = createContext<UserProps>({
   userInfo: {},
@@ -35,25 +34,11 @@ const UserProvider: FC<{
 
   // Sets user object on auth changes (login/logout, page refresh)
   useEffect(() => {
-    if (!authLoading)
-      if (authUser) {
-        getUser().then(userSnapshot => {
-          setUserInfo({
-            ...userSnapshot?.data(),
-          });
-        });
-      } else {
-        fetch(
-          `https://www.googleapis.com/geolocation/v1/geolocate?key=${process.env.NEXT_PUBLIC_GEOLOCATION_API_KEY}`,
-          { method: 'POST' },
-        ).then(async response => {
-          const locationObj = await response.json();
-          const {
-            location: { lng, lat },
-          } = locationObj;
-          setUserInfo({ lastLocation: { lng, lat }, performanceMode: false });
-        });
-      }
+    if (!authLoading && authUser) {
+      getUser().then(userSnapshot => {
+        setUserInfo(userSnapshot?.data());
+      });
+    } else setUserInfo({});
   }, [getUser, authUser, authLoading]);
 
   return (

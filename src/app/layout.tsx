@@ -7,6 +7,7 @@ import AuthWrapper from 'src/components/auth/auth-wrapper';
 import Logo from 'src/components/ui/logo';
 import UserProvider from 'src/hooks/use-user-context';
 import { urbanist } from 'src/components/ui/fonts';
+import { headers } from 'next/headers';
 
 export const metadata: Metadata = {
   title: 'TeaWork',
@@ -14,8 +15,18 @@ export const metadata: Metadata = {
 };
 
 export default function RootLayout({ children }: { children: ReactNode }) {
-  const currentTime = new Date();
-  const shouldUseDarkMode = 18 < currentTime.getHours() || currentTime.getHours() <= 6;
+  const headerStore = headers();
+  const timeZone = headerStore.get('x-vercel-ip-timezone');
+  const time = parseInt(
+    new Intl.DateTimeFormat([], {
+      timeZone: timeZone || 'America/Toronto',
+      hour: 'numeric',
+      hourCycle: 'h24',
+    }).format(),
+  );
+
+  const shouldUseDarkMode = 18 < time || time <= 6;
+
   return (
     <html lang="en">
       <body className={`${urbanist} ${shouldUseDarkMode ? 'bg-black' : ''}`}>
