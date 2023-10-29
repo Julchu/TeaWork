@@ -18,10 +18,6 @@ const Map: FC<{ shouldUseDarkMode: boolean; initialCoords: Coordinates }> = ({
   shouldUseDarkMode,
   initialCoords,
 }) => {
-  useEffect(() => {
-    console.log(initialCoords);
-  }, [initialCoords]);
-
   const [currentMarker, setCurrentMarker] = useState<Marker>();
   const { userInfo, setUserInfo } = useUserContext();
   const { authUser } = useAuthContext();
@@ -171,7 +167,6 @@ const Map: FC<{ shouldUseDarkMode: boolean; initialCoords: Coordinates }> = ({
       attributionControl: false,
       container: mapContainer.current,
       style: `${shouldUseDarkMode ? mapStyles.dark : mapStyles.light}`,
-      // Default initialCoords: CN Tower
       center: [initialCoords.lng, initialCoords.lat],
       zoom: 9,
     });
