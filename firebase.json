@@ -12,7 +12,13 @@
     ],
     "frameworksBackend": {
       "region": "us-east1"
-    }
+    },
+    "rewrites": [
+      {
+        "source": "**",
+        "destination": "/page.js"
+      }
+    ]
   },
   "functions": {
     "source": ".",
