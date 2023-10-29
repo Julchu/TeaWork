@@ -8,7 +8,10 @@ const Home: FC = async () => {
   const headerStore = headers();
 
   // Default coords: Toronto
-  const defaultCoords: Coordinates = { lng: -79.387054, lat: 43.642567 };
+  // const defaultCoords: Coordinates = { lng: -79.387054, lat: 43.642567 };
+
+  // San Francisco
+  const defaultCoords: Coordinates = { lng: -122.419416, lat: 37.774929 };
 
   const lat = headerStore.get('x-vercel-ip-latitude');
   const lng = headerStore.get('x-vercel-ip-longitude');
