@@ -4,8 +4,7 @@
     "indexes": "firestore.indexes.json"
   },
   "hosting": {
-    "public": "public",
-    "cleanUrls": true,
+    "source": ".",
     "ignore": [
       "firebase.json",
       "**/.*",
