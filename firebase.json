@@ -4,7 +4,8 @@
     "indexes": "firestore.indexes.json"
   },
   "hosting": {
-    "source": ".",
+    "public": "out",
+    "cleanUrls": true,
     "ignore": [
       "firebase.json",
       "**/.*",
@@ -15,19 +16,10 @@
     },
     "rewrites": [
       {
-        "source": "**.html",
+        "source": "**",
         "destination": "/index.html"
       }
     ]
-  },
-  "functions": {
-    "source": ".",
-    "ignore": [
-      "firebase.json",
-      "node_modules",
-      "out"
-    ],
-    "runtime": "nodejs12"
   },
   "storage": {
     "rules": "storage.rules"
