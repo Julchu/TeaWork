@@ -14,13 +14,14 @@ import Controls from 'src/components/map/controls';
 import useMapHook from 'src/hooks/use-map-hook';
 
 // CN Tower long/lat: [-79.387054, 43.642567]
-const Map: FC<{ shouldUseDarkMode: boolean; headerCoords?: Coordinates }> = ({
+const Map: FC<{ shouldUseDarkMode: boolean; initialCoords: Coordinates }> = ({
   shouldUseDarkMode,
-  headerCoords,
+  initialCoords,
 }) => {
   useEffect(() => {
-    console.log(headerCoords);
-  }, [headerCoords]);
+    console.log(initialCoords);
+  }, [initialCoords]);
+
   const [currentMarker, setCurrentMarker] = useState<Marker>();
   const { userInfo, setUserInfo } = useUserContext();
   const { authUser } = useAuthContext();
@@ -164,62 +165,69 @@ const Map: FC<{ shouldUseDarkMode: boolean; headerCoords?: Coordinates }> = ({
     if (map.current) return;
 
     // Workaround to spawn user near their location rather than in a random location and flying over
-    if (userInfo?.lastLocation && 'performanceMode' in userInfo) {
-      mapBoxGL.accessToken = process.env.NEXT_PUBLIC_MAPBOX_TOKEN || '';
+    mapBoxGL.accessToken = process.env.NEXT_PUBLIC_MAPBOX_TOKEN || '';
 
-      map.current = new mapBoxGL.Map({
-        attributionControl: false,
-        container: mapContainer.current,
-        style: `${shouldUseDarkMode ? mapStyles.dark : mapStyles.light}`,
-        // Default headerCoords: CN Tower
-        center: [userInfo.lastLocation.lng, userInfo.lastLocation.lat],
-        zoom: 9,
+    map.current = new mapBoxGL.Map({
+      attributionControl: false,
+      container: mapContainer.current,
+      style: `${shouldUseDarkMode ? mapStyles.dark : mapStyles.light}`,
+      // Default initialCoords: CN Tower
+      center: [initialCoords.lng, initialCoords.lat],
+      zoom: 9,
+    });
+
+    map.current
+      .once('style.load', () => {
+        setMapLoading(false);
+
+        // @ts-ignore
+        // if (shouldUseDarkMode) map.current.setConfigProperty('basemap', 'lightPreset', 'dusk');
+
+        // TODO: current location marker to replace currentGeolocator
+        // if (userInfo.lastLocation && map.current) {
+        //   addMarker(locationMarker, map.current, userInfo.lastLocation, true);
+        // }
+        // map.current?.addSource('my location', {
+        //   type: 'geojson',
+        //   data: {
+        //     type: 'Feature',
+        //     geometry: {
+        //       type: 'Point',
+        //       coordinates: [userInfo.lastLocation.lng, userInfo.lastLocation.lat],
+        //     },
+        //     properties: {
+        //       title: 'Mapbox DC',
+        //       'marker-symbol': 'monument',
+        //     },
+        //   },
+        // });
+      })
+      .on('moveend', () => {
+        if (map.current)
+          setViewingCoords({
+            lng: parseFloat(map.current.getCenter().lng.toFixed(4)),
+            lat: parseFloat(map.current.getCenter().lat.toFixed(4)),
+          });
+        setLocationLoading(false);
       });
 
-      map.current
-        .once('style.load', () => {
-          setMapLoading(false);
+    map.current?.on('click', mouseEvent => {
+      if (map.current) {
+        addMarker(locationMarker, map.current, mouseEvent.lngLat);
+        console.log(mouseEvent.lngLat);
+      }
+    });
+  }, [
+    addMarker,
+    initialCoords.lat,
+    initialCoords.lng,
+    locationMarker,
+    mapStyles.dark,
+    mapStyles.light,
+    shouldUseDarkMode,
+  ]);
 
-          // @ts-ignore
-          // if (shouldUseDarkMode) map.current.setConfigProperty('basemap', 'lightPreset', 'dusk');
-
-          // TODO: current location marker to replace currentGeolocator
-          if (userInfo.lastLocation && map.current) {
-            addMarker(locationMarker, map.current, userInfo.lastLocation, true);
-            // map.current?.addSource('my location', {
-            //   type: 'geojson',
-            //   data: {
-            //     type: 'Feature',
-            //     geometry: {
-            //       type: 'Point',
-            //       coordinates: [userInfo.lastLocation.lng, userInfo.lastLocation.lat],
-            //     },
-            //     properties: {
-            //       title: 'Mapbox DC',
-            //       'marker-symbol': 'monument',
-            //     },
-            //   },
-            // });
-          }
-        })
-        .on('moveend', () => {
-          if (map.current)
-            setViewingCoords({
-              lng: parseFloat(map.current.getCenter().lng.toFixed(4)),
-              lat: parseFloat(map.current.getCenter().lat.toFixed(4)),
-            });
-          setLocationLoading(false);
-        });
-
-      map.current?.on('click', mouseEvent => {
-        if (map.current) {
-          addMarker(locationMarker, map.current, mouseEvent.lngLat);
-          console.log(mouseEvent.lngLat);
-        }
-      });
-    }
-  }, [addMarker, locationMarker, mapStyles.dark, mapStyles.light, shouldUseDarkMode, userInfo]);
-
+  // Performance layer based on user preferences
   useEffect(() => {
     if (!mapLoading) {
       if (!map.current?.getLayer('add-3d-buildings') && userInfo?.performanceMode) {
@@ -229,6 +237,13 @@ const Map: FC<{ shouldUseDarkMode: boolean; headerCoords?: Coordinates }> = ({
       }
     }
   }, [addPerformanceLayer, mapLoading, userInfo?.performanceMode]);
+
+  // Setting initial location
+  useEffect(() => {
+    if (userInfo?.lastLocation && map.current) {
+      addMarker(locationMarker, map.current, userInfo.lastLocation, true);
+    }
+  }, [addMarker, locationMarker, userInfo?.lastLocation]);
 
   return (
     <div

@@ -1,31 +1,35 @@
 import { FC } from 'react';
 import Map from 'src/components/map/map';
 import { headers } from 'next/headers';
+import * as process from 'process';
+import { Coordinates } from 'src/lib/firebase/interfaces/generics';
 
 const Home: FC = async () => {
   const headerStore = headers();
+
+  // Default coords: Toronto
+  const defaultCoords: Coordinates = { lng: -79.387054, lat: 43.642567 };
 
   const lat = headerStore.get('x-vercel-ip-latitude');
   const lng = headerStore.get('x-vercel-ip-longitude');
   const timeZone = headerStore.get('x-vercel-ip-timezone');
 
-  const coords =
+  const initialCoords =
     lat && lng
       ? {
           lng: parseFloat(lng),
           lat: parseFloat(lat),
         }
-      : { lng: -79.387054, lat: 43.642567 };
-  /*
-  *
-  *  fetch(
+      : // Try fetching geolocation using Google services; if not; return Toronto geolocation
+        await fetch(
           `https://www.googleapis.com/geolocation/v1/geolocate?key=${process.env.NEXT_PUBLIC_GEOLOCATION_API_KEY}`,
           { method: 'POST' },
         ).then(async response => {
           const locationObj = await response.json();
-          return { lng: locationObj.location.lng, lat: locationObj.location.lat };
+          if (locationObj.location)
+            return { lng: locationObj.location.lng, lat: locationObj.location.lat };
+          else return defaultCoords;
         });
-        * */
 
   const time = parseInt(
     new Intl.DateTimeFormat([], {
@@ -44,7 +48,7 @@ const Home: FC = async () => {
         ${shouldUseDarkMode ? 'bg-gray-900' : ''}
       `}
     >
-      <Map headerCoords={coords ? coords : undefined} shouldUseDarkMode={shouldUseDarkMode} />
+      <Map initialCoords={initialCoords} shouldUseDarkMode={shouldUseDarkMode} />
     </main>
   );
 };
