@@ -1,17 +1,17 @@
 'use client';
-import "mapbox-gl/dist/mapbox-gl.css";
-import "./map.css";
-import mapBoxGL, { Marker } from "mapbox-gl";
-import * as React from "react";
-import { FC, useCallback, useEffect, useMemo, useRef, useState } from "react";
-import * as process from "process";
-import useUserHook from "src/hooks/use-user-firestore-hook";
-import { useAuthContext } from "src/hooks/use-auth-context";
-import { cn } from "src/lib/utils";
-import { useUserContext } from "src/hooks/use-user-context";
-import { Coordinates } from "src/lib/firebase/interfaces/generics";
-import Controls from "src/components/map/controls";
-import useMapHook from "src/hooks/use-map-hook";
+import 'mapbox-gl/dist/mapbox-gl.css';
+import './map.css';
+import mapBoxGL, { Marker } from 'mapbox-gl';
+import * as React from 'react';
+import { FC, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import * as process from 'process';
+import useUserHook from 'src/hooks/use-user-firestore-hook';
+import { useAuthContext } from 'src/hooks/use-auth-context';
+import { cn } from 'src/lib/utils';
+import { useUserContext } from 'src/hooks/use-user-context';
+import { Coordinates } from 'src/lib/firebase/interfaces/generics';
+import Controls from 'src/components/map/controls';
+import useMapHook from 'src/hooks/use-map-hook';
 
 // CN Tower long/lat: [-79.387054, 43.642567]
 const Map: FC<{ shouldUseDarkMode: boolean; headerCoords?: Coordinates }> = ({
