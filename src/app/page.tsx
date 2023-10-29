@@ -5,20 +5,20 @@ import { headers } from 'next/headers';
 const Home: FC = async () => {
   const currentTime = new Date();
   const shouldUseDarkMode = 18 < currentTime.getHours() || currentTime.getHours() <= 6;
-
+  
   const headerStore = headers();
-
-  const lat = headerStore.get('x-vercel-ip-longitude');
+  
+  const lat = headerStore.get('x-vercel-ip-latitude');
   const lng = headerStore.get('x-vercel-ip-longitude');
-
+  
   const coords =
     lat && lng
       ? {
-          lng: parseFloat(lng),
-          lat: parseFloat(lat),
-        }
+        lng: parseFloat(lng),
+        lat: parseFloat(lat),
+      }
       : null;
-
+  
   return (
     // bg-gradient-to-r from-indigo-200 via-purple-500 to-pink-200
     <main
@@ -26,7 +26,7 @@ const Home: FC = async () => {
         ${shouldUseDarkMode ? 'bg-gray-900' : ''}
       `}
     >
-      <Map headerCoords={coords ? coords : undefined} shouldUseDarkMode={shouldUseDarkMode} />
+      <Map headerCoords={coords ? coords : undefined} shouldUseDarkMode={shouldUseDarkMode}/>
     </main>
   );
 };
