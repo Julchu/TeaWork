@@ -1,5 +1,5 @@
-import * as React from "react";
-import { FC } from "react";
+import * as React from 'react';
+import { FC } from 'react';
 /*
  * You can change the colors of the spinner element using the fill and color utility classes from Tailwind CSS:
  * - use fill-{*} to change the main colors

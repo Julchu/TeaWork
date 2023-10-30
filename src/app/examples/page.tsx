@@ -1,12 +1,12 @@
-import React, { FC, Suspense } from "react";
-import AuthWrapper from "src/components/auth/auth-wrapper";
-import ServerComponent from "src/components/test/firebase/server-component";
-import ReactFirebaseHook from "src/components/test/firebase/react-firebase-hook";
-import ClientComponent from "src/components/test/firebase/client-component";
-import { getAllData } from "src/app/api/firestore";
-import TestLoading from "src/app/examples/test-loading";
-import Link from "next/link";
-import { Button } from "src/components/ui/button";
+import React, { FC, Suspense } from 'react';
+import AuthWrapper from 'src/components/auth/auth-wrapper';
+import ServerComponent from 'src/components/test/firebase/server-component';
+import ReactFirebaseHook from 'src/components/test/firebase/react-firebase-hook';
+import ClientComponent from 'src/components/test/firebase/client-component';
+import { getAllData } from 'src/app/api/firestore';
+import TestLoading from 'src/app/examples/test-loading';
+import Link from 'next/link';
+import { Button } from 'src/components/ui/button';
 
 // Two examples of Server Component and 1 Client Component being rendered in a server component
 // Data comparison for SSR data: 1 wrapped in Suspense, 1 rendered SSR, and 1 CSR

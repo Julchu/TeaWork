@@ -1,6 +1,6 @@
-import * as React from "react";
-import { FC } from "react";
-import { TailwindIcon } from "src/components/ui/icons/index";
+import * as React from 'react';
+import { FC } from 'react';
+import { TailwindIcon } from 'src/components/ui/icons/index';
 
 // Viewfinder circle, same as <Spinner /> but without the animation
 export const ViewFinderIcon: FC<TailwindIcon> = ({ className }) => (

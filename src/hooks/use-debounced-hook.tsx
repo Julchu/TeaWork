@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState } from 'react';
 
 // Prevent value from changing (debounce) if value is changed within the delay period; timeout gets cleared and restarted
 // Ex: if user is typing in search box, we don't want the value to update until they've stopped typing for more than 500ms
