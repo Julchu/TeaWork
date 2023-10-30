@@ -1,6 +1,7 @@
 import mapBoxGL from 'mapbox-gl';
 import { MutableRefObject, useCallback, useMemo, useState } from 'react';
 import { useUserContext } from 'src/hooks/use-user-context';
+import { Coordinates } from 'src/lib/firebase/interfaces';
 
 type MapMethods = {
   triggerGeolocator: () => void;
@@ -8,6 +9,7 @@ type MapMethods = {
   triggerPerformance: (mapLoading: boolean) => void;
   triggerPink: () => void;
   addPerformanceLayer: () => void;
+  flyTo: (coords: Coordinates, zoom?: number) => void;
   mapStyles: Record<string, string>;
 };
 
@@ -36,7 +38,15 @@ const useMapHook = (
     };
   }, []);
 
-  const addPerformanceLayer = useCallback(() => {
+  // Custom manual callback to fly to specific coordinates
+  const flyTo = useCallback<MapMethods['flyTo']>(
+    (coords: Coordinates, zoom: number = 15) => {
+      map.current?.flyTo({ center: [coords.lng, coords.lat], zoom });
+    },
+    [map],
+  );
+
+  const addPerformanceLayer = useCallback<MapMethods['addPerformanceLayer']>(() => {
     // Insert the layer beneath any symbol layer.
     const layers = map.current?.getStyle().layers;
     const labelLayerId = layers?.find(
@@ -115,6 +125,7 @@ const useMapHook = (
 
   return [
     {
+      flyTo,
       addPerformanceLayer,
       triggerGeolocator,
       triggerNorth,

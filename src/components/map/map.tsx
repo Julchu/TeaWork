@@ -9,7 +9,7 @@ import useUserHook from 'src/hooks/use-user-firestore-hook';
 import { useAuthContext } from 'src/hooks/use-auth-context';
 import { cn } from 'src/lib/utils';
 import { useUserContext } from 'src/hooks/use-user-context';
-import { Coordinates } from 'src/lib/firebase/interfaces/generics';
+import { Coordinates } from 'src/lib/firebase/interfaces';
 import Controls from 'src/components/map/controls';
 import useMapHook from 'src/hooks/use-map-hook';
 
@@ -34,7 +34,7 @@ const Map: FC<{ shouldUseDarkMode: boolean; initialCoords: Coordinates }> = ({
   const [firstLoading, setFirstLoading] = useState<boolean>(true);
   const [locationLoading, setLocationLoading] = useState<boolean>(false);
 
-  const [{ mapStyles, addPerformanceLayer, triggerPink }] = useMapHook(map, mapLoading);
+  const [{ mapStyles, addPerformanceLayer, triggerPink, flyTo }] = useMapHook(map, mapLoading);
 
   const locationMarker = useMemo(() => {
     return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="" class="w-5 h-5 absolute fill-blue-600">
@@ -98,11 +98,6 @@ const Map: FC<{ shouldUseDarkMode: boolean; initialCoords: Coordinates }> = ({
     },
     [currentMarker],
   );
-
-  // Custom manual callback to fly to specific coordinates
-  const flyTo = useCallback((coords: Coordinates, zoom: number = 15) => {
-    map.current?.flyTo({ center: [coords.lng, coords.lat], zoom });
-  }, []);
 
   const updateUserLocation = useCallback(
     async (coords: Coordinates) => {
@@ -256,7 +251,6 @@ const Map: FC<{ shouldUseDarkMode: boolean; initialCoords: Coordinates }> = ({
         triggerGeolocator={flyToCurrentLocation}
         triggerNorth={triggerNorth}
         triggerPerformance={triggerPerformance}
-        triggerPink={triggerPink}
         shouldUseDarkMode={shouldUseDarkMode}
       />
     </div>

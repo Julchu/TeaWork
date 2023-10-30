@@ -5,8 +5,8 @@ import { Label } from 'src/components/ui/label';
 import { addDoc } from '@firebase/firestore';
 import { collection, getDocs, query, where } from 'firebase/firestore';
 import { firestore } from 'src/lib/firebase/firebase-config';
-import { useCollection, useCollectionData } from 'react-firebase-hooks/firestore';
-import { reactFirebaseHooksConverter } from 'src/lib/firebase/interfaces/react-firebase-hooks';
+import { useCollection } from 'react-firebase-hooks/firestore';
+// import { reactFirebaseHooksConverter } from 'src/lib/firebase/interfaces/react-firebase-hooks';
 import Link from 'next/link';
 import { useAuthContext } from 'src/hooks/use-auth-context';
 
@@ -17,10 +17,10 @@ const Test: FC = () => {
   const q = query(usersRef, where('first', '==', 'Ada'));
   const [snapshot, loading, error] = useCollection(q);
 
-  const userCollectionRef = collection(firestore, 'users').withConverter(
-    reactFirebaseHooksConverter,
-  );
-  const [snapshot2, loading2, error2] = useCollectionData(userCollectionRef);
+  // const userCollectionRef = collection(firestore, 'users').withConverter(
+  //   reactFirebaseHooksConverter,
+  // );
+  // const [snapshot2, loading2, error2] = useCollectionData(userCollectionRef);
 
   const test = async () => {
     try {

@@ -8,7 +8,7 @@ import {
 } from 'firebase/firestore';
 import { useCallback, useState } from 'react';
 import { useAuthContext } from 'src/hooks/use-auth-context';
-import { Coordinates, db, UserInfo } from 'src/lib/firebase/interfaces/generics';
+import { Coordinates, db, Interfaces } from 'src/lib/firebase/interfaces';
 import { filterNullableObject } from 'src/lib/functions';
 
 export type UserFormData = {
@@ -20,9 +20,11 @@ export type UserFormData = {
 };
 
 type UserMethods = {
-  addUser: (userData: UserFormData) => Promise<DocumentReference<UserInfo> | undefined>;
-  getUser: () => Promise<DocumentSnapshot<UserInfo> | undefined>;
-  updateUser: (userData: Partial<UserFormData>) => Promise<DocumentReference<UserInfo> | undefined>;
+  addUser: (userData: UserFormData) => Promise<DocumentReference<Interfaces> | undefined>;
+  getUser: () => Promise<DocumentSnapshot<Interfaces> | undefined>;
+  updateUser: (
+    userData: Partial<UserFormData>,
+  ) => Promise<DocumentReference<Interfaces> | undefined>;
 };
 
 const useUserHook = (): [UserMethods, boolean, Error | undefined] => {
@@ -39,7 +41,7 @@ const useUserHook = (): [UserMethods, boolean, Error | undefined] => {
     try {
       if (!userDocRef.exists()) {
         const displayName = authUser.displayName?.split(' ');
-        const newUser: UserInfo = {
+        const newUser: Interfaces = {
           email: authUser.email ? authUser.email : '',
           firstName: displayName ? displayName[0] : '',
           lastName: displayName && displayName.length > 1 ? displayName[1] : '',
@@ -66,7 +68,7 @@ const useUserHook = (): [UserMethods, boolean, Error | undefined] => {
       try {
         if (email && firstName && lastName) {
           // Ensuring all fields are passed by typechecking Ingredient
-          const newUser: UserInfo = {
+          const newUser: Interfaces = {
             email,
             firstName,
             lastName,
@@ -95,7 +97,7 @@ const useUserHook = (): [UserMethods, boolean, Error | undefined] => {
 
       const userDocRef = db.userDoc(authUser.uid);
 
-      const updatedUser: Partial<UserInfo> = filterNullableObject({
+      const updatedUser: Partial<Interfaces> = filterNullableObject({
         firstName,
         lastName,
         email,

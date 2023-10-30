@@ -2,7 +2,7 @@ import { FC } from 'react';
 import Map from 'src/components/map/map';
 import { headers } from 'next/headers';
 import * as process from 'process';
-import { Coordinates } from 'src/lib/firebase/interfaces/generics';
+import { Coordinates } from 'src/lib/firebase/interfaces';
 
 const Home: FC = async () => {
   const headerStore = headers();
