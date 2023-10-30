@@ -6,7 +6,7 @@ import { Coordinates } from 'src/lib/firebase/interfaces';
 type MapMethods = {
   triggerGeolocator: () => void;
   triggerNorth: () => void;
-  triggerPerformance: (mapLoading: boolean) => void;
+  triggerPerformance: () => void;
   triggerPink: () => void;
   addPerformanceLayer: () => void;
   flyTo: (coords: Coordinates, zoom?: number) => void;

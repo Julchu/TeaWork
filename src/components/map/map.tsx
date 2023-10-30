@@ -18,12 +18,11 @@ const Map: FC<{ shouldUseDarkMode: boolean; initialCoords: Coordinates }> = ({
   shouldUseDarkMode,
   initialCoords,
 }) => {
-  const [currentMarker, setCurrentMarker] = useState<Marker>();
   const { userInfo, setUserInfo } = useUserContext();
   const { authUser } = useAuthContext();
   const [{ updateUser }] = useUserHook();
 
-  const mapContainer = useRef<any>(null);
+  const mapContainer = useRef<HTMLDivElement | null>(null);
   // Geolocator used to pass to external functions outside useEffect
   const map = useRef<mapBoxGL.Map | null>(null);
   const [currentCoords, setCurrentCoords] = useState<Coordinates>();
@@ -34,7 +33,9 @@ const Map: FC<{ shouldUseDarkMode: boolean; initialCoords: Coordinates }> = ({
   const [firstLoading, setFirstLoading] = useState<boolean>(true);
   const [locationLoading, setLocationLoading] = useState<boolean>(false);
 
-  const [{ mapStyles, addPerformanceLayer, triggerPink, flyTo }] = useMapHook(map, mapLoading);
+  const [currentMarker, setCurrentMarker] = useState<Marker>();
+
+  const [{ mapStyles, addPerformanceLayer, triggerNorth, flyTo }] = useMapHook(map, mapLoading);
 
   const locationMarker = useMemo(() => {
     return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="" class="w-5 h-5 absolute fill-blue-600">
@@ -137,19 +138,6 @@ const Map: FC<{ shouldUseDarkMode: boolean; initialCoords: Coordinates }> = ({
     [addMarker, flyTo, locationMarker, updateUserLocation],
   );
 
-  const triggerNorth = useCallback(() => {
-    map.current?.resetNorth({ duration: 2000 });
-  }, []);
-
-  const triggerPerformance = useCallback(() => {
-    if (!mapLoading) {
-      setUserInfo(currentInfo => ({
-        ...currentInfo,
-        performanceMode: !currentInfo?.performanceMode,
-      }));
-    }
-  }, [mapLoading, setUserInfo]);
-
   // Initial map loading
   useEffect(() => {
     // Prevent re-creating a map if one already exists
@@ -160,38 +148,17 @@ const Map: FC<{ shouldUseDarkMode: boolean; initialCoords: Coordinates }> = ({
 
     map.current = new mapBoxGL.Map({
       attributionControl: false,
-      container: mapContainer.current,
+      container:
+        mapContainer.current === undefined || mapContainer.current === null
+          ? ''
+          : mapContainer.current,
       style: `${shouldUseDarkMode ? mapStyles.dark : mapStyles.light}`,
       center: [initialCoords.lng, initialCoords.lat],
       zoom: 9,
     });
 
     map.current
-      .once('style.load', () => {
-        setMapLoading(false);
-
-        // @ts-ignore
-        // if (shouldUseDarkMode) map.current.setConfigProperty('basemap', 'lightPreset', 'dusk');
-
-        // TODO: current location marker to replace currentGeolocator
-        // if (userInfo.lastLocation && map.current) {
-        //   addMarker(locationMarker, map.current, userInfo.lastLocation, true);
-        // }
-        // map.current?.addSource('my location', {
-        //   type: 'geojson',
-        //   data: {
-        //     type: 'Feature',
-        //     geometry: {
-        //       type: 'Point',
-        //       coordinates: [userInfo.lastLocation.lng, userInfo.lastLocation.lat],
-        //     },
-        //     properties: {
-        //       title: 'Mapbox DC',
-        //       'marker-symbol': 'monument',
-        //     },
-        //   },
-        // });
-      })
+      .once('style.load', () => setMapLoading(false))
       .on('moveend', () => {
         if (map.current)
           setViewingCoords({
@@ -246,11 +213,10 @@ const Map: FC<{ shouldUseDarkMode: boolean; initialCoords: Coordinates }> = ({
 
       {/* Extra layers on map (buttons, controls) */}
       <Controls
+        map={map}
         mapLoading={mapLoading}
         locationLoading={locationLoading}
         triggerGeolocator={flyToCurrentLocation}
-        triggerNorth={triggerNorth}
-        triggerPerformance={triggerPerformance}
         shouldUseDarkMode={shouldUseDarkMode}
       />
     </div>

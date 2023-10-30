@@ -10,29 +10,24 @@
     </TooltipProvider>*/
 
 import * as React from 'react';
-import { FC } from 'react';
+import { FC, MutableRefObject } from 'react';
 import { useUserContext } from 'src/hooks/use-user-context';
 import Spinner from 'src/components/ui/spinner';
 import { Button } from 'src/components/ui/button';
 import { NoPowerIcon, PowerIcon } from 'src/components/ui/icons/power';
 import { LocationIcon, NorthIcon } from 'src/components/ui/icons/map-controls';
+import mapBoxGL from 'mapbox-gl';
+import useMapHook from 'src/hooks/use-map-hook';
 
 const Controls: FC<{
+  map: MutableRefObject<mapBoxGL.Map | null>;
   mapLoading: boolean;
   locationLoading: boolean;
   triggerGeolocator: () => void;
-  triggerNorth: () => void;
-  triggerPerformance: () => void;
   shouldUseDarkMode: boolean;
-}> = ({
-  mapLoading,
-  locationLoading,
-  triggerGeolocator,
-  triggerNorth,
-  triggerPerformance,
-  shouldUseDarkMode,
-}) => {
+}> = ({ map, mapLoading, locationLoading, triggerGeolocator, shouldUseDarkMode }) => {
   const { userInfo } = useUserContext();
+  const [{ triggerPerformance, triggerNorth }] = useMapHook(map, mapLoading);
 
   if (mapLoading)
     return (
