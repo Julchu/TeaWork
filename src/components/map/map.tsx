@@ -2,12 +2,10 @@
 import 'mapbox-gl/dist/mapbox-gl.css';
 import './map.css';
 import mapBoxGL, { Marker } from 'mapbox-gl';
-import * as React from 'react';
 import { FC, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import * as process from 'process';
 import useUserHook from 'src/hooks/use-user-firestore-hook';
 import { useAuthContext } from 'src/hooks/use-auth-context';
-import { cn } from 'src/lib/utils';
 import { useUserContext } from 'src/hooks/use-user-context';
 import { Coordinates } from 'src/lib/firebase/interfaces';
 import Controls from 'src/components/map/controls';
@@ -35,7 +33,7 @@ const Map: FC<{ shouldUseDarkMode: boolean; initialCoords: Coordinates }> = ({
 
   const [currentMarker, setCurrentMarker] = useState<Marker>();
 
-  const [{ mapStyles, addPerformanceLayer, triggerNorth, flyTo }] = useMapHook(map, mapLoading);
+  const [{ mapStyles, addMarker, addPerformanceLayer, flyTo }] = useMapHook(map, mapLoading);
 
   const locationMarker = useMemo(() => {
     return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="" class="w-5 h-5 absolute fill-blue-600">
@@ -48,58 +46,6 @@ const Map: FC<{ shouldUseDarkMode: boolean; initialCoords: Coordinates }> = ({
       </svg>`;
   }, [shouldUseDarkMode]);
 
-  const locationBalloon = useMemo(() => {
-    return `
-      <svg  viewBox="0 0 24 24" fill="white" xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 absolute">
-        <path d="M12 15C15.3137 15 18 12.3137 18 9C18 5.68629 15.3137 3 12 3C8.68629 3 6 5.68629 6 9C6 12.3137 8.68629 15 12 15ZM12 15V21M9.5 9C9.5 8.33696 9.76339 7.70107 10.2322 7.23223C10.7011 6.76339 11.337 6.5 12 6.5" stroke="#2F2F38" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-      </svg>
-  
-      <svg  viewBox="0 0 24 24" fill="white" xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 animate-ping">
-        <path d="M12 15C15.3137 15 18 12.3137 18 9C18 5.68629 15.3137 3 12 3C8.68629 3 6 5.68629 6 9C6 12.3137 8.68629 15 12 15ZM12 15V21M9.5 9C9.5 8.33696 9.76339 7.70107 10.2322 7.23223C10.7011 6.76339 11.337 6.5 12 6.5" stroke="#2F2F38" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-      </svg>`;
-  }, []);
-
-  const testElement = useMemo(() => {
-    return `
-      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1" stroke="white" class="w-6 h-6 absolute">
-        <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 3.75v4.5m0-4.5h4.5m-4.5 0L9 9M3.75 20.25v-4.5m0 4.5h4.5m-4.5 0L9 15M20.25 3.75h-4.5m4.5 0v4.5m0-4.5L15 9m5.25 11.25h-4.5m4.5 0v-4.5m0 4.5L15 15" />
-      </svg>
-      
-      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1" stroke="white" class="w-6 h-6 animate-ping">
-        <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 3.75v4.5m0-4.5h4.5m-4.5 0L9 9M3.75 20.25v-4.5m0 4.5h4.5m-4.5 0L9 15M20.25 3.75h-4.5m4.5 0v4.5m0-4.5L15 9m5.25 11.25h-4.5m4.5 0v-4.5m0 4.5L15 15" />
-      </svg>`;
-  }, []);
-
-  const testElement2 = useMemo(() => {
-    return `
-      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="white" class="w-6 h-6 absolute">
-        <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
-      </svg>
-      <svg class="w-6 h-6 animate-ping" width="15" height="15" viewBox="0 0 15 15" stroke="white" xmlns="http://www.w3.org/2000/svg"><path d="M0.877075 7.49991C0.877075 3.84222 3.84222 0.877075 7.49991 0.877075C11.1576 0.877075 14.1227 3.84222 14.1227 7.49991C14.1227 11.1576 11.1576 14.1227 7.49991 14.1227C3.84222 14.1227 0.877075 11.1576 0.877075 7.49991ZM7.49991 1.82708C4.36689 1.82708 1.82708 4.36689 1.82708 7.49991C1.82708 10.6329 4.36689 13.1727 7.49991 13.1727C10.6329 13.1727 13.1727 10.6329 13.1727 7.49991C13.1727 4.36689 10.6329 1.82708 7.49991 1.82708Z" fill="currentColor" fill-rule="evenodd" clip-rule="evenodd"></path></svg>
-    `;
-  }, []);
-
-  // Add HTML marker
-  const addMarker = useCallback(
-    (htmlElement: string, currentMap: mapBoxGL.Map, coords: Coordinates, save?: boolean) => {
-      const el = document.createElement('div');
-      el.className = 'marker';
-      el.innerHTML = htmlElement;
-
-      // make a marker for each feature and add to the map
-      const marker = new mapBoxGL.Marker(el).setLngLat([coords.lng, coords.lat]);
-
-      if (save) {
-        if (currentMarker) currentMarker.setLngLat([coords.lng, coords.lat]);
-        else {
-          setCurrentMarker(marker);
-          marker.addTo(currentMap);
-        }
-      } else marker.addTo(currentMap);
-    },
-    [currentMarker],
-  );
-
   const updateUserLocation = useCallback(
     async (coords: Coordinates) => {
       if (authUser) await updateUser({ lastLocation: coords });
@@ -110,7 +56,7 @@ const Map: FC<{ shouldUseDarkMode: boolean; initialCoords: Coordinates }> = ({
     [authUser, setUserInfo, updateUser],
   );
 
-  const flyToCurrentLocation = useCallback(
+  const flyAndUpdateUser = useCallback(
     async (save?: boolean) => {
       setLocationLoading(true);
 
@@ -121,9 +67,8 @@ const Map: FC<{ shouldUseDarkMode: boolean; initialCoords: Coordinates }> = ({
           flyTo(coords);
 
           await updateUserLocation(coords);
-          setCurrentCoords(coords);
 
-          if (map.current) addMarker(locationMarker, map.current, coords, save);
+          if (map.current) addMarker(locationMarker, currentMarker, setCurrentMarker, coords, save);
 
           map.current?.once('movestart', async () => {
             setLocationLoading(true);
@@ -135,7 +80,7 @@ const Map: FC<{ shouldUseDarkMode: boolean; initialCoords: Coordinates }> = ({
         { enableHighAccuracy: false },
       );
     },
-    [addMarker, flyTo, locationMarker, updateUserLocation],
+    [addMarker, currentMarker, flyTo, locationMarker, updateUserLocation],
   );
 
   // Initial map loading
@@ -170,12 +115,13 @@ const Map: FC<{ shouldUseDarkMode: boolean; initialCoords: Coordinates }> = ({
 
     map.current?.on('click', mouseEvent => {
       if (map.current) {
-        addMarker(locationMarker, map.current, mouseEvent.lngLat);
+        addMarker(locationMarker, currentMarker, setCurrentMarker, mouseEvent.lngLat);
         console.log(mouseEvent.lngLat);
       }
     });
   }, [
     addMarker,
+    currentMarker,
     initialCoords.lat,
     initialCoords.lng,
     locationMarker,
@@ -198,9 +144,9 @@ const Map: FC<{ shouldUseDarkMode: boolean; initialCoords: Coordinates }> = ({
   // Setting initial location
   useEffect(() => {
     if (userInfo?.lastLocation && map.current) {
-      addMarker(locationMarker, map.current, userInfo.lastLocation, true);
+      addMarker(locationMarker, currentMarker, setCurrentMarker, userInfo.lastLocation, true);
     }
-  }, [addMarker, locationMarker, userInfo?.lastLocation]);
+  }, [addMarker, currentMarker, locationMarker, userInfo?.lastLocation]);
 
   return (
     <div
@@ -209,14 +155,17 @@ const Map: FC<{ shouldUseDarkMode: boolean; initialCoords: Coordinates }> = ({
       }`}
     >
       {/* Actual map */}
-      <div className={cn(`w-full h-full`, locationLoading && 'animate-pulse')} ref={mapContainer} />
+      <div
+        className={`w-full h-full ${locationLoading ? 'animate-pulse' : ''}`}
+        ref={mapContainer}
+      />
 
       {/* Extra layers on map (buttons, controls) */}
       <Controls
         map={map}
         mapLoading={mapLoading}
         locationLoading={locationLoading}
-        triggerGeolocator={flyToCurrentLocation}
+        triggerGeolocator={flyAndUpdateUser}
         shouldUseDarkMode={shouldUseDarkMode}
       />
     </div>

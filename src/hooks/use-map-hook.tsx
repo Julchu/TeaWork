@@ -8,6 +8,13 @@ type MapMethods = {
   triggerNorth: () => void;
   triggerPerformance: () => void;
   triggerPink: () => void;
+  addMarker: (
+    htmlElement: string,
+    currentMarker: mapBoxGL.Marker | undefined,
+    setCurrentMarker: (marker: mapBoxGL.Marker) => void,
+    coords: Coordinates,
+    save?: boolean,
+  ) => void;
   addPerformanceLayer: () => void;
   flyTo: (coords: Coordinates, zoom?: number) => void;
   mapStyles: Record<string, string>;
@@ -37,6 +44,34 @@ const useMapHook = (
       standard: 'mapbox://styles/mapbox/standard-beta',
     };
   }, []);
+
+  // Add or replace (if save) current HTML marker
+  const addMarker = useCallback<MapMethods['addMarker']>(
+    (
+      htmlElement: string,
+      currentMarker: mapBoxGL.Marker | undefined,
+      setCurrentMarker: (marker: mapBoxGL.Marker) => void,
+      coords: Coordinates,
+      save?: boolean,
+    ) => {
+      if (!map.current) return;
+      const el = document.createElement('div');
+      el.className = 'marker';
+      el.innerHTML = htmlElement;
+
+      // make a marker for each feature and add to the map
+      const marker = new mapBoxGL.Marker(el).setLngLat([coords.lng, coords.lat]);
+
+      if (save) {
+        if (currentMarker) currentMarker.setLngLat([coords.lng, coords.lat]);
+        else {
+          setCurrentMarker(marker);
+          marker.addTo(map.current);
+        }
+      } else marker.addTo(map.current);
+    },
+    [map],
+  );
 
   // Custom manual callback to fly to specific coordinates
   const flyTo = useCallback<MapMethods['flyTo']>(
@@ -125,6 +160,7 @@ const useMapHook = (
 
   return [
     {
+      addMarker,
       flyTo,
       addPerformanceLayer,
       triggerGeolocator,
