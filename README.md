@@ -33,6 +33,12 @@ npm install --global yarn
 - You'll need Firebase installed globally
 
 ```zsh
+npm install -g firebase-tools
+````
+
+or
+
+```zsh
 yarn global add firebase-tools
 ```
 
@@ -72,7 +78,7 @@ yarn build && firebase --project teaworkapp deploy
 - Also exports/imports emulator data to `./emulatorData`
 
 ```zsh
-firebase --project="teaworkapp" emulators:start --only auth,firestore.ts,storage --export-on-exit ./emulatorData --import ./emulatorData
+firebase --project="teaworkapp" emulators:start --only auth,firestore,storage --export-on-exit ./emulatorData --import ./emulatorData
 ```
 
 ### Sometimes emulator port is in use, this command will kill that port
@@ -126,7 +132,7 @@ yarn type-check
 ## Firestore
 
 ```ts
-const newUserRef = await addDoc(db.userCollection, { userData });
+const newUserRef = await addDoc(db.userCollection, {userData});
 
 const userDoc = await getDoc(newUserRef);
 if (userDoc.exists()) {
