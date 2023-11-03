@@ -81,7 +81,17 @@ yarn build && firebase --project teaworkapp deploy
 firebase --project="teaworkapp" emulators:start --only auth,firestore,storage --export-on-exit ./emulatorData --import ./emulatorData
 ```
 
+- `firebase --project="teaworkapp"` identifies the project `teawork` to run commands on
+- `firebase emulators:start` starts emulators that were setup in `firebase.json` and `firebase-config.js`
+- `firebase emulators:start --only auth,firestore,storage` starts emulators for auth, Firestore (NoSQL database),
+  storage (file storage like images)
+- `firebase --import ./emulatorData` imports previously-exported data from `present working director/emulatorData`
+- `firebase --export-on-exit ./emulatorData` exports all your local Firestore data when you close your emulators
+
 ### Sometimes emulator port is in use, this command will kill that port
+
+- Close emulator with (`CTRL` + `C`) ONCE; twice might improperly terminate the emulators and prevent you from opening
+  another on the same port
 
 ```zsh
 sudo kill -9 $(sudo lsof -t -i:8080)
@@ -115,7 +125,7 @@ sudo kill -9 $(sudo lsof -t -i:8080)
 }
 ```
 
-## Testing
+## Basic testing
 
 We're using ESLint to test for basic JavaScript and TypeScript errors
 
@@ -132,7 +142,7 @@ yarn type-check
 ## Firestore
 
 ```ts
-const newUserRef = await addDoc(db.userCollection, {userData});
+const newUserRef = await addDoc(db.userCollection, { userData });
 
 const userDoc = await getDoc(newUserRef);
 if (userDoc.exists()) {
