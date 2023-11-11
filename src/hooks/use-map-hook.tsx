@@ -55,12 +55,16 @@ const useMapHook = (
       save?: boolean,
     ) => {
       if (!map.current) return;
-      const el = document.createElement('div');
-      el.className = 'marker';
-      el.innerHTML = htmlElement;
+      const element = document.createElement('div');
+      element.className = 'marker';
+      element.innerHTML = htmlElement;
 
       // make a marker for each feature and add to the map
-      const marker = new mapBoxGL.Marker(el).setLngLat([coords.lng, coords.lat]);
+      const marker = new mapBoxGL.Marker({
+        element,
+        draggable: true,
+        clickTolerance: 40,
+      }).setLngLat([coords.lng, coords.lat]);
 
       if (save) {
         if (currentMarker) currentMarker.setLngLat([coords.lng, coords.lat]);

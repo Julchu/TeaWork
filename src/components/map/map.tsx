@@ -12,10 +12,10 @@ import Controls from 'src/components/map/controls';
 import useMapHook from 'src/hooks/use-map-hook';
 
 // CN Tower long/lat: [-79.387054, 43.642567]
-const Map: FC<{ shouldUseDarkMode: boolean; initialCoords: Coordinates }> = ({
-  shouldUseDarkMode,
-  initialCoords,
-}) => {
+const Map: FC<{
+  shouldUseDarkMode: boolean;
+  initialCoords: Coordinates;
+}> = ({ shouldUseDarkMode, initialCoords }) => {
   const { userInfo, setUserInfo } = useUserContext();
   const { authUser } = useAuthContext();
   const [{ updateUser }] = useUserHook();
@@ -28,7 +28,6 @@ const Map: FC<{ shouldUseDarkMode: boolean; initialCoords: Coordinates }> = ({
 
   // Set map loading to true in page load
   const [mapLoading, setMapLoading] = useState<boolean>(true);
-  const [firstLoading, setFirstLoading] = useState<boolean>(true);
   const [locationLoading, setLocationLoading] = useState<boolean>(false);
 
   const [currentMarker, setCurrentMarker] = useState<Marker>();
@@ -114,6 +113,7 @@ const Map: FC<{ shouldUseDarkMode: boolean; initialCoords: Coordinates }> = ({
       });
 
     map.current?.on('click', mouseEvent => {
+      // mouseEvent.originalEvent?..;
       if (map.current) {
         addMarker(locationMarker, currentMarker, setCurrentMarker, mouseEvent.lngLat);
         console.log(mouseEvent.lngLat);
