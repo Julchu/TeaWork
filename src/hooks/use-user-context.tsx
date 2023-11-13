@@ -9,7 +9,7 @@ import {
   useEffect,
   useState,
 } from 'react';
-import { Interfaces } from 'src/lib/firebase/interfaces';
+import { UserInfo } from 'src/lib/firebase/interfaces';
 import { useAuthContext } from 'src/hooks/use-auth-context';
 import useUserHook from 'src/hooks/use-user-firestore-hook';
 
@@ -19,8 +19,8 @@ export const UserContext = createContext<UserProps>({
 });
 
 type UserProps = {
-  userInfo: Partial<Interfaces | undefined>;
-  setUserInfo: Dispatch<SetStateAction<Partial<Interfaces | undefined>>>;
+  userInfo: Partial<UserInfo | undefined>;
+  setUserInfo: Dispatch<SetStateAction<Partial<UserInfo | undefined>>>;
 };
 
 export const useUserContext = (): UserProps => useContext(UserContext);
@@ -30,7 +30,7 @@ const UserProvider: FC<{
 }> = ({ children }) => {
   const { authUser, authLoading, authError } = useAuthContext();
   const [{ getUser }] = useUserHook();
-  const [userInfo, setUserInfo] = useState<Partial<Interfaces>>();
+  const [userInfo, setUserInfo] = useState<Partial<UserInfo>>();
 
   // Sets user object on auth changes (login/logout, page refresh)
   useEffect(() => {
