@@ -15,7 +15,7 @@ import { firestore } from 'src/lib/firebase/firebase-config';
 
 export type Coordinates = { lat: number; lng: number };
 
-export type Interfaces = {
+export type UserInfo = {
   firstName: string;
   lastName: string;
   email: string;
@@ -40,8 +40,8 @@ const docPoint = <T>(collectionPath: string, ...extraPaths: string[]): DocumentR
   doc(firestore, collectionPath, ...extraPaths).withConverter(genericConverter<T>());
 
 export const db = {
-  userCollection: collectionPoint<Interfaces>('users'),
-  userDoc: (...extraPaths: string[]) => docPoint<Interfaces>('users', ...extraPaths),
+  userCollection: collectionPoint<UserInfo>('users'),
+  userDoc: (...extraPaths: string[]) => docPoint<UserInfo>('users', ...extraPaths),
 };
 
 /*
