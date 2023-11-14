@@ -6,7 +6,7 @@ import { useUserContext } from 'src/hooks/use-user-context';
 import useUserHook from 'src/hooks/use-user-firestore-hook';
 
 const MapStyleSelect: FC = () => {
-  const { userInfo, setUserInfo } = useUserContext();
+  const { userInfo } = useUserContext();
   const [{ updateUser }] = useUserHook();
 
   return (
