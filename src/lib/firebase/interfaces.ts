@@ -15,6 +15,12 @@ import { firestore } from 'src/lib/firebase/firebase-config';
 
 export type Coordinates = { lat: number; lng: number };
 
+export enum MapStyle {
+  nav = 'nav',
+  pink = 'pink',
+  satellite = 'satellite',
+}
+
 export type UserInfo = {
   firstName: string;
   lastName: string;
@@ -22,7 +28,7 @@ export type UserInfo = {
   lastLocation?: Coordinates;
   createdAt?: Timestamp | FieldValue;
   performanceMode?: boolean;
-  mapStyle?: boolean;
+  mapStyle?: MapStyle;
 };
 
 export const genericConverter = <T>(): FirestoreDataConverter<T> => ({

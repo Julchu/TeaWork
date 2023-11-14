@@ -8,8 +8,9 @@ import {
 } from 'firebase/firestore';
 import { useCallback, useState } from 'react';
 import { useAuthContext } from 'src/hooks/use-auth-context';
-import { Coordinates, db, UserInfo } from 'src/lib/firebase/interfaces';
+import { Coordinates, db, MapStyle, UserInfo } from 'src/lib/firebase/interfaces';
 import { filterNullableObject } from 'src/lib/functions';
+import { useUserContext } from 'src/hooks/use-user-context';
 
 export type UserFormData = {
   firstName?: string;
@@ -17,6 +18,7 @@ export type UserFormData = {
   email?: string;
   lastLocation?: Coordinates;
   performanceMode?: boolean;
+  mapStyle?: MapStyle;
 };
 
 type UserMethods = {
@@ -29,12 +31,13 @@ const useUserHook = (): [UserMethods, boolean, Error | undefined] => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<Error>();
   const { authUser } = useAuthContext();
+  const { setUserInfo } = useUserContext();
 
   const getUser = useCallback<UserMethods['getUser']>(async () => {
     if (!authUser) return;
     setLoading(true);
 
-    const userDocRef = await getDoc(db.userDoc(authUser.uid));
+    let userDocRef = await getDoc(db.userDoc(authUser.uid));
 
     try {
       if (!userDocRef.exists()) {
@@ -43,9 +46,11 @@ const useUserHook = (): [UserMethods, boolean, Error | undefined] => {
           email: authUser.email ? authUser.email : '',
           firstName: displayName ? displayName[0] : '',
           lastName: displayName && displayName.length > 1 ? displayName[1] : '',
+          mapStyle: MapStyle.nav,
           createdAt: serverTimestamp(),
         };
         await setDoc(db.userDoc(authUser.uid), newUser);
+        userDocRef = await getDoc(db.userDoc(authUser.uid));
       }
     } catch (e) {
       setError(e as Error);
@@ -89,7 +94,7 @@ const useUserHook = (): [UserMethods, boolean, Error | undefined] => {
   );
 
   const updateUser = useCallback<UserMethods['updateUser']>(
-    async ({ firstName, lastName, email, lastLocation, performanceMode }) => {
+    async ({ firstName, lastName, email, lastLocation, performanceMode, mapStyle }) => {
       if (!authUser) return;
       setLoading(true);
 
@@ -101,10 +106,12 @@ const useUserHook = (): [UserMethods, boolean, Error | undefined] => {
         email,
         lastLocation,
         performanceMode,
+        mapStyle,
       });
 
       try {
         await updateDoc(userDocRef, updatedUser);
+        setUserInfo(currentInfo => ({ ...currentInfo, ...updatedUser }));
       } catch (e) {
         setError(e as Error);
       }
@@ -112,7 +119,7 @@ const useUserHook = (): [UserMethods, boolean, Error | undefined] => {
       setLoading(false);
       return userDocRef;
     },
-    [authUser],
+    [authUser, setUserInfo],
   );
 
   return [{ getUser, addUser, updateUser }, loading, error];
