@@ -9,12 +9,15 @@ import {
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
+  DropdownMenuSub,
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from 'src/components/ui/dropdown-menu';
 import PersonIcon from 'src/components/ui/icons/person';
 import { Button } from 'src/components/ui/button';
-import Link from 'next/link';
 import { urbanist } from 'src/components/ui/fonts';
+import MapStyleSelect from 'src/components/auth/map-style-settings';
 
 const AuthWrapper: FC<{
   children: ReactNode;
@@ -55,9 +58,12 @@ const MenuContent: FC = () => {
 
       {authUser ? (
         <>
-          <Link href={'/settings'}>
-            <DropdownMenuItem>Settings</DropdownMenuItem>
-          </Link>
+          <DropdownMenuSub>
+            <DropdownMenuSubTrigger>Map style</DropdownMenuSubTrigger>
+            <DropdownMenuSubContent>
+              <MapStyleSelect />
+            </DropdownMenuSubContent>
+          </DropdownMenuSub>
           <DropdownMenuItem onSelect={authHandler}>Logout</DropdownMenuItem>
         </>
       ) : (
