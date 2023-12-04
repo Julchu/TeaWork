@@ -18,11 +18,13 @@ type MapMethods = {
   addPerformanceLayer: () => void;
   flyTo: (coords: Coordinates, zoom?: number) => void;
   mapStyles: Record<string, string>;
+  markers: Record<string, string>;
 };
 
 const useMapHook = (
   map: MutableRefObject<mapBoxGL.Map | null>,
   mapLoading: boolean,
+  shouldUseDarkMode?: boolean,
 ): [MapMethods, boolean, Error | undefined] => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<Error>();
@@ -38,10 +40,29 @@ const useMapHook = (
       satellite: 'mapbox://styles/mapbox/satellite-v9',
       satelliteStreets: 'mapbox://styles/mapbox/satellite-streets-v12',
       outdoors: 'mapbox://styles/mapbox/outdoors-v12',
-      navLight: 'mapbox://styles/mapbox/navigation-day-v1',
-      navDark: 'mapbox://styles/mapbox/navigation-night-v1',
+      nav: shouldUseDarkMode
+        ? `mapbox://styles/mapbox/navigation-night-v1`
+        : `mapbox://styles/mapbox/navigation-day-v1`,
       pink: 'mapbox://styles/jchumtl/clnfdhrsc080001qi3ye8e8mj',
       standard: 'mapbox://styles/mapbox/standard-beta',
+    };
+  }, [shouldUseDarkMode]);
+
+  const markers = useMemo(() => {
+    return {
+      location: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" class="w-5 h-5 fill-blue-600 absolute">
+                  <path fill-rule="evenodd" d="M9.69 18.933l.003.001C9.89 19.02 10 19 10 19s.11.02.308-.066l.002-.001.006-.003.018-.008a5.741 5.741 0 00.281-.14c.186-.096.446-.24.757-.433.62-.384 1.445-.966 2.274-1.765C15.302 14.988 17 12.493 17 9A7 7 0 103 9c0 3.492 1.698 5.988 3.355 7.584a13.731 13.731 0 002.273 1.765 11.842 11.842 0 00.976.544l.062.029.018.008.006.003zM10 11.25a2.25 2.25 0 100-4.5 2.25 2.25 0 000 4.5z" clip-rule="evenodd" />
+                </svg>
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" class="w-5 h-5 fill-blue-600 animate-ping">
+                  <path fill-rule="evenodd" d="M9.69 18.933l.003.001C9.89 19.02 10 19 10 19s.11.02.308-.066l.002-.001.006-.003.018-.008a5.741 5.741 0 00.281-.14c.186-.096.446-.24.757-.433.62-.384 1.445-.966 2.274-1.765C15.302 14.988 17 12.493 17 9A7 7 0 103 9c0 3.492 1.698 5.988 3.355 7.584a13.731 13.731 0 002.273 1.765 11.842 11.842 0 00.976.544l.062.029.018.008.006.003zM10 11.25a2.25 2.25 0 100-4.5 2.25 2.25 0 000 4.5z" clip-rule="evenodd" />
+                </svg>`,
+
+      home: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" class="w-5 h-5 fill-blue-600 absolute">
+              <path fill-rule="evenodd" d="M9.293 2.293a1 1 0 011.414 0l7 7A1 1 0 0117 11h-1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-3a1 1 0 00-1-1H9a1 1 0 00-1 1v3a1 1 0 01-1 1H5a1 1 0 01-1-1v-6H3a1 1 0 01-.707-1.707l7-7z" clip-rule="evenodd" />
+            </svg>
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" class="w-5 h-5 fill-blue-600 animate-ping">
+              <path fill-rule="evenodd" d="M9.293 2.293a1 1 0 011.414 0l7 7A1 1 0 0117 11h-1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-3a1 1 0 00-1-1H9a1 1 0 00-1 1v3a1 1 0 01-1 1H5a1 1 0 01-1-1v-6H3a1 1 0 01-.707-1.707l7-7z" clip-rule="evenodd" />
+            </svg>`,
     };
   }, []);
 
@@ -62,7 +83,7 @@ const useMapHook = (
       // make a marker for each feature and add to the map
       const marker = new mapBoxGL.Marker({
         element,
-        draggable: true,
+        draggable: !save,
         clickTolerance: 40,
       }).setLngLat([coords.lng, coords.lat]);
 
@@ -172,6 +193,7 @@ const useMapHook = (
       triggerPerformance,
       triggerPink,
       mapStyles,
+      markers,
     },
     loading,
     error,
