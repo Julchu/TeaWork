@@ -61,4 +61,6 @@ const Home: FC = async () => {
   );
 };
 
+export const runtime = 'edge';
+
 export default Home;
