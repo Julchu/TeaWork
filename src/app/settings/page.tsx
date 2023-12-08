@@ -6,4 +6,6 @@ const Settings: FC = () => {
     <main className="flex h-screen-small w-screen items-center justify-between p-6"></main>
   );
 };
+
+export const runtime = 'edge';
 export default Settings;

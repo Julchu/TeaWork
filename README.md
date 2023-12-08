@@ -69,8 +69,11 @@ cd teawork
 yarn install
 yarn dev
 
-# Deploying app to live on GCP; make sure to comment out lines to connect emulators in /lib/firebase/firebase-config.ts before deploying
+# Old deploying to Firebase; make sure to comment out lines to connect emulators in /lib/firebase/firebase-config.ts before deploying
+# Optional flag: --except functions
+yarn build && firebase --project teaworkapp deploy
 
+# Deploying app to live on GCP; make sure to comment out lines to connect emulators in /lib/firebase/firebase-config.ts before deploying
 docker compose build
 gcloud builds submit --tag gcr.io/teaworkapp/feat/docker-gcp --project teaworkapp
 gcloud run deploy --image gcr.io/teaworkapp/feat/docker-gcp --project teaworkapp --platform managed
