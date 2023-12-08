@@ -2,6 +2,7 @@
 
 import { useEffect } from 'react';
 
+export const runtime = 'edge';
 export default function Error({
   error,
   reset,
@@ -28,5 +29,3 @@ export default function Error({
     </div>
   );
 }
-
-export const runtime = 'edge';
