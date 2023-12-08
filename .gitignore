@@ -137,6 +137,3 @@ emulatorData
 .yarn/build-state.yml
 .yarn/install-state.gz
 .pnp.*
-
-compose.yaml
-Dockerfile
