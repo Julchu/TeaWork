@@ -20,3 +20,5 @@ export const getAllData = async () => {
   await new Promise(resolve => setTimeout(resolve, 1000));
   return usersSnapshot.docs.map(doc => doc.data());
 };
+
+export const runtime = 'edge';

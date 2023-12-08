@@ -18,3 +18,5 @@ export const useStreamAllData = () => {
 
   return { getFirestoreData, users };
 };
+
+export const runtime = 'edge';

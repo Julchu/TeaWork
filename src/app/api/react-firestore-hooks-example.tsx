@@ -7,3 +7,5 @@ export const useGetReactFirebaseHookData = () => {
 
   return { data, loading, error };
 };
+
+export const runtime = 'edge';
