@@ -2,7 +2,8 @@
 
 import { useEffect } from 'react';
 
-export const runtime = 'edge';
+export const config = { runtime: 'edge' };
+
 export default function Error({
   error,
   reset,
