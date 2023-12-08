@@ -48,11 +48,12 @@ yarn global add firebase-tools
 
 ### Environment files
 
-- You'll need a copy of `.env.example` as your development environment, as well as a production environment when
-  deploying to live
+- You'll need a copy of `.env.example` for your development environment
 
 ```zsh
-# Copy and setup your environment
+# Copy and setup your environment: copies .env.example into new files .env.development and .env.production
+# .env.production is not currently used (TODO: import into Dockerfile)
+# .env.development is used by Next.js locally
 cp .env.example .env.development .env.production
 ```
 
@@ -64,12 +65,15 @@ git clone https://github.com/Julchu/TeaWork.git
 cd teawork
 
 # Installing the React app; a browser tab should open at localhost:3000
+# Use yarn dev instead of docker compose up for local development; docker compose up will use real production environment
 yarn install
 yarn dev
 
-# Deploying app to live; make sure to comment out lines to connect emulators in /lib/firebase/firebase-config.ts before deploying
-# Optional flag: --except functions
-yarn build && firebase --project teaworkapp deploy
+# Deploying app to live on GCP; make sure to comment out lines to connect emulators in /lib/firebase/firebase-config.ts before deploying
+
+docker compose build
+gcloud builds submit --tag gcr.io/teaworkapp/feat/docker-gcp --project teaworkapp
+gcloud run deploy --image gcr.io/teaworkapp/feat/docker-gcp --project teaworkapp --platform managed
 ```
 
 ### Launching the Firebase/Firestore emulator:
@@ -99,7 +103,7 @@ sudo kill -9 $(sudo lsof -t -i:8080)
 
 ### Prettier (format on save)
 
-- In VSCode, install the extention Prettier
+- In VSCode, install the extension Prettier
 - Go to your VSCode JSON settings:
     - Command Palette -> Preferences: Open Settings (JSON)
 - Add the following code to the JSON object
@@ -117,7 +121,7 @@ sudo kill -9 $(sudo lsof -t -i:8080)
 }
 ```
 
-- I also use file autosave whenever I switch to a different page/window, mimicking Webstorm
+- I also use file auto-save whenever I switch to a different page/window, mimicking Webstorm
 
 ```json
 {
@@ -142,7 +146,7 @@ yarn type-check
 ## Firestore
 
 ```ts
-const newUserRef = await addDoc(db.userCollection, { userData });
+const newUserRef = await addDoc(db.userCollection, {userData});
 
 const userDoc = await getDoc(newUserRef);
 if (userDoc.exists()) {

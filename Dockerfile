@@ -22,6 +22,16 @@ WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
+ENV NEXT_PUBLIC_FIREBASE_API_KEY=""
+ENV NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=""
+ENV NEXT_PUBLIC_FIREBASE_PROJECT_ID=""
+ENV NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=""
+ENV NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=""
+ENV NEXT_PUBLIC_FIREBASE_APP_ID=""
+ENV NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID=""
+ENV NEXT_PUBLIC_MAPBOX_TOKEN=""
+ENV NEXT_PUBLIC_GEOLOCATION_API_KEY=""
+
 # Next.js collects completely anonymous telemetry data about general usage.
 # Learn more here: https://nextjs.org/telemetry
 # Uncomment the following line in case you want to disable telemetry during the build.
@@ -37,6 +47,7 @@ FROM base AS runner
 WORKDIR /app
 
 ENV NODE_ENV production
+
 # Uncomment the following line in case you want to disable telemetry during runtime.
 # ENV NEXT_TELEMETRY_DISABLED 1
 
