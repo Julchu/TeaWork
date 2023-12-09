@@ -11,8 +11,6 @@ export const metadata: Metadata = {
   description: 'Find nice environments to grab tea and work at',
 };
 
-export const runtime = 'edge';
-
 export default function RootLayout({ children }: { children: ReactNode }) {
   const headerStore = headers();
   const timeZone = headerStore.get('x-vercel-ip-timezone');

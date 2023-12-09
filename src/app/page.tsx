@@ -6,7 +6,6 @@ import { Coordinates } from 'src/lib/firebase/interfaces';
 
 const Home: FC = async () => {
   const headerStore = headers();
-  console.log(headerStore);
 
   // Default coords: Toronto
   // const defaultCoords: Coordinates = { lng: -79.387054, lat: 43.642567 };
@@ -52,15 +51,9 @@ const Home: FC = async () => {
         ${shouldUseDarkMode ? 'bg-gray-900' : ''}
       `}
     >
-      <Map
-        initialCoords={initialCoords}
-        shouldUseDarkMode={shouldUseDarkMode}
-        headers={headerStore}
-      />
+      <Map initialCoords={initialCoords} shouldUseDarkMode={shouldUseDarkMode} />
     </main>
   );
 };
-
-export const runtime = 'edge';
 
 export default Home;
