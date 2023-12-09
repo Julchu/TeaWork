@@ -46,7 +46,6 @@
     "postcss": "latest",
     "prettier": "3.0.3",
     "tailwindcss": "latest",
-    "typescript": "latest",
-    "@cloudflare/next-on-pages": "latest"
+    "typescript": "latest"
   }
 }
