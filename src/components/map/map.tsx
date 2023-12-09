@@ -141,6 +141,13 @@ const Map: FC<{
     }
   }, [addMarker, currentMarker, markers, userInfo?.lastLocation]);
 
+  // Setting map style based on settings
+  useEffect(() => {
+    if (userInfo?.mapStyle && map.current) {
+      map.current?.setStyle(mapStyles[userInfo?.mapStyle]);
+    }
+  }, [mapStyles, userInfo?.mapStyle]);
+
   return (
     <div
       className={`overflow-hidden rounded-xl h-full w-full relative drop-shadow-lg ${
