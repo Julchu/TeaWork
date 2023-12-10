@@ -149,7 +149,7 @@ const useMapHook = (
               15.05,
               ['get', 'min_height'],
             ],
-            'fill-extrusion-opacity': 0.6,
+            'fill-extrusion-opacity': 1,
           },
         },
         labelLayerId,

@@ -19,6 +19,7 @@ export enum MapStyle {
   default = 'default',
   nav = 'nav',
   satellite = 'satellite',
+  pink = 'pink',
 }
 
 export type MapStyleType = 'default' | 'nav' | 'satellite';
