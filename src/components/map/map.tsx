@@ -150,11 +150,9 @@ const Map: FC<{
   // TODO: fix performance layer to work with switching map style
   // Performance layer based on user preferences
   useEffect(() => {
-    if (map.current) {
-      if (!map.current?.getLayer('add-3d-buildings') && userInfo?.performanceMode) {
+    if (map.current && userInfo?.performanceMode) {
+      if (!map.current?.getLayer('add-3d-buildings')) {
         addPerformanceLayer();
-      } else if (map.current?.getLayer('add-3d-buildings') && !userInfo?.performanceMode) {
-        map.current?.removeLayer('add-3d-buildings');
       }
     }
   }, [addPerformanceLayer, userInfo?.performanceMode]);
