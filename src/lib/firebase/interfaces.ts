@@ -16,10 +16,14 @@ import { firestore } from 'src/lib/firebase/firebase-config';
 export type Coordinates = { lat: number; lng: number };
 
 export enum MapStyle {
+  default = 'default',
   nav = 'nav',
-  pink = 'pink',
   satellite = 'satellite',
 }
+
+export type MapStyleType = 'default' | 'nav' | 'satellite';
+
+export type MapTime = 'day' | 'dusk' | 'dawn' | 'night';
 
 export type UserInfo = {
   firstName: string;

@@ -27,7 +27,7 @@ const Controls: FC<{
   shouldUseDarkMode: boolean;
 }> = ({ map, mapLoading, locationLoading, triggerGeolocator, shouldUseDarkMode }) => {
   const { userInfo } = useUserContext();
-  const [{ triggerPerformance, triggerNorth }] = useMapHook(map, mapLoading);
+  const [{ updatePerformance, triggerNorth }] = useMapHook(map, mapLoading);
 
   if (mapLoading)
     return (
@@ -42,7 +42,7 @@ const Controls: FC<{
         className={
           'absolute bottom-5 left-5 opacity-60 bg-blue-600 w-[40px] h-[40px] p-0 rounded-full'
         }
-        onClick={triggerPerformance}
+        onClick={updatePerformance}
       >
         {userInfo?.performanceMode ? <PowerIcon /> : <NoPowerIcon />}
       </Button>

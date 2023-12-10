@@ -2,7 +2,7 @@ import { FC } from 'react';
 import Map from 'src/components/map/map';
 import { headers } from 'next/headers';
 import * as process from 'process';
-import { Coordinates } from 'src/lib/firebase/interfaces';
+import { Coordinates, MapTime } from 'src/lib/firebase/interfaces';
 
 const Home: FC = async () => {
   const headerStore = headers();
@@ -43,6 +43,7 @@ const Home: FC = async () => {
   );
 
   const shouldUseDarkMode = 18 < time || time <= 6;
+  const mapTimeMode: MapTime = 'dusk';
 
   return (
     // bg-gradient-to-r from-indigo-200 via-purple-500 to-pink-200

@@ -28,14 +28,16 @@ type UserMethods = {
 };
 
 const useUserHook = (): [UserMethods, boolean, Error | undefined] => {
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error>();
   const { authUser } = useAuthContext();
   const { setUserInfo } = useUserContext();
 
   const getUser = useCallback<UserMethods['getUser']>(async () => {
-    if (!authUser) return;
-    setLoading(true);
+    if (!authUser) {
+      setLoading(false);
+      return;
+    }
 
     let userDocRef = await getDoc(db.userDoc(authUser.uid));
 
@@ -62,8 +64,10 @@ const useUserHook = (): [UserMethods, boolean, Error | undefined] => {
 
   const addUser = useCallback<UserMethods['addUser']>(
     async ({ firstName, lastName, email, lastLocation }) => {
-      if (!authUser) return;
-      setLoading(true);
+      if (!authUser) {
+        setLoading(false);
+        return;
+      }
 
       // Creating doc with auto-generated id
       const userDocRef = db.userDoc(authUser.uid);
@@ -95,8 +99,10 @@ const useUserHook = (): [UserMethods, boolean, Error | undefined] => {
 
   const updateUser = useCallback<UserMethods['updateUser']>(
     async ({ firstName, lastName, email, lastLocation, performanceMode, mapStyle }) => {
-      if (!authUser) return;
-      setLoading(true);
+      if (!authUser) {
+        setLoading(false);
+        return;
+      }
 
       const userDocRef = db.userDoc(authUser.uid);
 
@@ -110,6 +116,7 @@ const useUserHook = (): [UserMethods, boolean, Error | undefined] => {
       });
 
       try {
+        // updateDoc modifies existing variables and adds non-existing variables, whereas setDoc replaces the entire object
         await updateDoc(userDocRef, updatedUser);
         setUserInfo(currentInfo => ({ ...currentInfo, ...updatedUser }));
       } catch (e) {

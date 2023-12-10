@@ -2,7 +2,7 @@
 import 'mapbox-gl/dist/mapbox-gl.css';
 import './map.css';
 import mapBoxGL, { Marker } from 'mapbox-gl';
-import { FC, useCallback, useEffect, useRef, useState } from 'react';
+import React, { FC, useCallback, useEffect, useRef, useState } from 'react';
 import * as process from 'process';
 import useUserHook from 'src/hooks/use-user-firestore-hook';
 import { useAuthContext } from 'src/hooks/use-auth-context';
@@ -16,8 +16,8 @@ const Map: FC<{
   shouldUseDarkMode: boolean;
   initialCoords: Coordinates;
 }> = ({ shouldUseDarkMode, initialCoords }) => {
-  const { userInfo, setUserInfo } = useUserContext();
-  const { authUser } = useAuthContext();
+  const { userInfo, setUserInfo, userLoading } = useUserContext();
+  const { authUser, authLoading } = useAuthContext();
   const [{ updateUser }] = useUserHook();
 
   const mapContainer = useRef<HTMLDivElement | null>(null);
@@ -77,62 +77,68 @@ const Map: FC<{
 
   // Initial map loading
   useEffect(() => {
-    // Prevent re-creating a map if one already exists
-    if (map.current) return;
+    if (!map.current && !userLoading && userInfo) {
+      mapBoxGL.accessToken = process.env.NEXT_PUBLIC_MAPBOX_TOKEN || '';
 
-    // Workaround to spawn user near their location rather than in a random location and flying over
-    mapBoxGL.accessToken = process.env.NEXT_PUBLIC_MAPBOX_TOKEN || '';
+      map.current = new mapBoxGL.Map({
+        attributionControl: false,
+        container:
+          mapContainer.current === undefined || mapContainer.current === null
+            ? ''
+            : mapContainer.current,
+        style: userInfo?.mapStyle ? mapStyles[userInfo.mapStyle] : mapStyles.default,
+        center: [initialCoords.lng, initialCoords.lat],
+        zoom: 9,
+      });
+    }
+  }, [initialCoords.lat, initialCoords.lng, mapStyles, mapStyles.default, userInfo, userLoading]);
 
-    map.current = new mapBoxGL.Map({
-      attributionControl: false,
-      container:
-        mapContainer.current === undefined || mapContainer.current === null
-          ? ''
-          : mapContainer.current,
-      style: `${shouldUseDarkMode ? mapStyles.dark : mapStyles.light}`,
-      center: [initialCoords.lng, initialCoords.lat],
-      zoom: 9,
-    });
+  useEffect(() => {
+    if (map.current) {
+      map.current
+        .once('style.load', () => setMapLoading(false))
+        // Gets currently-viewing coordinates
+        .on('moveend', () => {
+          if (map.current)
+            setViewingCoords({
+              lng: parseFloat(map.current.getCenter().lng.toFixed(4)),
+              lat: parseFloat(map.current.getCenter().lat.toFixed(4)),
+            });
+          setLocationLoading(false);
+        });
 
-    map.current
-      .once('style.load', () => setMapLoading(false))
-      .on('moveend', () => {
-        if (map.current)
-          setViewingCoords({
-            lng: parseFloat(map.current.getCenter().lng.toFixed(4)),
-            lat: parseFloat(map.current.getCenter().lat.toFixed(4)),
+      // Add updated v7 vector/composite source for loading buildings
+      map.current.once('style.load', () => {
+        if (!map.current?.getSource('composite'))
+          map.current?.addSource('composite', {
+            type: 'vector',
+            url: 'mapbox://mapbox.mapbox-streets-v7',
           });
-        setLocationLoading(false);
       });
 
-    map.current?.on('click', mouseEvent => {
-      // mouseEvent.originalEvent?..;
-      if (map.current) {
-        addMarker(markers['location'], currentMarker, setCurrentMarker, mouseEvent.lngLat);
-        console.log(mouseEvent.lngLat);
-      }
-    });
+      // Mapbox V3 style colors
+      // map.current.on('style.load', () => {
+      //   // @ts-ignore; TODO: check if setConfigProperty added to mapbox-gl type
+      //   map.current.setConfigProperty('basemap', 'lightPreset', `${'dusk'}`);
+      // });
+
+      map.current?.on('click', mouseEvent => {
+        // mouseEvent.originalEvent?..;
+        if (map.current) {
+          addMarker(markers['location'], currentMarker, setCurrentMarker, mouseEvent.lngLat);
+          console.log(mouseEvent.lngLat);
+        }
+      });
+    }
   }, [
     addMarker,
+    addPerformanceLayer,
     currentMarker,
-    initialCoords.lat,
-    initialCoords.lng,
-    mapStyles.dark,
-    mapStyles.light,
+    mapStyles,
     markers,
-    shouldUseDarkMode,
+    userInfo?.mapStyle,
+    userInfo?.performanceMode,
   ]);
-
-  // Performance layer based on user preferences
-  useEffect(() => {
-    if (!mapLoading) {
-      if (!map.current?.getLayer('add-3d-buildings') && userInfo?.performanceMode) {
-        addPerformanceLayer();
-      } else if (map.current?.getLayer('add-3d-buildings') && !userInfo?.performanceMode) {
-        map.current?.removeLayer('add-3d-buildings');
-      }
-    }
-  }, [addPerformanceLayer, mapLoading, userInfo?.performanceMode]);
 
   // Setting initial location
   useEffect(() => {
@@ -141,12 +147,27 @@ const Map: FC<{
     }
   }, [addMarker, currentMarker, markers, userInfo?.lastLocation]);
 
-  // Setting map style based on settings
+  // TODO: fix performance layer to work with switching map style
+  // Performance layer based on user preferences
   useEffect(() => {
-    if (userInfo?.mapStyle && map.current) {
-      map.current?.setStyle(mapStyles[userInfo?.mapStyle]);
+    if (map.current) {
+      if (!map.current?.getLayer('add-3d-buildings') && userInfo?.performanceMode) {
+        addPerformanceLayer();
+      } else if (map.current?.getLayer('add-3d-buildings') && !userInfo?.performanceMode) {
+        map.current?.removeLayer('add-3d-buildings');
+      }
     }
-  }, [mapStyles, userInfo?.mapStyle]);
+  }, [addPerformanceLayer, userInfo?.performanceMode]);
+
+  // Setting map style based on settings; requires separate check from performance-only layer check
+  useEffect(() => {
+    if (userInfo && userInfo?.mapStyle && map.current && map.current?.isStyleLoaded()) {
+      map.current?.setStyle(mapStyles[userInfo?.mapStyle]);
+      if (userInfo.performanceMode && !map.current?.getLayer('add-3d-buildings')) {
+        addPerformanceLayer();
+      }
+    }
+  }, [addPerformanceLayer, mapStyles, userInfo]);
 
   return (
     <div

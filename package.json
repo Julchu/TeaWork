@@ -21,13 +21,12 @@
     "@radix-ui/react-label": "^2.0.2",
     "@radix-ui/react-slot": "^1.0.2",
     "@radix-ui/react-tooltip": "^1.0.7",
-    "@types/mapbox-gl": "^2.7.15",
     "@vercel/analytics": "^1.0.2",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.0.0",
     "encoding": "^0.1.13",
     "firebase": "^10.4.0",
-    "mapbox-gl": "3.0.0-beta.5",
+    "mapbox-gl": "^3.0.1",
     "next": "^14.0.0",
     "react": "latest",
     "react-dom": "latest",
@@ -36,16 +35,17 @@
     "tailwindcss-animate": "^1.0.7"
   },
   "devDependencies": {
-    "@types/node": "latest",
-    "@types/react": "latest",
-    "@types/react-dom": "latest",
-    "autoprefixer": "latest",
-    "eslint": "latest",
-    "eslint-config-next": "latest",
+    "@types/mapbox-gl": "^2.7.19",
+    "@types/node": "^20.10.4",
+    "@types/react": "^18.2.43",
+    "@types/react-dom": "^18.2.17",
+    "autoprefixer": "^9.0.0",
+    "eslint": "^8.55.0",
+    "eslint-config-next": "^14.0.4",
     "eslint-config-prettier": "^9.0.0",
-    "postcss": "latest",
+    "postcss": "^8.4.32",
     "prettier": "3.0.3",
-    "tailwindcss": "latest",
-    "typescript": "latest"
+    "tailwindcss": "^3.3.6",
+    "typescript": "^5.3.3"
   }
 }

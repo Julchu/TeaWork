@@ -16,9 +16,14 @@ const MapStyleSelect: FC = () => {
         await updateUser({ mapStyle: MapStyle[style as keyof typeof MapStyle] })
       }
     >
-      <DropdownMenuRadioItem value={MapStyle[MapStyle.nav]}>Nav</DropdownMenuRadioItem>
-      <DropdownMenuRadioItem value={MapStyle[MapStyle.satellite]}>Satellite</DropdownMenuRadioItem>
-      <DropdownMenuRadioItem value={MapStyle[MapStyle.pink]}>Pink</DropdownMenuRadioItem>
+      {Object.values(MapStyle).map(style => {
+        const styleName = style.slice(0, 1).toUpperCase() + style.slice(1);
+        return (
+          <DropdownMenuRadioItem key={style} value={style}>
+            {styleName}
+          </DropdownMenuRadioItem>
+        );
+      })}
     </DropdownMenuRadioGroup>
   );
 };

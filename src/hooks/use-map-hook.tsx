@@ -2,11 +2,12 @@ import mapBoxGL from 'mapbox-gl';
 import { MutableRefObject, useCallback, useMemo, useState } from 'react';
 import { useUserContext } from 'src/hooks/use-user-context';
 import { Coordinates } from 'src/lib/firebase/interfaces';
+import useUserHook from 'src/hooks/use-user-firestore-hook';
 
 type MapMethods = {
   triggerGeolocator: () => void;
   triggerNorth: () => void;
-  triggerPerformance: () => void;
+  updatePerformance: () => void;
   triggerPink: () => void;
   addMarker: (
     htmlElement: string,
@@ -28,6 +29,7 @@ const useMapHook = (
 ): [MapMethods, boolean, Error | undefined] => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<Error>();
+  const [{ updateUser }] = useUserHook();
   const { userInfo, setUserInfo } = useUserContext();
 
   const mapStyles = useMemo(() => {
@@ -35,8 +37,9 @@ const useMapHook = (
       streets: 'mapbox://styles/mapbox/streets-v12',
       basic: 'mapbox://styles/mapbox/basic-v8',
       bright: 'mapbox://styles/mapbox/bright-v8',
-      light: 'mapbox://styles/mapbox/light-v11',
-      dark: 'mapbox://styles/mapbox/dark-v11',
+      default: shouldUseDarkMode
+        ? 'mapbox://styles/mapbox/dark-v11'
+        : 'mapbox://styles/mapbox/light-v11',
       satellite: 'mapbox://styles/mapbox/satellite-v9',
       satelliteStreets: 'mapbox://styles/mapbox/satellite-streets-v12',
       outdoors: 'mapbox://styles/mapbox/outdoors-v12',
@@ -107,50 +110,52 @@ const useMapHook = (
   );
 
   const addPerformanceLayer = useCallback<MapMethods['addPerformanceLayer']>(() => {
-    // Insert the layer beneath any symbol layer.
-    const layers = map.current?.getStyle().layers;
-    const labelLayerId = layers?.find(
-      layer => layer.type === 'symbol' && layer.layout?.['text-field'],
-    )?.id;
+    if (!mapLoading) {
+      // Insert the layer beneath any symbol layer.
+      const layers = map.current?.getStyle().layers;
+      const labelLayerId = layers?.find(
+        layer => layer.type === 'symbol' && layer.layout?.['text-field'],
+      )?.id;
 
-    // The 'building' layer in the Mapbox Streets vector tile set contains building height data from OpenStreetMap.
-    map.current?.addLayer(
-      {
-        id: 'add-3d-buildings',
-        source: 'composite',
-        'source-layer': 'building',
-        filter: ['==', 'extrude', 'true'],
-        type: 'fill-extrusion',
-        paint: {
-          'fill-extrusion-color': '#aaa',
+      // The 'building' layer in the Mapbox Streets vector tile set contains building height data from OpenStreetMap.
+      map.current?.addLayer(
+        {
+          id: 'add-3d-buildings',
+          source: 'composite',
+          'source-layer': 'building',
+          filter: ['==', 'extrude', 'true'],
+          type: 'fill-extrusion',
+          paint: {
+            'fill-extrusion-color': '#aaa',
 
-          // Use an 'interpolate' expression to
-          // add a smooth transition effect to
-          // the buildings as the user zooms in.
-          'fill-extrusion-height': [
-            'interpolate',
-            ['linear'],
-            ['zoom'],
-            15,
-            0,
-            15.05,
-            ['get', 'height'],
-          ],
-          'fill-extrusion-base': [
-            'interpolate',
-            ['linear'],
-            ['zoom'],
-            15,
-            0,
-            15.05,
-            ['get', 'min_height'],
-          ],
-          'fill-extrusion-opacity': 0.6,
+            // Use an 'interpolate' expression to
+            // add a smooth transition effect to
+            // the buildings as the user zooms in.
+            'fill-extrusion-height': [
+              'interpolate',
+              ['linear'],
+              ['zoom'],
+              15,
+              0,
+              15.05,
+              ['get', 'height'],
+            ],
+            'fill-extrusion-base': [
+              'interpolate',
+              ['linear'],
+              ['zoom'],
+              15,
+              0,
+              15.05,
+              ['get', 'min_height'],
+            ],
+            'fill-extrusion-opacity': 0.6,
+          },
         },
-      },
-      labelLayerId,
-    );
-  }, [map]);
+        labelLayerId,
+      );
+    }
+  }, [map, mapLoading]);
 
   const triggerGeolocator = useCallback<MapMethods['triggerGeolocator']>(() => {
     return;
@@ -160,18 +165,19 @@ const useMapHook = (
     map.current?.resetNorth({ duration: 2000 });
   }, [map]);
 
-  const triggerPerformance = useCallback<MapMethods['triggerPerformance']>(() => {
-    if (!mapLoading) {
+  const updatePerformance = useCallback<MapMethods['updatePerformance']>(async () => {
+    if (!mapLoading && userInfo) {
       setUserInfo(currentInfo => ({
         ...currentInfo,
         performanceMode: !currentInfo?.performanceMode,
       }));
+      await updateUser({ performanceMode: !userInfo.performanceMode });
     }
-  }, [mapLoading, setUserInfo]);
+  }, [mapLoading, setUserInfo, updateUser, userInfo]);
 
   const triggerPink = useCallback<MapMethods['triggerPink']>(() => {
     if (!mapLoading) {
-      map.current?.setStyle(mapStyles.light);
+      map.current?.setStyle(mapStyles.default);
       map.current?.on('style.load', () => {
         if (userInfo?.performanceMode) {
           addPerformanceLayer();
@@ -181,7 +187,7 @@ const useMapHook = (
         }
       });
     }
-  }, [addPerformanceLayer, map, mapLoading, mapStyles.light, userInfo?.performanceMode]);
+  }, [addPerformanceLayer, map, mapLoading, mapStyles.default, userInfo?.performanceMode]);
 
   return [
     {
@@ -190,7 +196,7 @@ const useMapHook = (
       addPerformanceLayer,
       triggerGeolocator,
       triggerNorth,
-      triggerPerformance,
+      updatePerformance,
       triggerPink,
       mapStyles,
       markers,

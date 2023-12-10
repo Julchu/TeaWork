@@ -1,23 +1,15 @@
 'use client';
-import { FC, ReactNode, useCallback, useMemo } from 'react';
+import { FC, ReactNode, useMemo } from 'react';
 import { useAuthContext } from 'src/hooks/use-auth-context';
-import { useSignInWithGoogle, useSignOut } from 'react-firebase-hooks/auth';
-import { authentication } from 'src/lib/firebase/firebase-config';
 import {
   DropdownMenu,
   DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuSub,
-  DropdownMenuSubContent,
-  DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from 'src/components/ui/dropdown-menu';
 import PersonIcon from 'src/components/ui/icons/person';
 import { Button } from 'src/components/ui/button';
 import { urbanist } from 'src/components/ui/fonts';
-import MapStyleSelect from 'src/components/auth/map-style-settings';
+import { MenuContent } from 'src/components/auth/auth-menu';
 
 const AuthWrapper: FC<{
   children: ReactNode;
@@ -30,48 +22,14 @@ const AuthWrapper: FC<{
       <DropdownMenu modal={false}>
         <MenuTriggerButton />
 
-        <MenuContent />
+        <DropdownMenuContent align={'end'} className={'border-0'}>
+          <MenuContent />
+        </DropdownMenuContent>
       </DropdownMenu>
     </>
   );
 };
 
-const MenuContent: FC = () => {
-  const { authUser } = useAuthContext();
-
-  const [login, _user, _loading, _error] = useSignInWithGoogle(authentication);
-  const [logout] = useSignOut(authentication);
-
-  const authHandler = useCallback(async () => {
-    if (authUser) await logout();
-    else await login();
-  }, [login, logout, authUser]);
-
-  return (
-    <DropdownMenuContent align={'end'} className={'border-0'}>
-      {authUser?.displayName ? (
-        <>
-          <DropdownMenuLabel className={'text-center'}>{authUser?.displayName}</DropdownMenuLabel>
-          <DropdownMenuSeparator />
-        </>
-      ) : null}
-
-      {authUser ? (
-        <>
-          <DropdownMenuSub>
-            <DropdownMenuSubTrigger>Map style</DropdownMenuSubTrigger>
-            <DropdownMenuSubContent>
-              <MapStyleSelect />
-            </DropdownMenuSubContent>
-          </DropdownMenuSub>
-          <DropdownMenuItem onSelect={authHandler}>Logout</DropdownMenuItem>
-        </>
-      ) : (
-        <DropdownMenuItem onSelect={authHandler}>Login</DropdownMenuItem>
-      )}
-    </DropdownMenuContent>
-  );
-};
 const MenuTriggerButton: FC = () => {
   const { authUser } = useAuthContext();
 
