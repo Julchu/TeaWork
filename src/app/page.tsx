@@ -32,7 +32,7 @@ const Home: FC = async () => {
   //           return { lng: locationObj.location.lng, lat: locationObj.location.lat };
   //         else return defaultCoords;
   //       });
-  const ip = headerStore.get('64.137.135.189');
+  const ip = headerStore.get('x-forwarded-for');
   const initialCoords = ip
     ? await fetch(`https://ip-api.com/#${ip.split(',')[0]}`).then(async response => {
         const locationObj = await response.json();
