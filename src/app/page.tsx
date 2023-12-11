@@ -13,8 +13,8 @@ const Home: FC = async () => {
   // San Francisco
   const defaultCoords: Coordinates = { lng: -122.419416, lat: 37.774929 };
 
-  const lat = headerStore.get('x-vercel-ip-latitude');
-  const lng = headerStore.get('x-vercel-ip-longitude');
+  const lat = null; //headerStore.get('x-vercel-ip-latitude');
+  const lng = null; //headerStore.get('x-vercel-ip-longitude');
   const timeZone = headerStore.get('x-vercel-ip-timezone');
 
   const initialCoords =
@@ -52,7 +52,11 @@ const Home: FC = async () => {
         ${shouldUseDarkMode ? 'bg-gray-900' : ''}
       `}
     >
-      <Map initialCoords={initialCoords} shouldUseDarkMode={shouldUseDarkMode} />
+      <Map
+        initialCoords={initialCoords}
+        shouldUseDarkMode={shouldUseDarkMode}
+        headerStore={headerStore}
+      />
     </main>
   );
 };

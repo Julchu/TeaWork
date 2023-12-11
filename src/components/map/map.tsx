@@ -15,7 +15,8 @@ import useMapHook from 'src/hooks/use-map-hook';
 const Map: FC<{
   shouldUseDarkMode: boolean;
   initialCoords: Coordinates;
-}> = ({ shouldUseDarkMode, initialCoords }) => {
+  headerStore?: any;
+}> = ({ shouldUseDarkMode, initialCoords, headerStore }) => {
   const { userInfo, setUserInfo, userLoading } = useUserContext();
   const { authUser, authLoading } = useAuthContext();
   const [{ updateUser }] = useUserHook();
@@ -173,6 +174,7 @@ const Map: FC<{
         shouldUseDarkMode ? 'bg-slate-800' : 'bg-gray-100'
       }`}
     >
+      <div>{JSON.stringify(headerStore)}</div>
       {/* Actual map */}
       <div
         className={`w-full h-full ${locationLoading ? 'animate-pulse' : ''}`}
