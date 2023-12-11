@@ -1,7 +1,6 @@
 import { FC } from 'react';
 import Map from 'src/components/map/map';
 import { headers } from 'next/headers';
-import * as process from 'process';
 import { Coordinates, MapTime } from 'src/lib/firebase/interfaces';
 
 const Home: FC = async () => {
@@ -17,22 +16,30 @@ const Home: FC = async () => {
   const lng = null; //headerStore.get('x-vercel-ip-longitude');
   const timeZone = headerStore.get('x-vercel-ip-timezone');
 
-  const initialCoords =
-    lat && lng
-      ? {
-          lng: parseFloat(lng),
-          lat: parseFloat(lat),
-        }
-      : // Try fetching geolocation using Google services; if not; return Toronto geolocation
-        await fetch(
-          `https://www.googleapis.com/geolocation/v1/geolocate?key=${process.env.NEXT_PUBLIC_GEOLOCATION_API_KEY}`,
-          { method: 'POST' },
-        ).then(async response => {
-          const locationObj = await response.json();
-          if (locationObj.location)
-            return { lng: locationObj.location.lng, lat: locationObj.location.lat };
-          else return defaultCoords;
-        });
+  // const initialCoords =
+  //   lat && lng
+  //     ? {
+  //         lng: parseFloat(lng),
+  //         lat: parseFloat(lat),
+  //       }
+  //     : // Try fetching geolocation using Google services; if not; return Toronto geolocation
+  //       await fetch(
+  //         `https://www.googleapis.com/geolocation/v1/geolocate?key=${process.env.NEXT_PUBLIC_GEOLOCATION_API_KEY}`,
+  //         { method: 'POST' },
+  //       ).then(async response => {
+  //         const locationObj = await response.json();
+  //         if (locationObj.location)
+  //           return { lng: locationObj.location.lng, lat: locationObj.location.lat };
+  //         else return defaultCoords;
+  //       });
+  const ip = headerStore.get('64.137.135.189');
+  const initialCoords = ip
+    ? await fetch(`https://ip-api.com/#${ip.split(',')[0]}`).then(async response => {
+        const locationObj = await response.json();
+        if (locationObj.location) return { lng: locationObj.lon, lat: locationObj.lat };
+        else return defaultCoords;
+      })
+    : defaultCoords;
 
   const time = parseInt(
     new Intl.DateTimeFormat([], {
