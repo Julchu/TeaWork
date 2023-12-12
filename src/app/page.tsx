@@ -66,7 +66,11 @@ const Home: FC = async () => {
         ${shouldUseDarkMode ? 'bg-gray-900' : ''}
       `}
     >
-      <Map initialCoords={initialCoords} shouldUseDarkMode={shouldUseDarkMode} headerStore={ip} />
+      <Map
+        initialCoords={initialCoords}
+        shouldUseDarkMode={shouldUseDarkMode}
+        headerStore={`ipinfo.io/${ip}?token=${process.env.NEXT_PUBLIC_GEOLOCATION_API_KEY}\``}
+      />
     </main>
   );
 };
