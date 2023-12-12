@@ -13,7 +13,7 @@ const Home: FC = async () => {
   // San Francisco: if SF is loaded then it means other geolocation metods have failed
   const defaultCoords: Coordinates = { lng: -122.419416, lat: 37.774929 };
 
-  const ip = headerStore.get('x-forwarded-for');
+  const ip = (headerStore.get('x-forwarded-for') || '').split(',')[0];
   const lat = headerStore.get('x-vercel-ip-latitude');
   const lng = headerStore.get('x-vercel-ip-longitude');
   const timeZone = headerStore.get('x-vercel-ip-timezone');
@@ -22,24 +22,25 @@ const Home: FC = async () => {
   const fetchObj = {
     url: devMode
       ? `https://www.googleapis.com/geolocation/v1/geolocate?key=${process.env.NEXT_PUBLIC_GEOLOCATION_API_KEY}`
-      : `ipinfo.io/${ip}?token=${process.env.NEXT_PUBLIC_GEOLOCATION_API_KEY}`,
+      : `https://ipinfo.io/${ip}?token=${process.env.NEXT_PUBLIC_GEOLOCATION_API_KEY}`,
     method: devMode ? 'POST' : 'GET',
   };
 
-  const initialCoords =
-    // Try fetching geolocation using Google services; if not; return Toronto geolocation
-    await fetch(fetchObj.url, { method: fetchObj.method }).then(async response => {
-      const locationObj = await response.json();
-
-      if (devMode && locationObj.location)
-        return { lng: locationObj.location.lng, lat: locationObj.location.lat };
-      else if (locationObj['loc']) {
-        const [lat, lng] = locationObj['loc'].split(',');
-        return { lng, lat };
-      }
-
-      return defaultCoords;
-    });
+  const initialCoords = defaultCoords;
+  // const initialCoords =
+  //   // Try fetching geolocation using Google services; if not; return Toronto geolocation
+  //   await fetch(fetchObj.url, { method: fetchObj.method }).then(async response => {
+  //     const locationObj = await response.json();
+  //
+  //     if (devMode && locationObj.location)
+  //       return { lng: locationObj.location.lng, lat: locationObj.location.lat };
+  //     else if (locationObj['loc']) {
+  //       const [lat, lng] = locationObj['loc'].split(',');
+  //       return { lng, lat };
+  //     }
+  //
+  //     return defaultCoords;
+  //   });
   // lat && lng
   //   ? {
   //       lng: parseFloat(lng),
