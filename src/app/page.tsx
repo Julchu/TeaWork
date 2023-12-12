@@ -14,8 +14,8 @@ const Home: FC = async () => {
   const defaultCoords: Coordinates = { lng: -122.419416, lat: 37.774929 };
 
   const ip = (headerStore.get('x-forwarded-for') || '').split(',')[0];
-  const lat = headerStore.get('x-vercel-ip-latitude');
-  const lng = headerStore.get('x-vercel-ip-longitude');
+  const vercelLat = headerStore.get('x-vercel-ip-latitude');
+  const vercelLng = headerStore.get('x-vercel-ip-longitude');
   const timeZone = headerStore.get('x-vercel-ip-timezone');
 
   const devMode = !!process.env.NEXT_PUBLIC_EMULATOR_ENABLED;
@@ -27,25 +27,24 @@ const Home: FC = async () => {
   };
 
   const initialCoords =
-    // lat && lng
-    //   ? {
-    //       lng: parseFloat(lng),
-    //       lat: parseFloat(lat),
-    //     }
-    //   :
-    // Try fetching geolocation using IpInfo.io services; if not; return Toronto geolocation
-    await fetch(fetchObj.url, { method: fetchObj.method }).then(async response => {
-      const locationObj = await response.json();
-      if (devMode && locationObj['location']) {
-        const { lat, lng } = locationObj['location'];
-        return { lat, lng };
-      } else if (locationObj['loc']) {
-        const [lat, lng] = locationObj['loc'].split(',');
-        return { lat, lng };
-      } else {
-        return defaultCoords;
-      }
-    });
+    vercelLat && vercelLng
+      ? {
+          lng: parseFloat(vercelLng),
+          lat: parseFloat(vercelLat),
+        }
+      : // Try fetching geolocation using IpInfo.io services; if not; return Toronto geolocation
+        await fetch(fetchObj.url, { method: fetchObj.method }).then(async response => {
+          const locationObj = await response.json();
+          if (devMode && locationObj['location']) {
+            const { lat, lng } = locationObj['location'];
+            return { lat, lng };
+          } else if (locationObj['loc']) {
+            const [lat, lng] = locationObj['loc'].split(',');
+            return { lat, lng };
+          } else {
+            return defaultCoords;
+          }
+        });
 
   const currentHour = parseInt(
     new Intl.DateTimeFormat([], {
