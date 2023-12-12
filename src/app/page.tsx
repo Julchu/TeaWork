@@ -27,20 +27,22 @@ const Home: FC = async () => {
     method: devMode ? 'POST' : 'GET',
   };
 
-  const initialCoords =
-    // Try fetching geolocation using Google services; if not; return Toronto geolocation
-    await fetch(fetchObj.url, { method: fetchObj.method }).then(async response => {
-      const locationObj = await response.json();
+  const initialCoords = defaultCoords;
 
-      if (devMode) {
-        if (locationObj.location) {
-          return { lng: locationObj.location.lng, lat: locationObj.location.lat };
-        } else {
-          const [lat, lng] = locationObj.split(',');
-          return { lng, lat };
-        }
-      } else return defaultCoords;
-    });
+  // const initialCoords =
+  //   // Try fetching geolocation using Google services; if not; return Toronto geolocation
+  //   await fetch(fetchObj.url, { method: fetchObj.method }).then(async response => {
+  //     const locationObj = await response.json();
+  //
+  //     if (devMode) {
+  //       if (locationObj.location) {
+  //         return { lng: locationObj.location.lng, lat: locationObj.location.lat };
+  //       } else {
+  //         const [lat, lng] = locationObj.split(',');
+  //         return { lng, lat };
+  //       }
+  //     } else return defaultCoords;
+  //   });
   // lat && lng
   //   ? {
   //       lng: parseFloat(lng),
