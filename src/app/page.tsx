@@ -26,45 +26,27 @@ const Home: FC = async () => {
     method: devMode ? 'POST' : 'GET',
   };
 
-  // Try fetching geolocation using Google services; if not; return Toronto geolocation
-  const initialCoords = await fetch(fetchObj.url, { method: fetchObj.method }).then(
-    async response => {
-      const locationObj = await response.json();
-      if (devMode && locationObj['location']) {
-        const { lat, lng } = locationObj['location'];
-        return { lat, lng };
-      } else if (locationObj['loc']) {
-        const [lat, lng] = locationObj['loc'].split(',');
-        return { lat, lng };
-      } else {
-        return 'san francisco';
-      }
-    },
-  );
+  const initialCoords =
+    lat && lng
+      ? {
+          lng: parseFloat(lng),
+          lat: parseFloat(lat),
+        }
+      : // Try fetching geolocation using IpInfo.io services; if not; return Toronto geolocation
+        await fetch(fetchObj.url, { method: fetchObj.method }).then(async response => {
+          const locationObj = await response.json();
+          if (devMode && locationObj['location']) {
+            const { lat, lng } = locationObj['location'];
+            return { lat, lng };
+          } else if (locationObj['loc']) {
+            const [lat, lng] = locationObj['loc'].split(',');
+            return { lat, lng };
+          } else {
+            return defaultCoords;
+          }
+        });
 
-  // const initialCoords = defaultCoords;
-  // const initialCoords =
-  //   // Try fetching geolocation using Google services; if not; return Toronto geolocation
-  //   await fetch(fetchObj.url, { method: fetchObj.method }).then(async response => {
-  //     const locationObj = await response.json();
-  //
-  //     if (devMode && locationObj.location)
-  //       return { lng: locationObj.location.lng, lat: locationObj.location.lat };
-  //     else if (locationObj['loc']) {
-  //       const [lat, lng] = locationObj['loc'].split(',');
-  //       return { lng, lat };
-  //     }
-  //
-  //     return defaultCoords;
-  //   });
-  // lat && lng
-  //   ? {
-  //       lng: parseFloat(lng),
-  //       lat: parseFloat(lat),
-  //     }
-  //   :
-
-  const time = parseInt(
+  const currentHour = parseInt(
     new Intl.DateTimeFormat([], {
       timeZone: timeZone || 'America/Toronto',
       hour: 'numeric',
@@ -72,8 +54,8 @@ const Home: FC = async () => {
     }).format(),
   );
 
-  const shouldUseDarkMode = 18 < time || time <= 6;
-  const mapTimeMode: MapTime = 'dusk';
+  const shouldUseDarkMode = 18 < currentHour || currentHour <= 6;
+  const mapTimeMode = MapTime[currentHour / 4];
 
   return (
     // bg-gradient-to-r from-indigo-200 via-purple-500 to-pink-200
@@ -83,9 +65,9 @@ const Home: FC = async () => {
       `}
     >
       <Map
-        initialCoords={defaultCoords}
+        initialCoords={initialCoords}
         shouldUseDarkMode={shouldUseDarkMode}
-        headerStore={initialCoords}
+        headerStore={mapTimeMode}
       />
     </main>
   );

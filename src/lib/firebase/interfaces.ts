@@ -24,7 +24,12 @@ export enum MapStyle {
 
 export type MapStyleType = 'default' | 'nav' | 'satellite';
 
-export type MapTime = 'day' | 'dusk' | 'dawn' | 'night';
+export enum MapTime {
+  'day',
+  'dusk',
+  'dawn',
+  'night',
+}
 
 export type UserInfo = {
   firstName: string;
