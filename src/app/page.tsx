@@ -56,7 +56,7 @@ const Home: FC = async () => {
   );
 
   const shouldUseDarkMode = 18 < currentHour || currentHour <= 6;
-  const mapTimeMode = MapTime[currentHour / 4];
+  const mapTimeMode = MapTime[currentHour / 6];
 
   return (
     // bg-gradient-to-r from-indigo-200 via-purple-500 to-pink-200
