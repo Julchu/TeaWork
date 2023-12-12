@@ -5,7 +5,7 @@ import * as process from 'process';
 import { Coordinates, MapTime } from 'src/lib/firebase/interfaces';
 
 const Home: FC = async () => {
-  const headerStore = headers();
+  const currentHeaders = headers();
 
   // Default coords: Toronto
   // const defaultCoords: Coordinates = { lng: -79.387054, lat: 43.642567 };
@@ -13,10 +13,10 @@ const Home: FC = async () => {
   // San Francisco: if SF is loaded then it means other geolocation metods have failed
   const defaultCoords: Coordinates = { lng: -122.419416, lat: 37.774929 };
 
-  const ip = (headerStore.get('x-forwarded-for') || '').split(',')[0];
-  const lat = headerStore.get('x-vercel-ip-latitude');
-  const lng = headerStore.get('x-vercel-ip-longitude');
-  const timeZone = headerStore.get('x-vercel-ip-timezone');
+  const ip = (currentHeaders.get('x-forwarded-for') || '').split(',')[0];
+  const lat = currentHeaders.get('x-vercel-ip-latitude');
+  const lng = currentHeaders.get('x-vercel-ip-longitude');
+  const timeZone = currentHeaders.get('x-vercel-ip-timezone');
 
   const devMode = !!process.env.NEXT_PUBLIC_EMULATOR_ENABLED;
   const fetchObj = {
@@ -26,7 +26,13 @@ const Home: FC = async () => {
     method: devMode ? 'POST' : 'GET',
   };
 
-  const initialCoords = defaultCoords;
+  const headerStore = await fetch(fetchObj.url, { method: fetchObj.method }).then(
+    async response => {
+      return await response.json();
+    },
+  );
+
+  // const initialCoords = defaultCoords;
   // const initialCoords =
   //   // Try fetching geolocation using Google services; if not; return Toronto geolocation
   //   await fetch(fetchObj.url, { method: fetchObj.method }).then(async response => {
@@ -67,7 +73,7 @@ const Home: FC = async () => {
       `}
     >
       <Map
-        initialCoords={initialCoords}
+        initialCoords={headerStore}
         shouldUseDarkMode={shouldUseDarkMode}
         headerStore={`ipinfo.io/${ip}?token=${process.env.NEXT_PUBLIC_GEOLOCATION_API_KEY}`}
       />
