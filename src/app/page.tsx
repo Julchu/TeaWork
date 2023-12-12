@@ -27,24 +27,25 @@ const Home: FC = async () => {
   };
 
   const initialCoords =
-    lat && lng
-      ? {
-          lng: parseFloat(lng),
-          lat: parseFloat(lat),
-        }
-      : // Try fetching geolocation using IpInfo.io services; if not; return Toronto geolocation
-        await fetch(fetchObj.url, { method: fetchObj.method }).then(async response => {
-          const locationObj = await response.json();
-          if (devMode && locationObj['location']) {
-            const { lat, lng } = locationObj['location'];
-            return { lat, lng };
-          } else if (locationObj['loc']) {
-            const [lat, lng] = locationObj['loc'].split(',');
-            return { lat, lng };
-          } else {
-            return defaultCoords;
-          }
-        });
+    // lat && lng
+    //   ? {
+    //       lng: parseFloat(lng),
+    //       lat: parseFloat(lat),
+    //     }
+    //   :
+    // Try fetching geolocation using IpInfo.io services; if not; return Toronto geolocation
+    await fetch(fetchObj.url, { method: fetchObj.method }).then(async response => {
+      const locationObj = await response.json();
+      if (devMode && locationObj['location']) {
+        const { lat, lng } = locationObj['location'];
+        return { lat, lng };
+      } else if (locationObj['loc']) {
+        const [lat, lng] = locationObj['loc'].split(',');
+        return { lat, lng };
+      } else {
+        return defaultCoords;
+      }
+    });
 
   const currentHour = parseInt(
     new Intl.DateTimeFormat([], {
