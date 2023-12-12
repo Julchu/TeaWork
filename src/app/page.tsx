@@ -69,7 +69,7 @@ const Home: FC = async () => {
       <Map
         initialCoords={initialCoords}
         shouldUseDarkMode={shouldUseDarkMode}
-        headerStore={`ipinfo.io/${ip}?token=${process.env.NEXT_PUBLIC_GEOLOCATION_API_KEY}\``}
+        headerStore={`ipinfo.io/${ip}?token=${process.env.NEXT_PUBLIC_GEOLOCATION_API_KEY}`}
       />
     </main>
   );
