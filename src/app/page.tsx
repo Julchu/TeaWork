@@ -5,7 +5,7 @@ import * as process from 'process';
 import { Coordinates, MapTime } from 'src/lib/firebase/interfaces';
 
 const Home: FC = async () => {
-  const currentHeaders = headers();
+  const headerStore = headers();
 
   // Default coords: Toronto
   // const defaultCoords: Coordinates = { lng: -79.387054, lat: 43.642567 };
@@ -13,10 +13,10 @@ const Home: FC = async () => {
   // San Francisco: if SF is loaded then it means other geolocation metods have failed
   const defaultCoords: Coordinates = { lng: -122.419416, lat: 37.774929 };
 
-  const ip = (currentHeaders.get('x-forwarded-for') || '').split(',')[0];
-  const lat = currentHeaders.get('x-vercel-ip-latitude');
-  const lng = currentHeaders.get('x-vercel-ip-longitude');
-  const timeZone = currentHeaders.get('x-vercel-ip-timezone');
+  const ip = (headerStore.get('x-forwarded-for') || '').split(',')[0];
+  const lat = headerStore.get('x-vercel-ip-latitude');
+  const lng = headerStore.get('x-vercel-ip-longitude');
+  const timeZone = headerStore.get('x-vercel-ip-timezone');
 
   const devMode = !!process.env.NEXT_PUBLIC_EMULATOR_ENABLED;
   const fetchObj = {
@@ -26,9 +26,19 @@ const Home: FC = async () => {
     method: devMode ? 'POST' : 'GET',
   };
 
-  const headerStore = await fetch(fetchObj.url, { method: fetchObj.method }).then(
+  // Try fetching geolocation using Google services; if not; return Toronto geolocation
+  const initialCoords = await fetch(fetchObj.url, { method: fetchObj.method }).then(
     async response => {
-      return await response.json();
+      const locationObj = await response.json();
+      if (devMode && locationObj['location']) {
+        const { lat, lng } = locationObj['location'];
+        return { lat, lng };
+      } else if (locationObj['loc']) {
+        const [lat, lng] = locationObj['loc'].split(',');
+        return { lat, lng };
+      } else {
+        return 'san francisco';
+      }
     },
   );
 
@@ -73,9 +83,9 @@ const Home: FC = async () => {
       `}
     >
       <Map
-        initialCoords={headerStore}
+        initialCoords={defaultCoords}
         shouldUseDarkMode={shouldUseDarkMode}
-        headerStore={`ipinfo.io/${ip}?token=${process.env.NEXT_PUBLIC_GEOLOCATION_API_KEY}`}
+        headerStore={initialCoords}
       />
     </main>
   );
