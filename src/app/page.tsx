@@ -18,7 +18,8 @@ const Home: FC = async () => {
   const lng = headerStore.get('x-vercel-ip-longitude');
   const timeZone = headerStore.get('x-vercel-ip-timezone');
 
-  const devMode = !!process.env.NEXT_PUBLIC_EMULATOR_ENABLED;
+  // const devMode = !!process.env.NEXT_PUBLIC_EMULATOR_ENABLED;
+  const devMode = false;
   const fetchObj = {
     url: devMode
       ? `https://www.googleapis.com/geolocation/v1/geolocate?key=${process.env.GEOLOCATION_API_KEY}`
