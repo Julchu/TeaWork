@@ -78,7 +78,7 @@ const Map: FC<{
 
   // Initial map loading
   useEffect(() => {
-    if (!map.current && !userLoading && userInfo) {
+    if (!map.current && userInfo != undefined) {
       mapBoxGL.accessToken = process.env.NEXT_PUBLIC_MAPBOX_TOKEN || '';
 
       map.current = new mapBoxGL.Map({
@@ -91,8 +91,24 @@ const Map: FC<{
         center: [initialCoords.lng, initialCoords.lat],
         zoom: 9,
       });
+
+      map.current?.on('click', mouseEvent => {
+        // mouseEvent.originalEvent?..;
+        if (map.current) {
+          addMarker(markers['location'], currentMarker, setCurrentMarker, mouseEvent.lngLat);
+          console.log(mouseEvent.lngLat);
+        }
+      });
     }
-  }, [initialCoords.lat, initialCoords.lng, mapStyles, mapStyles.default, userInfo, userLoading]);
+  }, [
+    addMarker,
+    currentMarker,
+    initialCoords.lat,
+    initialCoords.lng,
+    mapStyles,
+    markers,
+    userInfo,
+  ]);
 
   useEffect(() => {
     if (map.current) {
@@ -122,14 +138,6 @@ const Map: FC<{
       //   // @ts-ignore; TODO: check if setConfigProperty added to mapbox-gl type
       //   map.current.setConfigProperty('basemap', 'lightPreset', `${'dusk'}`);
       // });
-
-      map.current?.on('click', mouseEvent => {
-        // mouseEvent.originalEvent?..;
-        if (map.current) {
-          addMarker(markers['location'], currentMarker, setCurrentMarker, mouseEvent.lngLat);
-          console.log(mouseEvent.lngLat);
-        }
-      });
     }
   }, [
     addMarker,
@@ -174,7 +182,6 @@ const Map: FC<{
         shouldUseDarkMode ? 'bg-slate-800' : 'bg-gray-100'
       }`}
     >
-      <div>{JSON.stringify(headerStore)}</div>
       {/* Actual map */}
       <div
         className={`w-full h-full ${locationLoading ? 'animate-pulse' : ''}`}
