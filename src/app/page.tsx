@@ -18,31 +18,28 @@ const Home: FC = async () => {
   const lng = headerStore.get('x-vercel-ip-longitude');
   const timeZone = headerStore.get('x-vercel-ip-timezone');
 
-  // const devMode = !!process.env.NEXT_PUBLIC_EMULATOR_ENABLED;
-  const devMode = false;
+  const devMode = !!process.env.NEXT_PUBLIC_EMULATOR_ENABLED;
   const fetchObj = {
     url: devMode
-      ? `https://www.googleapis.com/geolocation/v1/geolocate?key=${process.env.GEOLOCATION_API_KEY}`
-      : `ipinfo.io/${ip}?token=${process.env.GEOLOCATION_API_KEY}`,
+      ? `https://www.googleapis.com/geolocation/v1/geolocate?key=${process.env.NEXT_PUBLIC_GEOLOCATION_API_KEY}`
+      : `ipinfo.io/${ip}?token=${process.env.NEXT_PUBLIC_GEOLOCATION_API_KEY}`,
     method: devMode ? 'POST' : 'GET',
   };
 
-  const initialCoords = defaultCoords;
+  const initialCoords =
+    // Try fetching geolocation using Google services; if not; return Toronto geolocation
+    await fetch(fetchObj.url, { method: fetchObj.method }).then(async response => {
+      const locationObj = await response.json();
 
-  // const initialCoords =
-  //   // Try fetching geolocation using Google services; if not; return Toronto geolocation
-  //   await fetch(fetchObj.url, { method: fetchObj.method }).then(async response => {
-  //     const locationObj = await response.json();
-  //
-  //     if (devMode) {
-  //       if (locationObj.location) {
-  //         return { lng: locationObj.location.lng, lat: locationObj.location.lat };
-  //       } else {
-  //         const [lat, lng] = locationObj.split(',');
-  //         return { lng, lat };
-  //       }
-  //     } else return defaultCoords;
-  //   });
+      if (devMode) {
+        if (locationObj.location) {
+          return { lng: locationObj.location.lng, lat: locationObj.location.lat };
+        } else {
+          const [lat, lng] = locationObj.split(',');
+          return { lng, lat };
+        }
+      } else return defaultCoords;
+    });
   // lat && lng
   //   ? {
   //       lng: parseFloat(lng),

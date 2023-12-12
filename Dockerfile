@@ -30,7 +30,7 @@ ENV NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=""
 ENV NEXT_PUBLIC_FIREBASE_APP_ID=""
 ENV NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID=""
 ENV NEXT_PUBLIC_MAPBOX_TOKEN=""
-ENV GEOLOCATION_API_KEY=""
+ENV NEXT_PUBLIC_GEOLOCATION_API_KEY=""
 
 # Next.js collects completely anonymous telemetry data about general usage.
 # Learn more here: https://nextjs.org/telemetry
