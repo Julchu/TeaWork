@@ -1,6 +1,7 @@
 import { FC } from 'react';
 import Map from 'src/components/map/map';
 import { headers } from 'next/headers';
+import * as process from 'process';
 import { Coordinates, MapTime } from 'src/lib/firebase/interfaces';
 
 const Home: FC = async () => {
@@ -9,37 +10,42 @@ const Home: FC = async () => {
   // Default coords: Toronto
   // const defaultCoords: Coordinates = { lng: -79.387054, lat: 43.642567 };
 
-  // San Francisco
+  // San Francisco: if SF is loaded then it means other geolocation metods have failed
   const defaultCoords: Coordinates = { lng: -122.419416, lat: 37.774929 };
 
-  const lat = null; //headerStore.get('x-vercel-ip-latitude');
-  const lng = null; //headerStore.get('x-vercel-ip-longitude');
+  const ip = headerStore.get('x-forwarded-for');
+  const lat = headerStore.get('x-vercel-ip-latitude');
+  const lng = headerStore.get('x-vercel-ip-longitude');
   const timeZone = headerStore.get('x-vercel-ip-timezone');
 
-  // const initialCoords =
-  //   lat && lng
-  //     ? {
-  //         lng: parseFloat(lng),
-  //         lat: parseFloat(lat),
-  //       }
-  //     : // Try fetching geolocation using Google services; if not; return Toronto geolocation
-  //       await fetch(
-  //         `https://www.googleapis.com/geolocation/v1/geolocate?key=${process.env.NEXT_PUBLIC_GEOLOCATION_API_KEY}`,
-  //         { method: 'POST' },
-  //       ).then(async response => {
-  //         const locationObj = await response.json();
-  //         if (locationObj.location)
-  //           return { lng: locationObj.location.lng, lat: locationObj.location.lat };
-  //         else return defaultCoords;
-  //       });
-  const ip = headerStore.get('x-forwarded-for');
-  const initialCoords = ip
-    ? await fetch(`https://ip-api.com/#${ip.split(',')[0]}`).then(async response => {
-        const locationObj = await response.json();
-        if (locationObj.location) return { lng: locationObj.lon, lat: locationObj.lat };
-        else return defaultCoords;
-      })
-    : defaultCoords;
+  const devMode = !!process.env.NEXT_PUBLIC_EMULATOR_ENABLED;
+  const fetchObj = {
+    url: devMode
+      ? `https://www.googleapis.com/geolocation/v1/geolocate?key=${process.env.GEOLOCATION_API_KEY}`
+      : `ipinfo.io/${ip}?token=${process.env.GEOLOCATION_API_KEY}`,
+    method: devMode ? 'POST' : 'GET',
+  };
+
+  const initialCoords =
+    // Try fetching geolocation using Google services; if not; return Toronto geolocation
+    await fetch(fetchObj.url, { method: fetchObj.method }).then(async response => {
+      const locationObj = await response.json();
+
+      if (devMode) {
+        if (locationObj.location) {
+          return { lng: locationObj.location.lng, lat: locationObj.location.lat };
+        } else {
+          const [lat, lng] = locationObj.split(',');
+          return { lng, lat };
+        }
+      } else return defaultCoords;
+    });
+  // lat && lng
+  //   ? {
+  //       lng: parseFloat(lng),
+  //       lat: parseFloat(lat),
+  //     }
+  //   :
 
   const time = parseInt(
     new Intl.DateTimeFormat([], {
