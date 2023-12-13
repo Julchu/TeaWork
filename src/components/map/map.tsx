@@ -99,21 +99,9 @@ const Map: FC<{
           console.log(mouseEvent.lngLat);
         }
       });
-    }
-  }, [
-    addMarker,
-    currentMarker,
-    initialCoords.lat,
-    initialCoords.lng,
-    mapStyles,
-    markers,
-    userInfo,
-  ]);
 
-  useEffect(() => {
-    if (map.current) {
       map.current
-        .once('style.load', () => setMapLoading(false))
+        ?.on('style.load', () => setMapLoading(false))
         // Gets currently-viewing coordinates
         .on('moveend', () => {
           if (map.current)
@@ -132,27 +120,24 @@ const Map: FC<{
             url: 'mapbox://mapbox.mapbox-streets-v7',
           });
       });
-
-      // Mapbox V3 style colors
-      // map.current.on('style.load', () => {
-      //   // @ts-ignore; TODO: check if setConfigProperty added to mapbox-gl type
-      //   map.current.setConfigProperty('basemap', 'lightPreset', `${'dusk'}`);
-      // });
     }
   }, [
     addMarker,
-    addPerformanceLayer,
     currentMarker,
+    initialCoords.lat,
+    initialCoords.lng,
     mapStyles,
     markers,
-    userInfo?.mapStyle,
-    userInfo?.performanceMode,
+    userInfo,
   ]);
 
   // Setting initial location
   useEffect(() => {
-    if (userInfo?.lastLocation && map.current) {
+    if (userInfo?.lastLocation && map.current)
       addMarker(markers['home'], currentMarker, setCurrentMarker, userInfo.lastLocation, true);
+    else {
+      currentMarker?.remove();
+      setCurrentMarker(undefined);
     }
   }, [addMarker, currentMarker, markers, userInfo?.lastLocation]);
 

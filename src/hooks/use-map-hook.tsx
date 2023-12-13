@@ -91,8 +91,9 @@ const useMapHook = (
       }).setLngLat([coords.lng, coords.lat]);
 
       if (save) {
-        if (currentMarker) currentMarker.setLngLat([coords.lng, coords.lat]);
-        else {
+        if (currentMarker) {
+          currentMarker.setLngLat([coords.lng, coords.lat]);
+        } else {
           setCurrentMarker(marker);
           marker.addTo(map.current);
         }

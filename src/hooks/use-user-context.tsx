@@ -32,19 +32,16 @@ const UserProvider: FC<{
 }> = ({ children }) => {
   const { authUser, authLoading, authError } = useAuthContext();
   const [{ getUser }, userLoading] = useUserHook();
-  const [userInfo, setUserInfo] = useState<Partial<UserInfo & { loaded?: boolean }>>();
+  const [userInfo, setUserInfo] = useState<Partial<UserInfo>>();
 
   // Sets user object on auth changes (login/logout, page refresh)
   useEffect(() => {
     if (!authLoading && authUser) {
       // Need to set userInfo here as the context; can't set userInfo in hook directly as well as no circular dependencies
       getUser().then(userSnapshot => {
-        setUserInfo({ ...userSnapshot?.data(), loaded: true });
+        setUserInfo({ ...userSnapshot?.data() });
       });
-    } else
-      setUserInfo({
-        loaded: true,
-      });
+    } else setUserInfo({});
   }, [authLoading, authUser, getUser]);
 
   return (
