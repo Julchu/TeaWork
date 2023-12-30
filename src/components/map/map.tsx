@@ -122,6 +122,15 @@ const Map: FC<{
     }
   }, [authLoading, mapStyles, userInfo?.mapStyle, userLoading]);
 
+  // Setting performance mode
+  useEffect(() => {
+    if (map.current) {
+      if (userInfo?.performanceMode && !userLoading && !authLoading)
+        togglePerformanceLayer(userInfo?.performanceMode);
+      else togglePerformanceLayer(false);
+    }
+  }, [authLoading, togglePerformanceLayer, userInfo?.performanceMode, userLoading]);
+
   // Setting performance mode whenever style changes or page loads
   useEffect(() => {
     if (map.current)
@@ -131,10 +140,6 @@ const Map: FC<{
         });
       }
   }, [authLoading, togglePerformanceLayer, userInfo?.performanceMode, userLoading]);
-
-  useEffect(() => {
-    togglePerformanceLayer(userInfo?.performanceMode);
-  }, [togglePerformanceLayer, userInfo?.performanceMode]);
 
   // Setting initial location
   useEffect(() => {

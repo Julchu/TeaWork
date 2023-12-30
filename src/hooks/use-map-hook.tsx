@@ -174,7 +174,7 @@ const useMapHook = (
     toggleOn => {
       if (map.current && !mapLoading) {
         if (toggleOn && !map.current?.getLayer('add-3d-buildings')) addPerformanceLayer();
-        else if (!toggleOn && map.current?.getLayer('add-3d-buildings')) removePerformanceLayer();
+        if (!toggleOn && map.current?.getLayer('add-3d-buildings')) removePerformanceLayer();
       }
     },
     [addPerformanceLayer, map, mapLoading, removePerformanceLayer],
