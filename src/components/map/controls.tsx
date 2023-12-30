@@ -1,17 +1,5 @@
-/*<TooltipProvider>
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <Button variant="outline">Hover</Button>
-        </TooltipTrigger>
-        <TooltipContent>
-          <p>Add to library</p>
-        </TooltipContent>
-      </Tooltip>
-    </TooltipProvider>*/
-
-import * as React from 'react';
-import { FC, MutableRefObject } from 'react';
-import { useUserContext } from 'src/hooks/use-user-context';
+import React, { Dispatch, FC, MutableRefObject, SetStateAction } from 'react';
+import { useAuthContext } from 'src/hooks/use-auth-context';
 import Spinner from 'src/components/ui/spinner';
 import { Button } from 'src/components/ui/button';
 import { NoPowerIcon, PowerIcon } from 'src/components/ui/icons/power';
@@ -22,12 +10,20 @@ import useMapHook from 'src/hooks/use-map-hook';
 const Controls: FC<{
   map: MutableRefObject<mapBoxGL.Map | null>;
   mapLoading: boolean;
+  setMapLoading: Dispatch<SetStateAction<boolean>>;
   locationLoading: boolean;
   triggerGeolocator: () => void;
   shouldUseDarkMode: boolean;
-}> = ({ map, mapLoading, locationLoading, triggerGeolocator, shouldUseDarkMode }) => {
-  const { userInfo } = useUserContext();
-  const [{ updatePerformance, triggerNorth }] = useMapHook(map, mapLoading);
+}> = ({
+  map,
+  mapLoading,
+  setMapLoading,
+  locationLoading,
+  triggerGeolocator,
+  shouldUseDarkMode,
+}) => {
+  const { userInfo } = useAuthContext();
+  const [{ updatePerformance, triggerNorth }] = useMapHook(map, mapLoading, setMapLoading);
 
   if (mapLoading)
     return (
@@ -37,15 +33,17 @@ const Controls: FC<{
     );
   return (
     <>
-      <Button
-        // Performance button
-        className={
-          'absolute bottom-5 left-5 opacity-60 bg-blue-600 w-[40px] h-[40px] p-0 rounded-full'
-        }
-        onClick={updatePerformance}
-      >
-        {userInfo?.performanceMode ? <PowerIcon /> : <NoPowerIcon />}
-      </Button>
+      {userInfo && Object.values(userInfo).length > 0 ? (
+        <Button
+          // Performance button
+          className={
+            'absolute bottom-5 left-5 opacity-60 bg-blue-600 w-[40px] h-[40px] p-0 rounded-full'
+          }
+          onClick={updatePerformance}
+        >
+          {userInfo?.performanceMode ? <PowerIcon /> : <NoPowerIcon />}
+        </Button>
+      ) : null}
 
       <Button
         // North button

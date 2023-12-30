@@ -2,11 +2,11 @@
 import { MapStyle } from 'src/lib/firebase/interfaces';
 import { DropdownMenuRadioGroup, DropdownMenuRadioItem } from 'src/components/ui/dropdown-menu';
 import { FC } from 'react';
-import { useUserContext } from 'src/hooks/use-user-context';
+import { useAuthContext } from 'src/hooks/use-auth-context';
 import useUserHook from 'src/hooks/use-user-firestore-hook';
 
 const MapStyleSelect: FC = () => {
-  const { userInfo } = useUserContext();
+  const { userInfo } = useAuthContext();
   const [{ updateUser }] = useUserHook();
 
   return (

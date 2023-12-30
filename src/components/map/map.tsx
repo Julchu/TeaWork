@@ -6,7 +6,6 @@ import React, { FC, useCallback, useEffect, useRef, useState } from 'react';
 import * as process from 'process';
 import useUserHook from 'src/hooks/use-user-firestore-hook';
 import { useAuthContext } from 'src/hooks/use-auth-context';
-import { useUserContext } from 'src/hooks/use-user-context';
 import { Coordinates } from 'src/lib/firebase/interfaces';
 import Controls from 'src/components/map/controls';
 import useMapHook from 'src/hooks/use-map-hook';
@@ -17,35 +16,32 @@ const Map: FC<{
   initialCoords: Coordinates;
   headerStore?: any;
 }> = ({ shouldUseDarkMode, initialCoords, headerStore }) => {
-  const { userInfo, setUserInfo, userLoading } = useUserContext();
-  const { authUser, authLoading } = useAuthContext();
+  const { authUser, authLoading, userInfo, setUserInfo, userLoading, setUserLoading } =
+    useAuthContext();
+  // const [userLoading, setUserLoading]
   const [{ updateUser }] = useUserHook();
+  const map = useRef<mapBoxGL.Map | null>(null);
+  // Set map loading to true in page load
+  const [mapLoading, setMapLoading] = useState<boolean>(true);
 
   const mapContainer = useRef<HTMLDivElement | null>(null);
   // Geolocator used to pass to external functions outside useEffect
-  const map = useRef<mapBoxGL.Map | null>(null);
   const [viewingCoords, setViewingCoords] = useState<Coordinates>();
-
-  // Set map loading to true in page load
-  const [mapLoading, setMapLoading] = useState<boolean>(true);
   const [locationLoading, setLocationLoading] = useState<boolean>(false);
 
   const [currentMarker, setCurrentMarker] = useState<Marker>();
 
-  const [{ mapStyles, markers, addMarker, addPerformanceLayer, flyTo }] = useMapHook(
-    map,
-    mapLoading,
-    shouldUseDarkMode,
-  );
+  const [{ mapStyles, markers, addMarker, togglePerformanceLayer, removePerformanceLayer, flyTo }] =
+    useMapHook(map, mapLoading, setMapLoading, shouldUseDarkMode);
 
   const updateUserLocation = useCallback(
     async (coords: Coordinates) => {
-      if (authUser) await updateUser({ lastLocation: coords });
+      if (userInfo) await updateUser({ lastLocation: coords });
       setUserInfo(currentInfo => {
         return { ...currentInfo, lastLocation: coords };
       });
     },
-    [authUser, setUserInfo, updateUser],
+    [userInfo, setUserInfo, updateUser],
   );
 
   const flyAndUpdateUser = useCallback(
@@ -76,32 +72,29 @@ const Map: FC<{
     [addMarker, currentMarker, flyTo, markers, updateUserLocation],
   );
 
-  // Initial map loading
+  // Initial map loading and base map event listeners that persist
   useEffect(() => {
-    if (!map.current && userInfo != undefined) {
+    if (!map.current && mapContainer.current !== undefined && mapContainer.current !== null) {
       mapBoxGL.accessToken = process.env.NEXT_PUBLIC_MAPBOX_TOKEN || '';
 
       map.current = new mapBoxGL.Map({
         attributionControl: false,
-        container:
-          mapContainer.current === undefined || mapContainer.current === null
-            ? ''
-            : mapContainer.current,
-        style: userInfo?.mapStyle ? mapStyles[userInfo.mapStyle] : mapStyles.default,
-        center: [initialCoords.lng, initialCoords.lat],
-        zoom: 9,
-      });
-
-      map.current?.on('click', mouseEvent => {
-        // mouseEvent.originalEvent?..;
-        if (map.current) {
-          addMarker(markers['location'], currentMarker, setCurrentMarker, mouseEvent.lngLat);
-          console.log(mouseEvent.lngLat);
-        }
-      });
-
-      map.current
-        ?.on('style.load', () => setMapLoading(false))
+        container: mapContainer.current,
+        style: {
+          version: 8,
+          sources: {},
+          layers: [],
+        },
+        center: [-79.387054, 43.642567],
+        // center: [initialCoords.lng, initialCoords.lat],
+        zoom: 17,
+        antialias: true,
+      })
+        .on('idle', () => {
+          if (map.current?.isStyleLoaded()) {
+            setMapLoading(false);
+          }
+        })
         // Gets currently-viewing coordinates
         .on('moveend', () => {
           if (map.current)
@@ -110,26 +103,38 @@ const Map: FC<{
               lat: parseFloat(map.current.getCenter().lat.toFixed(4)),
             });
           setLocationLoading(false);
+        }) // Click marker event listeners
+        .on('click', mouseEvent => {
+          addMarker(markers['location'], currentMarker, setCurrentMarker, mouseEvent.lngLat);
+          console.log(mouseEvent.lngLat);
         });
-
-      // Add updated v7 vector/composite source for loading buildings
-      map.current.once('style.load', () => {
-        if (!map.current?.getSource('composite'))
-          map.current?.addSource('composite', {
-            type: 'vector',
-            url: 'mapbox://mapbox.mapbox-streets-v7',
-          });
-      });
     }
-  }, [
-    addMarker,
-    currentMarker,
-    initialCoords.lat,
-    initialCoords.lng,
-    mapStyles,
-    markers,
-    userInfo,
-  ]);
+  }, [addMarker, currentMarker, initialCoords.lat, initialCoords.lng, markers]);
+
+  // Setting map styles
+  useEffect(() => {
+    if (map.current) {
+      if (userInfo?.mapStyle && !userLoading && !authLoading) {
+        map.current.setStyle(mapStyles[userInfo?.mapStyle]);
+      } else {
+        map.current?.setStyle(mapStyles.default);
+      }
+    }
+  }, [authLoading, mapStyles, userInfo?.mapStyle, userLoading]);
+
+  // Setting initial performance mode whenever style changes or page loads
+  useEffect(() => {
+    if (map.current)
+      if (userInfo?.performanceMode && !userLoading && !authLoading) {
+        map.current.once('style.load', () => {
+          togglePerformanceLayer(userInfo.performanceMode);
+        });
+      }
+  }, [authLoading, togglePerformanceLayer, userInfo?.performanceMode, userLoading]);
+
+  useEffect(() => {
+    togglePerformanceLayer(userInfo?.performanceMode);
+  }, [togglePerformanceLayer, userInfo?.performanceMode]);
 
   // Setting initial location
   useEffect(() => {
@@ -140,26 +145,6 @@ const Map: FC<{
       setCurrentMarker(undefined);
     }
   }, [addMarker, currentMarker, markers, userInfo?.lastLocation]);
-
-  // TODO: fix performance layer to work with switching map style
-  // Performance layer based on user preferences
-  useEffect(() => {
-    if (map.current && userInfo?.performanceMode) {
-      if (!map.current?.getLayer('add-3d-buildings')) {
-        addPerformanceLayer();
-      }
-    }
-  }, [addPerformanceLayer, userInfo?.performanceMode]);
-
-  // Setting map style based on settings; requires separate check from performance-only layer check
-  useEffect(() => {
-    if (userInfo && userInfo?.mapStyle && map.current && map.current?.isStyleLoaded()) {
-      map.current?.setStyle(mapStyles[userInfo?.mapStyle]);
-      if (userInfo.performanceMode && !map.current?.getLayer('add-3d-buildings')) {
-        addPerformanceLayer();
-      }
-    }
-  }, [addPerformanceLayer, mapStyles, userInfo]);
 
   return (
     <div
@@ -177,6 +162,7 @@ const Map: FC<{
       <Controls
         map={map}
         mapLoading={mapLoading}
+        setMapLoading={setMapLoading}
         locationLoading={locationLoading}
         triggerGeolocator={flyAndUpdateUser}
         shouldUseDarkMode={shouldUseDarkMode}

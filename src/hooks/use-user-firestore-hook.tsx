@@ -10,7 +10,7 @@ import { useCallback, useState } from 'react';
 import { useAuthContext } from 'src/hooks/use-auth-context';
 import { Coordinates, db, MapStyle, UserInfo } from 'src/lib/firebase/interfaces';
 import { filterNullableObject } from 'src/lib/functions';
-import { useUserContext } from 'src/hooks/use-user-context';
+import { User } from 'firebase/auth';
 
 export type UserFormData = {
   firstName?: string;
@@ -23,44 +23,45 @@ export type UserFormData = {
 
 type UserMethods = {
   addUser: (userData: UserFormData) => Promise<DocumentReference<UserInfo> | undefined>;
-  getUser: () => Promise<DocumentSnapshot<UserInfo> | undefined>;
+  getUser: (authUser: User | null | undefined) => Promise<DocumentSnapshot<UserInfo> | undefined>;
   updateUser: (userData: Partial<UserFormData>) => Promise<DocumentReference<UserInfo> | undefined>;
 };
 
 const useUserHook = (): [UserMethods, boolean, Error | undefined] => {
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<Error>();
-  const { authUser } = useAuthContext();
-  const { setUserInfo } = useUserContext();
+  const { authUser, setUserInfo } = useAuthContext();
 
-  const getUser = useCallback<UserMethods['getUser']>(async () => {
-    if (!authUser) {
-      setLoading(false);
-      return;
-    }
-
-    let userDocRef = await getDoc(db.userDoc(authUser.uid));
-
-    try {
-      if (!userDocRef.exists()) {
-        const displayName = authUser.displayName?.split(' ');
-        const newUser: UserInfo = {
-          email: authUser.email ? authUser.email : '',
-          firstName: displayName ? displayName[0] : '',
-          lastName: displayName && displayName.length > 1 ? displayName[1] : '',
-          mapStyle: MapStyle.nav,
-          createdAt: serverTimestamp(),
-        };
-        await setDoc(db.userDoc(authUser.uid), newUser);
-        userDocRef = await getDoc(db.userDoc(authUser.uid));
+  const getUser = useCallback<UserMethods['getUser']>(
+    async authUser => {
+      if (!authUser) {
+        setLoading(false);
+        return;
       }
-    } catch (e) {
-      setError(e as Error);
-    }
 
-    setLoading(false);
-    return userDocRef;
-  }, [authUser]);
+      let userDocRef = await getDoc(db.userDoc(authUser.uid));
+
+      try {
+        if (!userDocRef.exists()) {
+          const displayName = authUser.displayName?.split(' ');
+          const newUser: UserInfo = {
+            email: authUser.email ? authUser.email : '',
+            firstName: displayName ? displayName[0] : '',
+            lastName: displayName && displayName.length > 1 ? displayName[1] : '',
+            createdAt: serverTimestamp(),
+          };
+          await setDoc(db.userDoc(authUser.uid), newUser);
+          userDocRef = await getDoc(db.userDoc(authUser.uid));
+        }
+      } catch (e) {
+        setError(e as Error);
+      }
+
+      setLoading(false);
+      return userDocRef;
+    },
+    [setLoading],
+  );
 
   const addUser = useCallback<UserMethods['addUser']>(
     async ({ firstName, lastName, email, lastLocation }) => {
@@ -94,7 +95,7 @@ const useUserHook = (): [UserMethods, boolean, Error | undefined] => {
       setLoading(false);
       return userDocRef;
     },
-    [authUser],
+    [authUser, setLoading],
   );
 
   const updateUser = useCallback<UserMethods['updateUser']>(
@@ -126,7 +127,7 @@ const useUserHook = (): [UserMethods, boolean, Error | undefined] => {
       setLoading(false);
       return userDocRef;
     },
-    [authUser, setUserInfo],
+    [authUser, setUserInfo, setLoading],
   );
 
   return [{ getUser, addUser, updateUser }, loading, error];

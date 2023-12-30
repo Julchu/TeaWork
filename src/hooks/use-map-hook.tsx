@@ -1,21 +1,23 @@
 import mapBoxGL from 'mapbox-gl';
-import { MutableRefObject, useCallback, useMemo, useState } from 'react';
-import { useUserContext } from 'src/hooks/use-user-context';
+import { Dispatch, MutableRefObject, SetStateAction, useCallback, useMemo, useState } from 'react';
+import { useAuthContext } from 'src/hooks/use-auth-context';
 import { Coordinates } from 'src/lib/firebase/interfaces';
 import useUserHook from 'src/hooks/use-user-firestore-hook';
 
 type MapMethods = {
   triggerGeolocator: () => void;
   triggerNorth: () => void;
-  updatePerformance: () => void;
+  updatePerformance: () => Promise<void>;
   triggerPink: () => void;
   addMarker: (
     htmlElement: string,
     currentMarker: mapBoxGL.Marker | undefined,
-    setCurrentMarker: (marker: mapBoxGL.Marker) => void,
+    setCurrentMarker: (marker: mapBoxGL.Marker | undefined) => void,
     coords: Coordinates,
     save?: boolean,
   ) => void;
+  togglePerformanceLayer: (toggleOn?: boolean) => void;
+  removePerformanceLayer: () => void;
   addPerformanceLayer: () => void;
   flyTo: (coords: Coordinates, zoom?: number) => void;
   mapStyles: Record<string, string>;
@@ -25,12 +27,13 @@ type MapMethods = {
 const useMapHook = (
   map: MutableRefObject<mapBoxGL.Map | null>,
   mapLoading: boolean,
+  setMapLoading: Dispatch<SetStateAction<boolean>>,
   shouldUseDarkMode?: boolean,
 ): [MapMethods, boolean, Error | undefined] => {
-  const [loading, setLoading] = useState(false);
+  const [userLoading, setUserLoading] = useState(false);
   const [error, setError] = useState<Error>();
+  const { userInfo } = useAuthContext();
   const [{ updateUser }] = useUserHook();
-  const { userInfo, setUserInfo } = useUserContext();
 
   const mapStyles = useMemo(() => {
     return {
@@ -74,7 +77,7 @@ const useMapHook = (
     (
       htmlElement: string,
       currentMarker: mapBoxGL.Marker | undefined,
-      setCurrentMarker: (marker: mapBoxGL.Marker) => void,
+      setCurrentMarker: (marker: mapBoxGL.Marker | undefined) => void,
       coords: Coordinates,
       save?: boolean,
     ) => {
@@ -92,6 +95,9 @@ const useMapHook = (
 
       if (save) {
         if (currentMarker) {
+          // currentMarker.remove();
+          // setCurrentMarker(undefined);
+          // marker.addTo(map.current);
           currentMarker.setLngLat([coords.lng, coords.lat]);
         } else {
           setCurrentMarker(marker);
@@ -110,8 +116,14 @@ const useMapHook = (
     [map],
   );
 
+  const removePerformanceLayer = useCallback<MapMethods['removePerformanceLayer']>(() => {
+    if (map.current && !mapLoading) {
+      map.current?.removeLayer('add-3d-buildings');
+    }
+  }, [map, mapLoading]);
+
   const addPerformanceLayer = useCallback<MapMethods['addPerformanceLayer']>(() => {
-    if (!mapLoading) {
+    if (map.current && !mapLoading) {
       // Insert the layer beneath any symbol layer.
       const layers = map.current?.getStyle().layers;
       const labelLayerId = layers?.find(
@@ -158,6 +170,16 @@ const useMapHook = (
     }
   }, [map, mapLoading]);
 
+  const togglePerformanceLayer = useCallback<MapMethods['togglePerformanceLayer']>(
+    toggleOn => {
+      if (map.current && !mapLoading) {
+        if (toggleOn && !map.current?.getLayer('add-3d-buildings')) addPerformanceLayer();
+        else if (!toggleOn && map.current?.getLayer('add-3d-buildings')) removePerformanceLayer();
+      }
+    },
+    [addPerformanceLayer, map, mapLoading, removePerformanceLayer],
+  );
+
   const triggerGeolocator = useCallback<MapMethods['triggerGeolocator']>(() => {
     return;
   }, []);
@@ -167,14 +189,8 @@ const useMapHook = (
   }, [map]);
 
   const updatePerformance = useCallback<MapMethods['updatePerformance']>(async () => {
-    if (!mapLoading && userInfo) {
-      setUserInfo(currentInfo => ({
-        ...currentInfo,
-        performanceMode: !currentInfo?.performanceMode,
-      }));
-      await updateUser({ performanceMode: !userInfo.performanceMode });
-    }
-  }, [mapLoading, setUserInfo, updateUser, userInfo]);
+    if (map.current && userInfo) await updateUser({ performanceMode: !userInfo.performanceMode });
+  }, [map, updateUser, userInfo]);
 
   const triggerPink = useCallback<MapMethods['triggerPink']>(() => {
     if (!mapLoading) {
@@ -188,13 +204,15 @@ const useMapHook = (
         }
       });
     }
-  }, [addPerformanceLayer, map, mapLoading, mapStyles.default, userInfo?.performanceMode]);
+  }, [map, mapLoading, mapStyles.default, addPerformanceLayer, userInfo?.performanceMode]);
 
   return [
     {
       addMarker,
       flyTo,
+      togglePerformanceLayer,
       addPerformanceLayer,
+      removePerformanceLayer,
       triggerGeolocator,
       triggerNorth,
       updatePerformance,
@@ -202,7 +220,7 @@ const useMapHook = (
       mapStyles,
       markers,
     },
-    loading,
+    userLoading,
     error,
   ];
 };

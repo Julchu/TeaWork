@@ -17,6 +17,7 @@ const Home: FC = async () => {
   const vercelLat = headerStore.get('x-vercel-ip-latitude');
   const vercelLng = headerStore.get('x-vercel-ip-longitude');
   const timeZone = headerStore.get('x-vercel-ip-timezone');
+  // TODO: get timezone based on location/ip
 
   const devMode = !!process.env.NEXT_PUBLIC_EMULATOR_ENABLED;
   const fetchObj = {
