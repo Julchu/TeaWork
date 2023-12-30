@@ -122,11 +122,11 @@ const Map: FC<{
     }
   }, [authLoading, mapStyles, userInfo?.mapStyle, userLoading]);
 
-  // Setting initial performance mode whenever style changes or page loads
+  // Setting performance mode whenever style changes or page loads
   useEffect(() => {
     if (map.current)
       if (userInfo?.performanceMode && !userLoading && !authLoading) {
-        map.current.once('style.load', () => {
+        map.current.on('style.load', () => {
           togglePerformanceLayer(userInfo.performanceMode);
         });
       }
