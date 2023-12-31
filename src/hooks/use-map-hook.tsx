@@ -8,7 +8,6 @@ type MapMethods = {
   triggerGeolocator: () => void;
   triggerNorth: () => void;
   updatePerformance: () => Promise<void>;
-  triggerPink: () => void;
   addMarker: (
     htmlElement: string,
     currentMarker: mapBoxGL.Marker | undefined,
@@ -50,7 +49,7 @@ const useMapHook = (
         ? `mapbox://styles/mapbox/navigation-night-v1`
         : `mapbox://styles/mapbox/navigation-day-v1`,
       pink: 'mapbox://styles/jchumtl/clnfdhrsc080001qi3ye8e8mj',
-      standard: 'mapbox://styles/mapbox/standard-beta',
+      standard: 'mapbox://styles/mapbox/standard',
     };
   }, [shouldUseDarkMode]);
 
@@ -117,9 +116,7 @@ const useMapHook = (
   );
 
   const removePerformanceLayer = useCallback<MapMethods['removePerformanceLayer']>(() => {
-    if (map.current && !mapLoading) {
-      map.current?.removeLayer('add-3d-buildings');
-    }
+    if (map.current && !mapLoading) map.current?.removeLayer('add-3d-buildings');
   }, [map, mapLoading]);
 
   const addPerformanceLayer = useCallback<MapMethods['addPerformanceLayer']>(() => {
@@ -192,20 +189,6 @@ const useMapHook = (
     if (map.current && userInfo) await updateUser({ performanceMode: !userInfo.performanceMode });
   }, [map, updateUser, userInfo]);
 
-  const triggerPink = useCallback<MapMethods['triggerPink']>(() => {
-    if (!mapLoading) {
-      map.current?.setStyle(mapStyles.default);
-      map.current?.on('style.load', () => {
-        if (userInfo?.performanceMode) {
-          addPerformanceLayer();
-          map.current?.triggerRepaint();
-          map.current?.resize();
-          // map.current?.setLight({color: 'red'})
-        }
-      });
-    }
-  }, [map, mapLoading, mapStyles.default, addPerformanceLayer, userInfo?.performanceMode]);
-
   return [
     {
       addMarker,
@@ -216,7 +199,6 @@ const useMapHook = (
       triggerGeolocator,
       triggerNorth,
       updatePerformance,
-      triggerPink,
       mapStyles,
       markers,
     },

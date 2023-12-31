@@ -6,7 +6,7 @@ import React, { FC, useCallback, useEffect, useRef, useState } from 'react';
 import * as process from 'process';
 import useUserHook from 'src/hooks/use-user-firestore-hook';
 import { useAuthContext } from 'src/hooks/use-auth-context';
-import { Coordinates } from 'src/lib/firebase/interfaces';
+import { Coordinates, MapStyle } from 'src/lib/firebase/interfaces';
 import Controls from 'src/components/map/controls';
 import useMapHook from 'src/hooks/use-map-hook';
 
@@ -28,6 +28,9 @@ const Map: FC<{
   // Geolocator used to pass to external functions outside useEffect
   const [viewingCoords, setViewingCoords] = useState<Coordinates>();
   const [locationLoading, setLocationLoading] = useState<boolean>(false);
+
+  const [currentMapStyle, setCurrentMapStyle] = useState<MapStyle>();
+  const [currentPerfMode, setCurrentPerfMode] = useState<boolean | undefined>(false);
 
   const [currentMarker, setCurrentMarker] = useState<Marker>();
 
@@ -85,16 +88,14 @@ const Map: FC<{
           sources: {},
           layers: [],
         },
-        center: [-79.387054, 43.642567],
-        // center: [initialCoords.lng, initialCoords.lat],
-        zoom: 17,
+        center: [initialCoords.lng, initialCoords.lat],
+        zoom: 9,
         antialias: true,
       })
-        .on('idle', () => {
-          if (map.current?.isStyleLoaded()) {
-            setMapLoading(false);
-          }
-        })
+        .on('styledataloading', () => setMapLoading(true))
+        .off('styledataloading', () => setMapLoading(false))
+        .on('styledata', () => setMapLoading(false))
+        // .off('styledata', () => setMapLoading(false))
         // Gets currently-viewing coordinates
         .on('moveend', () => {
           if (map.current)
@@ -114,32 +115,55 @@ const Map: FC<{
   // Setting map styles
   useEffect(() => {
     if (map.current) {
-      if (userInfo?.mapStyle && !userLoading && !authLoading) {
-        map.current.setStyle(mapStyles[userInfo?.mapStyle]);
+      if (userInfo !== undefined) {
+        if (
+          userInfo.mapStyle &&
+          userInfo?.mapStyle !== currentMapStyle &&
+          !userLoading &&
+          !authLoading
+        ) {
+          map.current.setStyle(mapStyles[userInfo?.mapStyle]);
+          setCurrentMapStyle(userInfo?.mapStyle);
+        }
       } else {
         map.current?.setStyle(mapStyles.default);
+        setCurrentMapStyle(MapStyle.default);
       }
     }
-  }, [authLoading, mapStyles, userInfo?.mapStyle, userLoading]);
+  }, [authLoading, currentMapStyle, mapStyles, userInfo, userInfo?.mapStyle, userLoading]);
 
   // Setting performance mode
   useEffect(() => {
     if (map.current) {
-      if (userInfo?.performanceMode && !userLoading && !authLoading)
+      if (userInfo?.performanceMode !== currentPerfMode && !userLoading && !authLoading) {
         togglePerformanceLayer(userInfo?.performanceMode);
-      else togglePerformanceLayer(false);
+        setCurrentPerfMode(userInfo?.performanceMode);
+      }
     }
-  }, [authLoading, togglePerformanceLayer, userInfo?.performanceMode, userLoading]);
+  }, [
+    authLoading,
+    currentPerfMode,
+    togglePerformanceLayer,
+    userInfo?.performanceMode,
+    userLoading,
+  ]);
 
   // Setting performance mode whenever style changes or page loads
   useEffect(() => {
     if (map.current)
-      if (userInfo?.performanceMode && !userLoading && !authLoading) {
+      if (userInfo?.performanceMode !== currentPerfMode && !userLoading && !authLoading) {
         map.current.on('style.load', () => {
-          togglePerformanceLayer(userInfo.performanceMode);
+          togglePerformanceLayer(userInfo?.performanceMode);
+          togglePerformanceLayer(userInfo?.performanceMode);
         });
       }
-  }, [authLoading, togglePerformanceLayer, userInfo?.performanceMode, userLoading]);
+  }, [
+    authLoading,
+    currentPerfMode,
+    togglePerformanceLayer,
+    userInfo?.performanceMode,
+    userLoading,
+  ]);
 
   // Setting initial location
   useEffect(() => {

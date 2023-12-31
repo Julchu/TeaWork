@@ -55,7 +55,7 @@ const AuthProvider: FC<{ children: ReactNode }> = ({ children }) => {
     getUserInfo().then(() => {
       setUserLoading(false);
     });
-  }, [authUser, getUser, getUserInfo]);
+  }, [getUserInfo]);
 
   return (
     <AuthContext.Provider

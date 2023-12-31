@@ -22,8 +22,6 @@ export enum MapStyle {
   pink = 'pink',
 }
 
-export type MapStyleType = 'default' | 'nav' | 'satellite';
-
 export enum MapTime {
   'night',
   'dusk',

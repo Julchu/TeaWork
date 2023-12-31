@@ -32,36 +32,33 @@ const useUserHook = (): [UserMethods, boolean, Error | undefined] => {
   const [error, setError] = useState<Error>();
   const { authUser, setUserInfo } = useAuthContext();
 
-  const getUser = useCallback<UserMethods['getUser']>(
-    async authUser => {
-      if (!authUser) {
-        setLoading(false);
-        return;
-      }
-
-      let userDocRef = await getDoc(db.userDoc(authUser.uid));
-
-      try {
-        if (!userDocRef.exists()) {
-          const displayName = authUser.displayName?.split(' ');
-          const newUser: UserInfo = {
-            email: authUser.email ? authUser.email : '',
-            firstName: displayName ? displayName[0] : '',
-            lastName: displayName && displayName.length > 1 ? displayName[1] : '',
-            createdAt: serverTimestamp(),
-          };
-          await setDoc(db.userDoc(authUser.uid), newUser);
-          userDocRef = await getDoc(db.userDoc(authUser.uid));
-        }
-      } catch (e) {
-        setError(e as Error);
-      }
-
+  const getUser = useCallback<UserMethods['getUser']>(async authUser => {
+    if (!authUser) {
       setLoading(false);
-      return userDocRef;
-    },
-    [setLoading],
-  );
+      return;
+    }
+
+    let userDocRef = await getDoc(db.userDoc(authUser.uid));
+
+    try {
+      if (!userDocRef.exists()) {
+        const displayName = authUser.displayName?.split(' ');
+        const newUser: UserInfo = {
+          email: authUser.email ? authUser.email : '',
+          firstName: displayName ? displayName[0] : '',
+          lastName: displayName && displayName.length > 1 ? displayName[1] : '',
+          createdAt: serverTimestamp(),
+        };
+        await setDoc(db.userDoc(authUser.uid), newUser);
+        userDocRef = await getDoc(db.userDoc(authUser.uid));
+      }
+    } catch (e) {
+      setError(e as Error);
+    }
+
+    setLoading(false);
+    return userDocRef;
+  }, []);
 
   const addUser = useCallback<UserMethods['addUser']>(
     async ({ firstName, lastName, email, lastLocation }) => {

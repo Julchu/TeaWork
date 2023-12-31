@@ -1,4 +1,4 @@
-import React, { Dispatch, FC, MutableRefObject, SetStateAction } from 'react';
+import React, { Dispatch, FC, MutableRefObject, SetStateAction, useCallback } from 'react';
 import { useAuthContext } from 'src/hooks/use-auth-context';
 import Spinner from 'src/components/ui/spinner';
 import { Button } from 'src/components/ui/button';
@@ -23,7 +23,16 @@ const Controls: FC<{
   shouldUseDarkMode,
 }) => {
   const { userInfo } = useAuthContext();
-  const [{ updatePerformance, triggerNorth }] = useMapHook(map, mapLoading, setMapLoading);
+  const [{ updatePerformance, triggerNorth, togglePerformanceLayer }] = useMapHook(
+    map,
+    mapLoading,
+    setMapLoading,
+  );
+
+  const updatePerformanceCallback = useCallback(async () => {
+    await updatePerformance();
+    togglePerformanceLayer(!userInfo?.performanceMode);
+  }, [togglePerformanceLayer, updatePerformance, userInfo?.performanceMode]);
 
   if (mapLoading)
     return (
@@ -39,7 +48,7 @@ const Controls: FC<{
           className={
             'absolute bottom-5 left-5 opacity-60 bg-blue-600 w-[40px] h-[40px] p-0 rounded-full'
           }
-          onClick={updatePerformance}
+          onClick={updatePerformanceCallback}
         >
           {userInfo?.performanceMode ? <PowerIcon /> : <NoPowerIcon />}
         </Button>
