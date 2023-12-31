@@ -42,8 +42,8 @@ const useMapHook = (
       default: shouldUseDarkMode
         ? 'mapbox://styles/mapbox/dark-v11'
         : 'mapbox://styles/mapbox/light-v11',
-      satellite: 'mapbox://styles/mapbox/satellite-v9',
-      satelliteStreets: 'mapbox://styles/mapbox/satellite-streets-v12',
+      satelliteStreets: 'mapbox://styles/mapbox/satellite-v9',
+      satellite: 'mapbox://styles/mapbox/satellite-streets-v12',
       outdoors: 'mapbox://styles/mapbox/outdoors-v12',
       nav: shouldUseDarkMode
         ? `mapbox://styles/mapbox/navigation-night-v1`
