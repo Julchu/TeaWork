@@ -92,10 +92,7 @@ const Map: FC<{
         zoom: 9,
         antialias: true,
       })
-        .on('styledataloading', () => setMapLoading(true))
-        .off('styledataloading', () => setMapLoading(false))
-        .on('styledata', () => setMapLoading(false))
-        // .off('styledata', () => setMapLoading(false))
+        .on('idle', () => setMapLoading(false))
         // Gets currently-viewing coordinates
         .on('moveend', () => {
           if (map.current)
@@ -154,7 +151,7 @@ const Map: FC<{
       if (userInfo?.performanceMode !== currentPerfMode && !userLoading && !authLoading) {
         map.current.on('style.load', () => {
           togglePerformanceLayer(userInfo?.performanceMode);
-          togglePerformanceLayer(userInfo?.performanceMode);
+          setCurrentPerfMode(userInfo?.performanceMode);
         });
       }
   }, [
@@ -167,7 +164,7 @@ const Map: FC<{
 
   // Setting initial location
   useEffect(() => {
-    if (userInfo?.lastLocation && map.current)
+    if (map.current && userInfo?.lastLocation)
       addMarker(markers['home'], currentMarker, setCurrentMarker, userInfo.lastLocation, true);
     else {
       currentMarker?.remove();
