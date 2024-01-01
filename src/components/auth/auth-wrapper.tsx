@@ -45,7 +45,8 @@ const MenuTriggerButton: FC = () => {
 
   return (
     <DropdownMenuTrigger asChild>
-      <div className={'absolute top-5 right-5 w-[40px] h-[40px] m-6 cursor-pointer'}>
+      <div className={'absolute top-5 right-5 w-[40px] h-[40px] cursor-pointer'}>
+        {/* Full screen margin change: m-6 */}
         {authUser ? (
           <>
             <Button

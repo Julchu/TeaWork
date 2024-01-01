@@ -136,7 +136,9 @@ const useMapHook = (
           filter: ['==', 'extrude', 'true'],
           type: 'fill-extrusion',
           paint: {
-            'fill-extrusion-color': '#aaa',
+            // 'fill-extrusion-color': '#aaa', // Grey
+            // 'fill-extrusion-color': '#d0b47c', // Yellow
+            'fill-extrusion-color': 'rgb(37, 99, 235)', // Blue
 
             // Use an 'interpolate' expression to
             // add a smooth transition effect to

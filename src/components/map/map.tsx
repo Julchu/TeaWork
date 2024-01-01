@@ -177,9 +177,9 @@ const Map: FC<{
 
   return (
     <div
-      className={`overflow-hidden rounded-xl h-full w-full relative drop-shadow-lg ${
+      className={`overflow-hidden h-full w-full relative drop-shadow-lg ${
         shouldUseDarkMode ? 'bg-slate-800' : 'bg-gray-100'
-      }`}
+      }`} // Full screen margin change: rounded-xl
     >
       {/* Actual map */}
       <div

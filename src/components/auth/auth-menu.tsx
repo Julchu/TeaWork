@@ -15,7 +15,7 @@ import { authentication } from 'src/lib/firebase/firebase-config';
 export const MenuContent: FC = () => {
   const { authUser } = useAuthContext();
 
-  const [login, user, _loading, _error] = useSignInWithGoogle(authentication);
+  const [login, _user, _loading, _error] = useSignInWithGoogle(authentication);
   const [logout] = useSignOut(authentication);
 
   const authHandler = useCallback(async () => {
