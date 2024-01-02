@@ -16,7 +16,7 @@ import { firestore } from 'src/lib/firebase/firebase-config';
 export type Coordinates = { lat: number; lng: number };
 
 export enum MapStyle {
-  default = 'default',
+  grey = 'grey',
   nav = 'nav',
   satellite = 'satellite',
   pink = 'pink',

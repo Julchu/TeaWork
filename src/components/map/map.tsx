@@ -112,14 +112,9 @@ const Map: FC<{
 
   // Setting map styles
   useEffect(() => {
-    if (map.current && !mapLoading) {
+    if (map.current) {
       if (userInfo !== undefined) {
-        if (
-          userInfo.mapStyle &&
-          userInfo?.mapStyle !== currentMapStyle &&
-          !userLoading &&
-          !authLoading
-        ) {
+        if (userInfo.mapStyle && userInfo?.mapStyle !== currentMapStyle) {
           map.current.setStyle(mapStyles[userInfo?.mapStyle]);
           setCurrentMapStyle(userInfo?.mapStyle);
         } else if (!mapLoading && !currentMapStyle) {
@@ -128,50 +123,31 @@ const Map: FC<{
         }
       }
     }
-  }, [
-    authLoading,
-    currentMapStyle,
-    mapLoading,
-    mapStyles,
-    userInfo,
-    userInfo?.mapStyle,
-    userLoading,
-  ]);
+  }, [currentMapStyle, mapLoading, mapStyles, userInfo]);
 
-  // Setting performance mode
+  // Setting performance mode when user toggles perf mode
   useEffect(() => {
     if (map.current) {
-      if (userInfo?.performanceMode !== currentPerfMode && !userLoading && !authLoading) {
+      if (userInfo?.performanceMode !== currentPerfMode) {
         togglePerformanceLayer(userInfo?.performanceMode);
         setCurrentPerfMode(userInfo?.performanceMode);
       }
     }
-  }, [
-    authLoading,
-    currentPerfMode,
-    togglePerformanceLayer,
-    userInfo?.performanceMode,
-    userLoading,
-  ]);
+  }, [currentPerfMode, togglePerformanceLayer, userInfo?.performanceMode]);
 
-  // Setting performance mode whenever style changes or page loads
+  // Setting performance mode after style changes or page loads
   useEffect(() => {
     if (map.current)
-      if (userInfo?.performanceMode !== currentPerfMode && !userLoading && !authLoading) {
+      if (userInfo?.performanceMode !== currentPerfMode) {
         map.current.on('style.load', () => {
           togglePerformanceLayer(userInfo?.performanceMode);
           setCurrentPerfMode(userInfo?.performanceMode);
         });
       }
-  }, [
-    authLoading,
-    currentPerfMode,
-    togglePerformanceLayer,
-    userInfo?.performanceMode,
-    userLoading,
-  ]);
+  }, [currentPerfMode, togglePerformanceLayer, userInfo?.performanceMode]);
 
   // Setting initial location
+  // TODO: change current marker icon
   useEffect(() => {
     if (map.current && userInfo?.lastLocation)
       addMarker(markers['home'], currentMarker, setCurrentMarker, userInfo.lastLocation, true);

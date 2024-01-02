@@ -39,7 +39,7 @@ const useMapHook = (
       streets: 'mapbox://styles/mapbox/streets-v12',
       basic: 'mapbox://styles/mapbox/basic-v8',
       bright: 'mapbox://styles/mapbox/bright-v8',
-      default: shouldUseDarkMode
+      grey: shouldUseDarkMode
         ? 'mapbox://styles/mapbox/dark-v11'
         : 'mapbox://styles/mapbox/light-v11',
       satelliteStreets: 'mapbox://styles/mapbox/satellite-v9',
@@ -92,6 +92,7 @@ const useMapHook = (
         clickTolerance: 40,
       }).setLngLat([coords.lng, coords.lat]);
 
+      // Save current home location
       if (save) {
         if (currentMarker) {
           // currentMarker.remove();
