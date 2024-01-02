@@ -9,18 +9,13 @@ import {
   DropdownMenuSubTrigger,
 } from 'src/components/ui/dropdown-menu';
 import MapStyleSelect from 'src/components/auth/map-style-settings';
-import { useSignInWithGoogle, useSignOut } from 'react-firebase-hooks/auth';
-import { authentication } from 'src/lib/firebase/firebase-config';
 
 export const MenuContent: FC = () => {
-  const { authUser } = useAuthContext();
-
-  const [login, _user, _loading, _error] = useSignInWithGoogle(authentication);
-  const [logout] = useSignOut(authentication);
+  const { authUser, userInfo, logout, login } = useAuthContext();
 
   const authHandler = useCallback(async () => {
-    if (authUser) await logout();
-    else await login();
+    if (authUser) logout();
+    else login();
   }, [login, logout, authUser]);
   return (
     <>

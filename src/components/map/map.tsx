@@ -93,6 +93,7 @@ const Map: FC<{
         antialias: true,
       })
         .on('idle', () => setMapLoading(false))
+        .on('styledata', () => setMapLoading(false))
         // Gets currently-viewing coordinates
         .on('moveend', () => {
           if (map.current)
@@ -111,7 +112,7 @@ const Map: FC<{
 
   // Setting map styles
   useEffect(() => {
-    if (map.current) {
+    if (map.current && !mapLoading) {
       if (userInfo !== undefined) {
         if (
           userInfo.mapStyle &&
@@ -121,13 +122,21 @@ const Map: FC<{
         ) {
           map.current.setStyle(mapStyles[userInfo?.mapStyle]);
           setCurrentMapStyle(userInfo?.mapStyle);
+        } else if (!mapLoading && !currentMapStyle) {
+          map.current?.setStyle(mapStyles.standard);
+          setCurrentMapStyle(MapStyle.standard);
         }
-      } else {
-        map.current?.setStyle(mapStyles.default);
-        setCurrentMapStyle(MapStyle.default);
       }
     }
-  }, [authLoading, currentMapStyle, mapStyles, userInfo, userInfo?.mapStyle, userLoading]);
+  }, [
+    authLoading,
+    currentMapStyle,
+    mapLoading,
+    mapStyles,
+    userInfo,
+    userInfo?.mapStyle,
+    userLoading,
+  ]);
 
   // Setting performance mode
   useEffect(() => {

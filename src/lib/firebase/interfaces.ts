@@ -20,6 +20,7 @@ export enum MapStyle {
   nav = 'nav',
   satellite = 'satellite',
   pink = 'pink',
+  standard = 'standard',
 }
 
 export enum MapTime {

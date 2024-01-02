@@ -10,23 +10,32 @@ import {
   useEffect,
   useState,
 } from 'react';
-import { User } from 'firebase/auth';
-import { authentication } from 'src/lib/firebase/firebase-config';
-import { useAuthState } from 'react-firebase-hooks/auth';
+import {
+  GoogleAuthProvider,
+  onAuthStateChanged,
+  signInWithPopup,
+  signOut,
+  User,
+} from 'firebase/auth';
 import { UserInfo } from 'src/lib/firebase/interfaces';
 import useUserHook from 'src/hooks/use-user-firestore-hook';
+import { authentication } from 'src/lib/firebase/firebase-config';
+import { useRouter } from 'next/navigation';
 
 export const AuthContext = createContext<AuthProps>({
   userInfo: {},
   setUserInfo: () => void 0,
   userLoading: false,
   setUserLoading: () => void 0,
+  login: () => void 0,
+  logout: () => void 0,
 });
 
 type AuthProps = {
   authUser?: User | null;
   authLoading?: boolean;
-  authError?: Error | null;
+  login: () => void;
+  logout: () => void;
 
   userInfo: Partial<UserInfo | undefined>;
   setUserInfo: Dispatch<SetStateAction<Partial<UserInfo | undefined>>>;
@@ -37,36 +46,78 @@ type AuthProps = {
 export const useAuthContext = (): AuthProps => useContext(AuthContext);
 
 const AuthProvider: FC<{ children: ReactNode }> = ({ children }) => {
-  const [authUser, authLoading, authError] = useAuthState(authentication);
+  const [authUser, setAuthUser] = useState<User | undefined>(undefined);
+  const [authLoading, setAuthLoading] = useState<boolean>(true);
   const [userInfo, setUserInfo] = useState<Partial<UserInfo>>();
   const [userLoading, setUserLoading] = useState<boolean>(false);
   const [{ getUser }] = useUserHook();
 
-  const getUserInfo = useCallback(async () => {
-    setUserLoading(true);
-    const userSnapshot = await getUser(authUser);
-    setUserInfo({
-      ...userSnapshot?.data(),
-    });
-  }, [authUser, getUser]);
+  const router = useRouter();
 
-  // Sets user object on auth changes (login/logout, page refresh)
+  const login = useCallback(async () => {
+    setAuthLoading(true);
+    const provider = new GoogleAuthProvider();
+    provider.setCustomParameters({ prompt: 'select_account' });
+
+    // Retrieve user public info such as first name
+    // provider.addScope('https://www.googleapis.com/auth/userinfo.profile');
+    // provider.addScope('profile');
+    // provider.addScope('email');
+
+    await signInWithPopup(authentication, provider); // signInWithRedirect(auth, provider) doesn't work for mobile for now
+  }, []);
+
+  const logout = useCallback(() => {
+    signOut(authentication)
+      .then(() => {
+        // Sign-out successful.
+        setAuthUser(undefined);
+        console.log('Signed out');
+        router.push('/');
+      })
+      .catch(error => {
+        // An error happened.
+        console.log('Sign out error:', error);
+      });
+    setAuthLoading(false);
+  }, [router]);
+
+  const handleAuthChange = useCallback(
+    async (firebaseUser: User | null) => {
+      if (firebaseUser) {
+        const retrievedUser = await getUser(firebaseUser);
+
+        if (retrievedUser) {
+          setAuthUser(firebaseUser);
+          setUserInfo({ ...retrievedUser?.data() });
+        }
+      } else {
+        setAuthUser(undefined);
+        setUserInfo({});
+        console.log('User is not logged');
+      }
+      setAuthLoading(false);
+    },
+    [getUser],
+  );
+
+  // Auth persistence: detect if user is authenticated or not (on page change, on page refresh)
   useEffect(() => {
-    getUserInfo().then(() => {
-      setUserLoading(false);
-    });
-  }, [getUserInfo]);
+    const unsubscribe = onAuthStateChanged(authentication, handleAuthChange);
+    return () => unsubscribe();
+  }, [handleAuthChange]);
 
   return (
     <AuthContext.Provider
       value={{
         authUser,
         authLoading,
-        authError,
         userInfo,
         setUserInfo,
         userLoading,
         setUserLoading,
+        login,
+        logout,
       }}
     >
       {children}
