@@ -24,10 +24,10 @@ export enum MapStyle {
 }
 
 export enum MapTime {
-  'night',
-  'dusk',
-  'day',
-  'dawn',
+  'dusk' = 'dusk',
+  'day' = 'day',
+  'dawn' = 'dawn',
+  'night' = 'night',
 }
 
 export type UserInfo = {

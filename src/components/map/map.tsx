@@ -6,16 +6,16 @@ import React, { FC, useCallback, useEffect, useRef, useState } from 'react';
 import * as process from 'process';
 import useUserHook from 'src/hooks/use-user-firestore-hook';
 import { useAuthContext } from 'src/hooks/use-auth-context';
-import { Coordinates, MapStyle } from 'src/lib/firebase/interfaces';
+import { Coordinates, MapStyle, MapTime } from 'src/lib/firebase/interfaces';
 import Controls from 'src/components/map/controls';
 import useMapHook from 'src/hooks/use-map-hook';
 
 // CN Tower long/lat: [-79.387054, 43.642567]
 const Map: FC<{
   shouldUseDarkMode: boolean;
+  mapTimeMode: MapTime;
   initialCoords: Coordinates;
-  headerStore?: any;
-}> = ({ shouldUseDarkMode, initialCoords, headerStore }) => {
+}> = ({ shouldUseDarkMode, initialCoords, mapTimeMode }) => {
   const { authUser, authLoading, userInfo, setUserInfo, userLoading, setUserLoading } =
     useAuthContext();
   // const [userLoading, setUserLoading]
@@ -35,7 +35,7 @@ const Map: FC<{
   const [currentMarker, setCurrentMarker] = useState<Marker>();
 
   const [{ mapStyles, markers, addMarker, togglePerformanceLayer, removePerformanceLayer, flyTo }] =
-    useMapHook(map, mapLoading, setMapLoading, shouldUseDarkMode);
+    useMapHook(map, mapLoading, setMapLoading, shouldUseDarkMode, mapTimeMode);
 
   const updateUserLocation = useCallback(
     async (coords: Coordinates) => {
@@ -124,6 +124,17 @@ const Map: FC<{
       }
     }
   }, [currentMapStyle, mapLoading, mapStyles, userInfo]);
+
+  useEffect(() => {
+    if (map.current) {
+      if (currentMapStyle === MapStyle.standard) {
+        map.current.once('style.load', () => {
+          // @ts-ignore
+          map.current?.setConfigProperty('basemap', 'lightPreset', mapTimeMode);
+        });
+      }
+    }
+  }, [currentMapStyle, mapTimeMode]);
 
   // Setting performance mode when user toggles perf mode
   useEffect(() => {

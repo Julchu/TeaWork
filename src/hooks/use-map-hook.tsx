@@ -1,7 +1,7 @@
 import mapBoxGL from 'mapbox-gl';
 import { Dispatch, MutableRefObject, SetStateAction, useCallback, useMemo, useState } from 'react';
 import { useAuthContext } from 'src/hooks/use-auth-context';
-import { Coordinates } from 'src/lib/firebase/interfaces';
+import { Coordinates, MapTime } from 'src/lib/firebase/interfaces';
 import useUserHook from 'src/hooks/use-user-firestore-hook';
 
 type MapMethods = {
@@ -28,6 +28,7 @@ const useMapHook = (
   mapLoading: boolean,
   setMapLoading: Dispatch<SetStateAction<boolean>>,
   shouldUseDarkMode?: boolean,
+  mapTimeMode?: MapTime,
 ): [MapMethods, boolean, Error | undefined] => {
   const [userLoading, setUserLoading] = useState(false);
   const [error, setError] = useState<Error>();

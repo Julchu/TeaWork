@@ -10,14 +10,12 @@ const Home: FC = async () => {
   // Default coords: Toronto
   // const defaultCoords: Coordinates = { lng: -79.387054, lat: 43.642567 };
 
-  // San Francisco: if SF is loaded then it means other geolocation metods have failed
+  // San Francisco: if SF is loaded then it means other geolocation methods have failed
   const defaultCoords: Coordinates = { lng: -122.419416, lat: 37.774929 };
 
   const ip = (headerStore.get('x-forwarded-for') || '').split(',')[0];
   const vercelLat = headerStore.get('x-vercel-ip-latitude');
   const vercelLng = headerStore.get('x-vercel-ip-longitude');
-  const timeZone = headerStore.get('x-vercel-ip-timezone');
-  // TODO: get timezone based on location/ip
 
   const devMode = !!process.env.NEXT_PUBLIC_EMULATOR_ENABLED;
   const fetchObj = {
@@ -47,16 +45,33 @@ const Home: FC = async () => {
           }
         });
 
+  const vercelTimeZone = headerStore.get('x-vercel-ip-timezone');
+
+  const timestamp = new Date().getTime() / 1000; //1697812766
+  const timeZone =
+    vercelTimeZone ||
+    (await fetch(
+      `https://maps.googleapis.com/maps/api/timezone/json?location=${initialCoords.lat},${initialCoords.lng}&key=${process.env.NEXT_PUBLIC_GEOLOCATION_API_KEY}&timestamp=${timestamp}`,
+    ).then(async response => {
+      const timezoneObject = await response.json();
+      return timezoneObject['timeZoneId'];
+    }));
+
   const currentHour = parseInt(
     new Intl.DateTimeFormat([], {
-      timeZone: timeZone || 'America/Toronto',
+      timeZone,
       hour: 'numeric',
       hourCycle: 'h24',
     }).format(),
   );
 
   const shouldUseDarkMode = 18 < currentHour || currentHour <= 6;
-  const mapTimeMode = MapTime[currentHour / 6];
+  const mapTimeMode =
+    MapTime[
+      Object.keys(MapTime)[
+        Math.floor(currentHour / 6) % Object.keys(MapTime).length
+      ] as keyof typeof MapTime
+    ];
 
   return (
     // bg-gradient-to-r from-indigo-200 via-purple-500 to-pink-200
@@ -68,7 +83,7 @@ const Home: FC = async () => {
       <Map
         initialCoords={initialCoords}
         shouldUseDarkMode={shouldUseDarkMode}
-        headerStore={mapTimeMode}
+        mapTimeMode={mapTimeMode}
       />
     </main>
   );
