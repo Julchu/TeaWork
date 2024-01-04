@@ -1,8 +1,6 @@
 import * as React from 'react';
 import { FC, useCallback } from 'react';
 import { useAuthContext } from 'src/hooks/use-auth-context';
-// import {
-// } from 'src/components/ui/dropdown-menu';
 import MapStyleSelect from 'src/components/auth/map-style-settings';
 import {
   DropdownMenuItem,
