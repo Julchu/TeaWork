@@ -11,7 +11,8 @@
     "lint": "next lint",
     "lint:fix": "next lint --fix '**/*.{ts,tsx}'",
     "type-check": "tsc --noEmit",
-    "type-check:firebase": "tsc -p functions --skipLibCheck --noEmit"
+    "type-check:firebase": "tsc -p functions --skipLibCheck --noEmit",
+    "test": "next lint && tsc --noEmit"
   },
   "dependencies": {
     "@radix-ui/react-avatar": "^1.0.4",
