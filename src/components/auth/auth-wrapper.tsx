@@ -1,15 +1,17 @@
 'use client';
+import * as React from 'react';
 import { FC, ReactNode, useMemo } from 'react';
 import { useAuthContext } from 'src/hooks/use-auth-context';
+import PersonIcon from 'src/components/ui/icons/person';
+import { urbanist } from 'src/components/ui/fonts';
+import { MenuContent } from 'src/components/auth/auth-menu';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuTrigger,
-} from 'src/components/ui/dropdown-menu';
-import PersonIcon from 'src/components/ui/icons/person';
+} from '@radix-ui/react-dropdown-menu';
+import { DropdownMenuArrow } from 'src/components/ui/dropdown-menu';
 import { Button } from 'src/components/ui/button';
-import { urbanist } from 'src/components/ui/fonts';
-import { MenuContent } from 'src/components/auth/auth-menu';
 
 const AuthWrapper: FC<{
   children: ReactNode;
@@ -22,8 +24,14 @@ const AuthWrapper: FC<{
       <DropdownMenu modal={false}>
         <MenuTriggerButton />
 
-        <DropdownMenuContent align={'end'} className={'border-0'}>
+        <DropdownMenuContent
+          align={'end'}
+          className={
+            'border-0 z-50 min-w-[8rem] rounded-md bg-popover p-1 text-popover-foreground shadow-md data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2'
+          }
+        >
           <MenuContent />
+          <DropdownMenuArrow className={'fill-white'} />
         </DropdownMenuContent>
       </DropdownMenu>
     </>

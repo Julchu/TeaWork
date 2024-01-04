@@ -7,7 +7,7 @@ const Logo: FC = () => {
   return (
     <Link href={'/'}>
       <Button
-        className={`opacity-50 bg-blue-600 text-2xl font-bold absolute top-5 left-5 cursor-pointer text-white tracking-widest ${urbanist.className}`} // Full screen margin change: m-6
+        className={`rounded-md h-9 px-4 py-2 opacity-50 bg-blue-600 text-2xl font-bold absolute top-5 left-5 cursor-pointer text-white tracking-widest ${urbanist.className}`} // Full screen margin change: m-6
       >
         TeaWork
       </Button>

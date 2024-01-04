@@ -11,7 +11,7 @@ const MapStyleSelect: FC = () => {
 
   return (
     <DropdownMenuRadioGroup
-      value={userInfo?.mapStyle}
+      value={userInfo?.mapStyle || MapStyle.standard}
       onValueChange={async style =>
         await updateUser({ mapStyle: MapStyle[style as keyof typeof MapStyle] })
       }
