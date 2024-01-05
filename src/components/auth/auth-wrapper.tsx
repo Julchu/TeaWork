@@ -3,7 +3,7 @@ import * as React from 'react';
 import { FC, ReactNode, useMemo } from 'react';
 import { useAuthContext } from 'src/hooks/use-auth-context';
 import PersonIcon from 'src/components/ui/icons/person';
-import { urbanist } from 'src/components/ui/fonts';
+import { montserrat } from 'src/components/ui/fonts';
 import { MenuContent } from 'src/components/auth/auth-menu';
 import {
   DropdownMenu,
@@ -59,7 +59,7 @@ const MenuTriggerButton: FC = () => {
         {authUser ? (
           <>
             <Button
-              className={`font-bold absolute opacity-60 bg-blue-600 w-full h-full p-0 rounded-full ${urbanist.className}`}
+              className={`font-bold absolute opacity-60 bg-blue-600 w-full h-full p-0 rounded-full ${montserrat.className}`}
             >
               {initials}
             </Button>

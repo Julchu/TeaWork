@@ -2,7 +2,7 @@ import './globals.css';
 import type { Metadata } from 'next';
 import React, { ReactNode } from 'react';
 import { Analytics } from '@vercel/analytics/react';
-import { urbanist } from 'src/components/ui/fonts';
+import { montserrat } from 'src/components/ui/fonts';
 import { headers } from 'next/headers';
 import Providers from 'src/hooks/use-providers';
 
@@ -26,7 +26,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
 
   return (
     <html lang="en">
-      <body className={`${urbanist} ${shouldUseDarkMode ? 'bg-black' : ''}`}>
+      <body className={`${montserrat.className} ${shouldUseDarkMode ? 'bg-black' : ''}`}>
         <Providers>{children}</Providers>
         <Analytics />
       </body>
