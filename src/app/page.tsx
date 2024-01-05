@@ -8,10 +8,10 @@ const Home: FC = async () => {
   const headerStore = headers();
 
   // Default coords: Toronto
-  // const defaultCoords: Coordinates = { lng: -79.387054, lat: 43.642567 };
+  const defaultCoords: Coordinates = { lng: -79.387054, lat: 43.642567 };
 
   // San Francisco: if SF is loaded then it means other geolocation methods have failed
-  const defaultCoords: Coordinates = { lng: -122.419416, lat: 37.774929 };
+  // const defaultCoords: Coordinates = { lng: -122.419416, lat: 37.774929 };
 
   const ip = (headerStore.get('x-forwarded-for') || '').split(',')[0];
   const vercelLat = headerStore.get('x-vercel-ip-latitude');
@@ -19,43 +19,31 @@ const Home: FC = async () => {
 
   const devMode = !!process.env.NEXT_PUBLIC_EMULATOR_ENABLED;
   const fetchObj = {
-    url: devMode
-      ? `https://www.googleapis.com/geolocation/v1/geolocate?key=${process.env.NEXT_PUBLIC_GEOLOCATION_API_KEY}`
-      : `https://ipinfo.io/${ip}?token=${process.env.NEXT_PUBLIC_GEOLOCATION_API_KEY}`,
-    method: devMode ? 'POST' : 'GET',
+    url: `https://ipinfo.io/${ip}?token=${process.env.NEXT_PUBLIC_GEOLOCATION_API_KEY}`,
+    method: 'GET',
   };
 
-  const initialCoords =
+  const [initialCoords, timeZone] =
     vercelLat && vercelLng
-      ? {
-          lng: parseFloat(vercelLng),
-          lat: parseFloat(vercelLat),
-        }
+      ? [
+          {
+            lng: parseFloat(vercelLng),
+            lat: parseFloat(vercelLat),
+          },
+          headerStore.get('x-vercel-ip-timezone'),
+        ]
       : // Try fetching geolocation using IpInfo.io services; if not; return Toronto geolocation
         await fetch(fetchObj.url, { method: fetchObj.method }).then(async response => {
           const locationObj = await response.json();
-          if (devMode && locationObj['location']) {
-            const { lat, lng } = locationObj['location'];
-            return { lat, lng };
-          } else if (locationObj['loc']) {
+          if (locationObj['loc'] && locationObj['timezone']) {
             const [lat, lng] = locationObj['loc'].split(',');
-            return { lat, lng };
+            return [{ lat, lng }, locationObj['timezone']];
           } else {
-            return defaultCoords;
+            return [defaultCoords, 'America/Toronto'];
           }
         });
 
-  const vercelTimeZone = headerStore.get('x-vercel-ip-timezone');
-
   const timestamp = new Date().getTime() / 1000; //1697812766
-  const timeZone =
-    vercelTimeZone ||
-    (await fetch(
-      `https://maps.googleapis.com/maps/api/timezone/json?location=${initialCoords.lat},${initialCoords.lng}&key=${process.env.NEXT_PUBLIC_GEOLOCATION_API_KEY}&timestamp=${timestamp}`,
-    ).then(async response => {
-      const timezoneObject = await response.json();
-      return timezoneObject['timeZoneId'];
-    }));
 
   const currentHour = parseInt(
     new Intl.DateTimeFormat([], {
@@ -80,6 +68,8 @@ const Home: FC = async () => {
         ${shouldUseDarkMode ? 'bg-gray-900' : ''}
       `} // Full screen margin change: p-6
     >
+      <div>location: {initialCoords.lat}</div>
+      <div>location: {initialCoords.lng}</div>
       <Map
         initialCoords={initialCoords}
         shouldUseDarkMode={shouldUseDarkMode}
