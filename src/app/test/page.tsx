@@ -17,7 +17,7 @@ const Home: FC = async () => {
   const timeZone =
     vercelTimeZone ||
     (await fetch(
-      `https://maps.googleapis.com/maps/api/timezone/json?location=${initialCoords.lat},${initialCoords.lng}&key=${process.env.NEXT_PUBLIC_GEOLOCATION_API_KEY}&timestamp=${timestamp}`,
+      `https://maps.googleapis.com/maps/api/timezone/json?location=${initialCoords.lat},${initialCoords.lng}&key=${process.env.NEXT_PUBLIC_GOOGLE_GEOLOCATION_API_KEY}&timestamp=${timestamp}`,
     ).then(async response => {
       const timezoneObject = await response.json();
       return timezoneObject['timeZoneId'];

@@ -7,21 +7,22 @@ import { Coordinates, MapTime } from 'src/lib/firebase/interfaces';
 const Home: FC = async () => {
   const headerStore = headers();
 
-  // Default coords: Toronto
+  // Toronto; 'America/Toronto'
   // const defaultCoords: Coordinates = { lng: -79.387054, lat: 43.642567 };
+  // const defaultTimezone = 'America/Toronto'
 
-  // San Francisco: if SF is loaded then it means other geolocation methods have failed
+  // San Francisco; : if SF is loaded then it means other geolocation methods have failed
   const defaultCoords: Coordinates = { lng: -122.419416, lat: 37.774929 };
+  const defaultTimezone = 'America/Los_Angeles';
 
   const ip = (headerStore.get('x-forwarded-for') || '').split(',')[0];
   const vercelLat = headerStore.get('x-vercel-ip-latitude');
   const vercelLng = headerStore.get('x-vercel-ip-longitude');
 
-  const devMode = !!process.env.NEXT_PUBLIC_EMULATOR_ENABLED;
-  const fetchObj = {
-    url: `https://ipinfo.io/${ip}?token=${process.env.NEXT_PUBLIC_GEOLOCATION_API_KEY}`,
-    method: 'GET',
-  };
+  // Localhost IP would return ::1 which is invalid; shortest possible IP might be 5 digits
+  const url = `https://ipinfo.io/${ip.length >= 5 ? ip : ''}?token=${
+    process.env.NEXT_PUBLIC_IPINFO_GEOLOCATION_API_KEY
+  }`;
 
   const [initialCoords, timeZone] =
     vercelLat && vercelLng
@@ -33,17 +34,15 @@ const Home: FC = async () => {
           headerStore.get('x-vercel-ip-timezone'),
         ]
       : // Try fetching geolocation using IpInfo.io services; if not; return Toronto geolocation
-        await fetch(fetchObj.url, { method: fetchObj.method }).then(async response => {
+        await fetch(url).then(async response => {
           const locationObj = await response.json();
           if (locationObj['loc'] && locationObj['timezone']) {
             const [lat, lng] = locationObj['loc'].split(',');
             return [{ lat, lng }, locationObj['timezone']];
           } else {
-            return [defaultCoords, 'America/Toronto'];
+            return [defaultCoords, defaultTimezone];
           }
         });
-
-  const timestamp = new Date().getTime() / 1000; //1697812766
 
   const currentHour = parseInt(
     new Intl.DateTimeFormat([], {
