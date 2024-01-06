@@ -8,10 +8,10 @@ const Home: FC = async () => {
   const headerStore = headers();
 
   // Default coords: Toronto
-  const defaultCoords: Coordinates = { lng: -79.387054, lat: 43.642567 };
+  // const defaultCoords: Coordinates = { lng: -79.387054, lat: 43.642567 };
 
   // San Francisco: if SF is loaded then it means other geolocation methods have failed
-  // const defaultCoords: Coordinates = { lng: -122.419416, lat: 37.774929 };
+  const defaultCoords: Coordinates = { lng: -122.419416, lat: 37.774929 };
 
   const ip = (headerStore.get('x-forwarded-for') || '').split(',')[0];
   const vercelLat = headerStore.get('x-vercel-ip-latitude');
@@ -68,8 +68,6 @@ const Home: FC = async () => {
         ${shouldUseDarkMode ? 'bg-gray-900' : ''}
       `} // Full screen margin change: p-6
     >
-      <div>location: {initialCoords.lat}</div>
-      <div>location: {initialCoords.lng}</div>
       <Map
         initialCoords={initialCoords}
         shouldUseDarkMode={shouldUseDarkMode}
