@@ -16,11 +16,12 @@ import { firestore } from 'src/lib/firebase/firebase-config';
 export type Coordinates = { lat: number; lng: number };
 
 export enum MapStyle {
+  standard = 'standard',
   grey = 'grey',
   nav = 'nav',
   satellite = 'satellite',
   pink = 'pink',
-  standard = 'standard',
+  streets = 'streets',
 }
 
 export enum MapTime {
@@ -38,6 +39,37 @@ export type UserInfo = {
   createdAt?: Timestamp | FieldValue;
   performanceMode?: boolean;
   mapStyle?: MapStyle;
+};
+
+type Wifi = {
+  available: boolean;
+  name: string;
+  password?: string;
+  fast?: boolean;
+};
+
+type BathroomLock = {
+  type: 'key' | 'code';
+  code?: string;
+};
+
+type Bathroom = {
+  available: boolean;
+  locked: BathroomLock;
+};
+
+export type Cafe = {
+  name: string;
+  wifi: Wifi;
+  outlet: boolean;
+  bathroom: Bathroom;
+  clean: boolean;
+  busy: {
+    morning: boolean;
+    afternoon: boolean;
+    evening: boolean;
+  };
+  parking: boolean;
 };
 
 export const genericConverter = <T>(): FirestoreDataConverter<T> => ({

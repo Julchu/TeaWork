@@ -125,17 +125,6 @@ const Map: FC<{
     }
   }, [currentMapStyle, mapLoading, mapStyles, userInfo]);
 
-  // useEffect(() => {
-  //   if (map.current) {
-  //     if (currentMapStyle === MapStyle.standard) {
-  //       map.current.once('style.load', () => {
-  //         // @ts-ignore
-  //         map.current?.setConfigProperty('basemap', 'lightPreset', mapTimeMode);
-  //       });
-  //     }
-  //   }
-  // }, [currentMapStyle, mapTimeMode]);
-
   // Setting performance mode when user toggles perf mode
   useEffect(() => {
     if (map.current) {
