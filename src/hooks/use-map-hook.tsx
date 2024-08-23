@@ -52,14 +52,15 @@ const useMapHook = (
         : `mapbox://styles/mapbox/navigation-day-v1`,
       pink: 'mapbox://styles/jchumtl/clnfdhrsc080001qi3ye8e8mj',
       standardDefault: 'mapbox://styles/mapbox/standard',
+      standard2: 'mapbox://styles/mapbox/standard',
       standard:
-        mapTimeMode === 'dawn'
+        mapTimeMode === MapTime.dawn
           ? 'mapbox://styles/jchumtl/clr05ebof00tu01nva1xxag8p'
-          : mapTimeMode === 'dusk'
-          ? 'mapbox://styles/jchumtl/clr05vdp400f401qvgtdc5czu'
-          : mapTimeMode === 'night'
-          ? 'mapbox://styles/jchumtl/clr05wq8w00t501qrcc2h3gzw'
-          : 'mapbox://styles/jchumtl/clr05sec300th01ql91z593w2',
+          : mapTimeMode === MapTime.dusk
+            ? 'mapbox://styles/jchumtl/clr05vdp400f401qvgtdc5czu'
+            : mapTimeMode === MapTime.night
+              ? 'mapbox://styles/jchumtl/clr05wq8w00t501qrcc2h3gzw'
+              : 'mapbox://styles/jchumtl/clr05sec300th01ql91z593w2',
     };
   }, [mapTimeMode, shouldUseDarkMode]);
 

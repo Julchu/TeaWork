@@ -2,6 +2,7 @@
 import 'mapbox-gl/dist/mapbox-gl.css';
 import './map.css';
 import mapBoxGL, { Marker } from 'mapbox-gl';
+// import MapboxGeocoder from '@mapbox/mapbox-gl-geocoder';
 import React, { FC, useCallback, useEffect, useRef, useState } from 'react';
 import * as process from 'process';
 import useUserHook from 'src/hooks/use-user-firestore-hook';
@@ -9,6 +10,8 @@ import { useAuthContext } from 'src/hooks/use-auth-context';
 import { Coordinates, MapStyle, MapTime } from 'src/lib/firebase/interfaces';
 import Controls from 'src/components/map/controls';
 import useMapHook from 'src/hooks/use-map-hook';
+import useDebouncedState from 'src/hooks/use-debounced-hook';
+import { Button } from 'src/components/ui/button';
 
 // CN Tower long/lat: [-79.387054, 43.642567]
 const Map: FC<{
@@ -27,6 +30,7 @@ const Map: FC<{
   const mapContainer = useRef<HTMLDivElement | null>(null);
   // Geolocator used to pass to external functions outside useEffect
   const [viewingCoords, setViewingCoords] = useState<Coordinates>();
+  const debouncedViewingCoords = useDebouncedState(viewingCoords);
   const [locationLoading, setLocationLoading] = useState<boolean>(false);
 
   const [currentMapStyle, setCurrentMapStyle] = useState<MapStyle>();
@@ -62,9 +66,10 @@ const Map: FC<{
           if (map.current)
             addMarker(markers['location'], currentMarker, setCurrentMarker, coords, save);
 
-          map.current?.once('movestart', async () => {
-            setLocationLoading(true);
-          });
+          if (map.current)
+            map.current?.once('movestart', async () => {
+              setLocationLoading(true);
+            });
         },
         error => {
           console.log('Error geolocating', error);
@@ -77,12 +82,11 @@ const Map: FC<{
 
   // Initial map loading and base map event listeners that persist
   useEffect(() => {
-    if (!map.current && mapContainer.current !== undefined && mapContainer.current !== null) {
+    if (!map.current && mapContainer.current !== null) {
       mapBoxGL.accessToken = process.env.NEXT_PUBLIC_MAPBOX_TOKEN || '';
-
       map.current = new mapBoxGL.Map({
         attributionControl: false,
-        container: mapContainer.current,
+        container: mapContainer.current || '',
         style: {
           version: 8,
           sources: {},
@@ -96,10 +100,12 @@ const Map: FC<{
         .on('styledata', () => setMapLoading(false))
         // Gets currently-viewing coordinates
         .on('moveend', () => {
-          if (map.current)
+          const lng = map.current?.getCenter().lng.toFixed(4);
+          const lat = map.current?.getCenter().lat.toFixed(4);
+          if (lng && lat)
             setViewingCoords({
-              lng: parseFloat(map.current.getCenter().lng.toFixed(4)),
-              lat: parseFloat(map.current.getCenter().lat.toFixed(4)),
+              lng: parseFloat(lng),
+              lat: parseFloat(lat),
             });
           setLocationLoading(false);
         }) // Click marker event listeners
@@ -109,6 +115,53 @@ const Map: FC<{
         });
     }
   }, [addMarker, currentMarker, initialCoords.lat, initialCoords.lng, markers]);
+
+  const searchNearby = useCallback(async (coordinates: Coordinates) => {
+    const results = await fetch(
+      `https://api.mapbox.com/search/searchbox/v1/forward?&access_token=${process.env.NEXT_PUBLIC_MAPBOX_TOKEN}&q=cafe&proximity=${coordinates.lng},${coordinates.lat}`,
+    );
+    return await results.json();
+  }, []);
+
+  /*
+    Bakery,Restaurant,Pub,Cafe,Memorial,Playground,Library,Convenience_Store,Supermarket,Social_Facility,Tourist_Attraction,Bar,Hotel,Museum,Hostel,Community_Garden,Community_Center,Marketplace,Picnic_Site,Fast_Food,
+]
+  * */
+
+  // const searchCategoryNearby = useCallback(async (coordinates: Coordinates) => {
+  //   const results = await fetch(
+  //     `https://api.mapbox.com/search/searchbox/v1/category/coffee?access_token=${process.env.NEXT_PUBLIC_MAPBOX_TOKEN}&proximity=${coordinates.lng},${coordinates.lat}&poi_category=bakery,restaurant,pub,cafe,memorial,playground,library,convenience_store,supermarket,social_facility,tourist_attraction,bar,hotel,museum,hostel,community_garden,community_center,marketplace,picnic_site,fast_food`,
+  //   );
+  //   return await results.json();
+  // }, []);
+
+  const filterCategory = useCallback(() => {
+    if (map.current) {
+      const layers = map.current.style._mergedLayers;
+
+      for (const layerId in layers) {
+        if (layerId.includes('poi-label')) {
+          const layer = map.current.style._mergedLayers[layerId];
+          layer.filter = ['!=', 'category_en', 'Restaurant'];
+          map.current.style._updateLayer(layer);
+        }
+      }
+      map.current._update(true);
+    }
+  }, []);
+
+  // useEffect(() => {
+  //   console.log(map.current.style._mergedLayers);
+  // }, []);
+
+  // useEffect(() => {
+  //   if (debouncedViewingCoords) {
+  //     console.log('debounced', debouncedViewingCoords);
+  //     searchCategoryNearby(debouncedViewingCoords).then(results => {
+  //       console.log('results', results);
+  //     });
+  //   }
+  // }, [debouncedViewingCoords, searchCategoryNearby]);
 
   // Setting map styles
   useEffect(() => {
@@ -163,6 +216,10 @@ const Map: FC<{
         shouldUseDarkMode ? 'bg-slate-800' : 'bg-gray-100'
       }`} // Full screen margin change: rounded-xl
     >
+      <Button
+        onClick={filterCategory}
+        className={'absolute top-56 left-56 z-50 bg-green-950 w-[40px] h-[40px] p-0 rounded-full'}
+      />
       {/* Actual map */}
       <div
         className={`w-full h-full ${locationLoading ? 'animate-pulse' : ''}`}
