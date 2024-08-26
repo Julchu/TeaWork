@@ -21,16 +21,16 @@ const getIpInfo = async (ip: string) => {
 
 export const getMiddleware = async (request: NextRequest, response: NextResponse) => {
   const ip = request.headers.get('X-Forwarded-For');
-  if (ip) {
-    const { loc } = await getIpInfo(ip);
-    response.cookies.set(
-      'geo',
-      JSON.stringify({
-        lat: loc[0],
-        lng: loc[1],
-      }),
-    );
-  }
+  // if (ip) {
+  //   const { loc } = await getIpInfo(ip)
+  //   response.cookies.set(
+  //     'geo',
+  //     JSON.stringify({
+  //       lat: loc[0],
+  //       lng: loc[1],
+  //     }),
+  //   );
+  // }
 
   const authIdToken = request.cookies.get('token');
 
