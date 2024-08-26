@@ -7,7 +7,7 @@
     "dev": "next dev",
     "build": "next build",
     "build-service-worker": "npx esbuild auth-service-worker.ts --bundle --outfile=public/auth-service-worker.js",
-    "export": "next build && next export",
+    "export": "npx esbuild auth-service-worker.ts --bundle --outfile=public/auth-service-worker.js && next build && next export",
     "start": "next start",
     "lint": "next lint",
     "lint:fix": "next lint --fix '**/*.{ts,tsx}'",
