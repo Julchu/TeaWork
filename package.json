@@ -5,7 +5,7 @@
   "license": "MIT",
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "build": "npx esbuild auth-service-worker.ts --bundle --outfile=public/auth-service-worker.js && next build && next build",
     "build-service-worker": "npx esbuild auth-service-worker.ts --bundle --outfile=public/auth-service-worker.js",
     "export": "npx esbuild auth-service-worker.ts --bundle --outfile=public/auth-service-worker.js && next build && next export",
     "start": "next start",

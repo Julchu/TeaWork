@@ -9,6 +9,7 @@ import process from 'process';
 import { getAuthenticatedAppForUser } from 'src/lib/firebase/server-app';
 
 export const dynamic = 'force-dynamic';
+export const runtime = 'edge';
 
 export const metadata: Metadata = {
   title: 'TeaWork',
