@@ -16,6 +16,7 @@ const Home: FC = async () => {
   const defaultTimezone = 'America/Los_Angeles';
 
   const ip = (headerStore.get('x-forwarded-for') || '').split(',')[0];
+
   const vercelLat = headerStore.get('x-vercel-ip-latitude');
   const vercelLng = headerStore.get('x-vercel-ip-longitude');
 

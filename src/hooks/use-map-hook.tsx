@@ -1,4 +1,4 @@
-import mapBoxGL from 'mapbox-gl';
+import mapboxgl from 'mapbox-gl';
 import { Dispatch, MutableRefObject, SetStateAction, useCallback, useMemo, useState } from 'react';
 import { useAuthContext } from 'src/hooks/use-auth-context';
 import { Coordinates, MapTime } from 'src/lib/firebase/interfaces';
@@ -10,8 +10,8 @@ type MapMethods = {
   updatePerformance: () => Promise<void>;
   addMarker: (
     htmlElement: string,
-    currentMarker: mapBoxGL.Marker | undefined,
-    setCurrentMarker: (marker: mapBoxGL.Marker | undefined) => void,
+    currentMarker: mapboxgl.Marker | undefined,
+    setCurrentMarker: (marker: mapboxgl.Marker | undefined) => void,
     coords: Coordinates,
     save?: boolean,
   ) => void;
@@ -24,7 +24,7 @@ type MapMethods = {
 };
 
 const useMapHook = (
-  map: MutableRefObject<mapBoxGL.Map | null>,
+  map: MutableRefObject<mapboxgl.Map>,
   mapLoading: boolean,
   setMapLoading: Dispatch<SetStateAction<boolean>>,
   shouldUseDarkMode?: boolean,
@@ -86,8 +86,8 @@ const useMapHook = (
   const addMarker = useCallback<MapMethods['addMarker']>(
     (
       htmlElement: string,
-      currentMarker: mapBoxGL.Marker | undefined,
-      setCurrentMarker: (marker: mapBoxGL.Marker | undefined) => void,
+      currentMarker: mapboxgl.Marker | undefined,
+      setCurrentMarker: (marker: mapboxgl.Marker | undefined) => void,
       coords: Coordinates,
       save?: boolean,
     ) => {
@@ -97,7 +97,7 @@ const useMapHook = (
       element.innerHTML = htmlElement;
 
       // make a marker for each feature and add to the map
-      const marker = new mapBoxGL.Marker({
+      const marker = new mapboxgl.Marker({
         element,
         draggable: !save,
         clickTolerance: 40,
@@ -131,64 +131,67 @@ const useMapHook = (
     if (map.current && !mapLoading) map.current?.removeLayer('add-3d-buildings');
   }, [map, mapLoading]);
 
-  const addPerformanceLayer = useCallback<MapMethods['addPerformanceLayer']>(() => {
-    if (map.current && !mapLoading) {
-      // Insert the layer beneath any symbol layer.
-      const layers = map.current?.getStyle().layers;
-      const labelLayerId = layers?.find(
-        layer => layer.type === 'symbol' && layer.layout?.['text-field'],
-      )?.id;
-
-      // The 'building' layer in the Mapbox Streets vector tile set contains building height data from OpenStreetMap.
-      map.current?.addLayer(
-        {
-          id: 'add-3d-buildings',
-          source: 'composite',
-          'source-layer': 'building',
-          filter: ['==', 'extrude', 'true'],
-          type: 'fill-extrusion',
-          paint: {
-            // 'fill-extrusion-color': '#aaa', // Grey
-            // 'fill-extrusion-color': '#d0b47c', // Yellow
-            'fill-extrusion-color': 'rgb(37, 99, 235)', // Blue
-
-            // Use an 'interpolate' expression to
-            // add a smooth transition effect to
-            // the buildings as the user zooms in.
-            'fill-extrusion-height': [
-              'interpolate',
-              ['linear'],
-              ['zoom'],
-              15,
-              0,
-              15.05,
-              ['get', 'height'],
-            ],
-            'fill-extrusion-base': [
-              'interpolate',
-              ['linear'],
-              ['zoom'],
-              15,
-              0,
-              15.05,
-              ['get', 'min_height'],
-            ],
-            'fill-extrusion-opacity': 1,
-          },
-        },
-        labelLayerId,
-      );
-    }
-  }, [map, mapLoading]);
+  const addPerformanceLayer = useCallback<MapMethods['addPerformanceLayer']>(
+    () => {
+      //   if (map.current && !mapLoading) {
+      //     // Insert the layer beneath any symbol layer.
+      //     const layers = map.current?.getStyle().layers;
+      //     const labelLayerId = layers?.find(
+      //       layer => layer.type === 'symbol' && layer.layout?.['text-field'],
+      //     )?.id;
+      //     // The 'building' layer in the Mapbox Streets vector tile set contains building height data from OpenStreetMap.
+      //     map.current?.addLayer(
+      //       {
+      //         id: 'add-3d-buildings',
+      //         source: 'composite',
+      //         'source-layer': 'building',
+      //         filter: ['==', 'extrude', 'true'],
+      //         type: 'fill-extrusion',
+      //         paint: {
+      //           // 'fill-extrusion-color': '#aaa', // Grey
+      //           // 'fill-extrusion-color': '#d0b47c', // Yellow
+      //           'fill-extrusion-color': 'rgb(37, 99, 235)', // Blue
+      //           // Use an 'interpolate' expression to
+      //           // add a smooth transition effect to
+      //           // the buildings as the user zooms in.
+      //           'fill-extrusion-height': [
+      //             'interpolate',
+      //             ['linear'],
+      //             ['zoom'],
+      //             15,
+      //             0,
+      //             15.05,
+      //             ['get', 'height'],
+      //           ],
+      //           'fill-extrusion-base': [
+      //             'interpolate',
+      //             ['linear'],
+      //             ['zoom'],
+      //             15,
+      //             0,
+      //             15.05,
+      //             ['get', 'min_height'],
+      //           ],
+      //           'fill-extrusion-opacity': 1,
+      //         },
+      // },
+      // labelLayerId,
+      // );
+      // }
+    },
+    [
+      /* map, mapLoading */
+    ],
+  );
 
   const togglePerformanceLayer = useCallback<MapMethods['togglePerformanceLayer']>(
     toggleOn => {
       if (map.current && !mapLoading) {
-        if (toggleOn && !map.current?.getLayer('add-3d-buildings')) addPerformanceLayer();
+        // if (toggleOn && !map.current?.getLayer('add-3d-buildings')) addPerformanceLayer();
         if (!toggleOn && map.current?.getLayer('add-3d-buildings')) removePerformanceLayer();
       }
     },
-    [addPerformanceLayer, map, mapLoading, removePerformanceLayer],
+    [/* addPerformanceLayer,  */ map, mapLoading, removePerformanceLayer],
   );
 
   const triggerGeolocator = useCallback<MapMethods['triggerGeolocator']>(() => {

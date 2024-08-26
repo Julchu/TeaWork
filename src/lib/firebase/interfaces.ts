@@ -11,7 +11,7 @@ import {
   Timestamp,
 } from 'firebase/firestore';
 import { CollectionReference } from '@firebase/firestore';
-import { firestore } from 'src/lib/firebase/firebase-config';
+import { firestore } from 'src/lib/firebase/client-app';
 
 export type Coordinates = { lat: number; lng: number };
 

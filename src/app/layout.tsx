@@ -6,6 +6,9 @@ import { montserrat } from 'src/components/ui/fonts';
 import { headers } from 'next/headers';
 import Providers from 'src/hooks/use-providers';
 import process from 'process';
+import { getAuthenticatedAppForUser } from 'src/lib/firebase/server-app';
+
+export const dynamic = 'force-dynamic';
 
 export const metadata: Metadata = {
   title: 'TeaWork',
@@ -13,6 +16,9 @@ export const metadata: Metadata = {
 };
 
 const RootLayout: FC<{ children: ReactNode }> = async ({ children }) => {
+  const { currentUser } = await getAuthenticatedAppForUser();
+  console.log('currentUser from root', currentUser);
+
   const headerStore = headers();
 
   const ip = (headerStore.get('x-forwarded-for') || '').split(',')[0];

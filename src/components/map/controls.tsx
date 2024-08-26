@@ -4,11 +4,10 @@ import Spinner from 'src/components/ui/spinner';
 import { Button } from 'src/components/ui/button';
 import { NoPowerIcon, PowerIcon } from 'src/components/ui/icons/power';
 import { LocationIcon, NorthIcon } from 'src/components/ui/icons/map-controls';
-import mapBoxGL from 'mapbox-gl';
 import useMapHook from 'src/hooks/use-map-hook';
 
 const Controls: FC<{
-  map: MutableRefObject<mapBoxGL.Map | null>;
+  map: MutableRefObject<mapboxgl.Map>;
   mapLoading: boolean;
   setMapLoading: Dispatch<SetStateAction<boolean>>;
   locationLoading: boolean;

@@ -13,7 +13,7 @@ import {
 import { ChevronRightIcon } from '@radix-ui/react-icons';
 
 export const MenuContent: FC = () => {
-  const { authUser, userInfo, logout, login } = useAuthContext();
+  const { authUser, logout, login } = useAuthContext();
 
   const authHandler = useCallback(async () => {
     if (authUser) logout();

@@ -69,11 +69,11 @@ cd teawork
 yarn install
 yarn dev
 
-# Old deploying to Firebase; make sure to comment out lines to connect emulators in /lib/firebase/firebase-config.ts before deploying
+# Old deploying to Firebase; make sure to comment out lines to connect emulators in /lib/firebase/client-app.ts before deploying
 # Optional flag: --except functions
 yarn build && firebase --project teaworkapp deploy
 
-# Deploying app to live on GCP; make sure to comment out lines to connect emulators in /lib/firebase/firebase-config.ts before deploying
+# Deploying app to live on GCP; make sure to comment out lines to connect emulators in /lib/firebase/client-app.ts before deploying
 docker compose build
 gcloud builds submit --tag gcr.io/teaworkapp/feat/docker-gcp --project teaworkapp
 gcloud run deploy --image gcr.io/teaworkapp/feat/docker-gcp --project teaworkapp --platform managed
@@ -89,7 +89,7 @@ firebase --project="teaworkapp" emulators:start --only auth,firestore,storage --
 ```
 
 - `firebase --project="teaworkapp"` identifies the project `teawork` to run commands on
-- `firebase emulators:start` starts emulators that were setup in `firebase.json` and `firebase-config.js`
+- `firebase emulators:start` starts emulators that were setup in `firebase.json` and `client-auth.js`
 - `firebase emulators:start --only auth,firestore,storage` starts emulators for auth, Firestore (NoSQL database),
   storage (file storage like images)
 - `firebase --import ./emulatorData` imports previously-exported data from `present working director/emulatorData`
@@ -149,7 +149,7 @@ yarn type-check
 ## Firestore
 
 ```ts
-const newUserRef = await addDoc(db.userCollection, {userData});
+const newUserRef = await addDoc(db.userCollection, { userData });
 
 const userDoc = await getDoc(newUserRef);
 if (userDoc.exists()) {
