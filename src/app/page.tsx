@@ -4,9 +4,6 @@ import { headers } from 'next/headers';
 import * as process from 'process';
 import { Coordinates, MapTime } from 'src/lib/firebase/interfaces';
 
-export const dynamic = 'force-dynamic';
-export const runtime = 'edge';
-
 const Home: FC = async () => {
   const headerStore = headers();
 

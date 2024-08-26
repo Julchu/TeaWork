@@ -1,13 +1,9 @@
-import { getFirestore } from 'firebase/firestore';
 import { cookies } from 'next/headers';
 import * as React from 'react';
 import { FC } from 'react';
 import Map from 'src/components/googleMaps/map';
 import { Coordinates } from 'src/lib/firebase/interfaces';
-import { getUsers } from 'src/lib/firebase/queries';
 import { getAuthenticatedAppForUser } from 'src/lib/firebase/server-app';
-
-export const dynamic = 'force-dynamic';
 
 const NewHomePage: FC = async searchParams => {
   const cookieStore = cookies();
