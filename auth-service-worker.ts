@@ -1,7 +1,6 @@
 import { FirebaseOptions, initializeApp } from 'firebase/app';
 import { Auth, getAuth, getIdToken } from 'firebase/auth';
 import { getInstallations, getToken } from 'firebase/installations';
-import { connectAuthEmulator } from '@firebase/auth';
 
 // this is set during install
 let firebaseConfig: FirebaseOptions;
@@ -29,9 +28,6 @@ self.addEventListener('fetch', event => {
 const fetchWithFirebaseHeaders = async (request: Request) => {
   const app = initializeApp(firebaseConfig);
   const authentication = getAuth(app);
-  connectAuthEmulator(authentication, `http://localhost:9099`, {
-    disableWarnings: true,
-  });
   const installations = getInstallations(app);
 
   const [authIdToken, installationToken] = await Promise.all([
