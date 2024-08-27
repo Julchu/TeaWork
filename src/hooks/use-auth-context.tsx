@@ -107,9 +107,7 @@ const AuthProvider: FC<{ children: ReactNode; currentUser?: User }> = ({
       const serializedFirebaseConfig = encodeURIComponent(JSON.stringify(firebaseConfig));
       const serviceWorkerUrl = `/auth-service-worker.js?firebaseConfig=${serializedFirebaseConfig}`;
 
-      navigator.serviceWorker
-        .register(serviceWorkerUrl)
-        .then(registration => console.log('scope is: ', registration.scope));
+      navigator.serviceWorker.register(serviceWorkerUrl);
     }
   }, []);
 
