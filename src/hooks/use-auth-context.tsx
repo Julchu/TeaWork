@@ -21,11 +21,11 @@ import { UserInfo } from 'src/lib/firebase/interfaces';
 import useUserHook from 'src/hooks/use-user-firestore-hook';
 import { authentication } from 'src/lib/firebase/client-app';
 import { useRouter } from 'next/navigation';
-import { deleteCookies, setCookies } from 'src/app/get/actions';
 import { firebaseConfig } from 'src/lib/firebase/firebase-config';
 
 export const AuthContext = createContext<AuthProps>({
   userInfo: {},
+  testCurrentUser: {},
   setUserInfo: () => void 0,
   userLoading: false,
   setUserLoading: () => void 0,
@@ -35,6 +35,7 @@ export const AuthContext = createContext<AuthProps>({
 
 type AuthProps = {
   authUser?: User | null;
+  testCurrentUser: any;
   authLoading?: boolean;
   login: () => void;
   logout: () => void;
@@ -47,8 +48,9 @@ type AuthProps = {
 
 export const useAuthContext = (): AuthProps => useContext(AuthContext);
 
-const AuthProvider: FC<{ children: ReactNode }> = ({ children }) => {
+const AuthProvider: FC<{ children: ReactNode; currentUser: any }> = ({ children, currentUser }) => {
   const [authUser, setAuthUser] = useState<User | undefined>(undefined);
+  const [testCurrentUser, setTestCurrentUser] = useState<any>(currentUser);
   const [authLoading, setAuthLoading] = useState<boolean>(true);
   const [userInfo, setUserInfo] = useState<Partial<UserInfo>>();
   const [userLoading, setUserLoading] = useState<boolean>(false);
@@ -71,10 +73,10 @@ const AuthProvider: FC<{ children: ReactNode }> = ({ children }) => {
 
   const logout = useCallback(() => {
     signOut(authentication)
-      .then(() => {
+      .then(async () => {
         // Sign-out successful.
         setAuthUser(undefined);
-        // deleteCookies(['token']);
+        // await deleteCookies(['token']);
         console.log('Signed out');
         // router.push('/');
       })
@@ -93,18 +95,29 @@ const AuthProvider: FC<{ children: ReactNode }> = ({ children }) => {
         if (retrievedUser) {
           setAuthUser(firebaseUser);
           setUserInfo({ ...retrievedUser?.data() });
-          // setCookies([{ key: 'token', value: await firebaseUser.getIdToken() }]);
+          // await setCookies([{ key: 'token', value: await firebaseUser.getIdToken() }]);
         }
       } else {
         setAuthUser(undefined);
         setUserInfo({});
-        deleteCookies(['token']);
+        // await deleteCookies(['token']);
         console.log('User is not logged');
       }
       setAuthLoading(false);
     },
     [getUser],
   );
+
+  useEffect(() => {
+    onAuthStateChanged(authentication, firebaseUser => {
+      if (authUser === undefined) return;
+
+      // refresh when user changed to ease testing
+      if (authUser?.email !== firebaseUser?.email) {
+        router.refresh();
+      }
+    });
+  }, [authUser, router]);
 
   // Auth persistence: detect if user is authenticated or not (on page change, on page refresh)
   useEffect(() => {
@@ -117,9 +130,7 @@ const AuthProvider: FC<{ children: ReactNode }> = ({ children }) => {
       const serializedFirebaseConfig = encodeURIComponent(JSON.stringify(firebaseConfig));
       const serviceWorkerUrl = `/auth-service-worker.js?firebaseConfig=${serializedFirebaseConfig}`;
 
-      navigator.serviceWorker
-        .register(serviceWorkerUrl, { scope: '/' })
-        .then(registration => console.log('scope is: ', registration.scope));
+      navigator.serviceWorker.register(serviceWorkerUrl, { scope: '/' });
     }
   }, []);
 
@@ -127,6 +138,7 @@ const AuthProvider: FC<{ children: ReactNode }> = ({ children }) => {
     <AuthContext.Provider
       value={{
         authUser,
+        testCurrentUser,
         authLoading,
         userInfo,
         setUserInfo,

@@ -15,13 +15,15 @@ import { Button } from 'src/components/ui/button';
 
 const AuthWrapper: FC<{
   children: ReactNode;
-}> = ({ children }) => {
+  currentUser: any;
+}> = ({ children, currentUser }) => {
   return (
     <>
       {children}
 
       {/* Modal: false, in case PC users still want to scroll map while modal is open */}
       <DropdownMenu modal={false}>
+        <div>Current User: {currentUser}</div>
         <MenuTriggerButton />
 
         <DropdownMenuContent
@@ -40,7 +42,7 @@ const AuthWrapper: FC<{
 };
 
 const MenuTriggerButton: FC = () => {
-  const { authUser } = useAuthContext();
+  const { authUser, testCurrentUser } = useAuthContext();
 
   /* Using user displayName (and initials) instead of userInfo first/lastName
    ** Currently userInfo name won't get updated because not using snapshot
@@ -55,6 +57,7 @@ const MenuTriggerButton: FC = () => {
   return (
     <DropdownMenuTrigger asChild>
       <div className={'absolute top-5 right-5 w-[40px] h-[40px] cursor-pointer'}>
+        <div>Current User: {testCurrentUser}</div>
         {/* Full screen margin change: m-6 */}
         {authUser ? (
           <>

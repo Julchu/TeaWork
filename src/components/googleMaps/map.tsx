@@ -20,6 +20,11 @@ const MapComponent: FC<{
   return (
     <APIProvider apiKey={googleMapsApiKey}>
       <Button
+        className={`font-bold  opacity-60 bg-blue-600 w-[50px] h-[50px] p-0 rounded-full ${montserrat.className}`}
+      >
+        {currentUser}
+      </Button>
+      <Button
         onClick={login}
         className={`font-bold  opacity-60 bg-blue-600 w-[50px] h-[50px] p-0 rounded-full ${montserrat.className}`}
       >

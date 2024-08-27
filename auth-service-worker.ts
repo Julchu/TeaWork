@@ -1,6 +1,7 @@
 import { FirebaseOptions, initializeApp } from 'firebase/app';
 import { Auth, getAuth, getIdToken } from 'firebase/auth';
 import { getInstallations, getToken } from 'firebase/installations';
+import { connectAuthEmulator } from '@firebase/auth';
 
 // this is set during install
 let firebaseConfig: FirebaseOptions;
@@ -18,20 +19,27 @@ self.addEventListener('install', event => {
 });
 
 self.addEventListener('fetch', event => {
-  const { origin } = new URL((event as FetchEvent).request.url);
+  const fetchEvent = event as FetchEvent;
+
+  const { origin } = new URL(fetchEvent.request.url);
   if (origin !== self.location.origin) return;
-  (event as FetchEvent).respondWith(fetchWithFirebaseHeaders((event as FetchEvent).request));
+  fetchEvent.respondWith(fetchWithFirebaseHeaders(fetchEvent.request));
 });
 
 const fetchWithFirebaseHeaders = async (request: Request) => {
   const app = initializeApp(firebaseConfig);
-  const auth = getAuth(app);
+  const authentication = getAuth(app);
+  connectAuthEmulator(authentication, `http://localhost:9099`, {
+    disableWarnings: true,
+  });
   const installations = getInstallations(app);
-  const headers = new Headers(request.headers);
+
   const [authIdToken, installationToken] = await Promise.all([
-    getAuthIdToken(auth),
+    getAuthIdToken(authentication),
     getToken(installations),
   ]);
+
+  const headers = new Headers(request.headers);
   headers.append('Firebase-Instance-ID-Token', installationToken);
   if (authIdToken) headers.append('Authorization', `Bearer ${authIdToken}`);
   const newRequest = new Request(request, { headers });

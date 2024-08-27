@@ -6,16 +6,20 @@ import { montserrat } from 'src/components/ui/fonts';
 import { headers } from 'next/headers';
 import Providers from 'src/hooks/use-providers';
 import process from 'process';
-import { getAuthenticatedAppForUser } from 'src/lib/firebase/server-app';
+import { getFirebaseServerApp } from 'src/lib/firebase/server-app';
+import Logo from 'src/components/ui/logo';
 
 export const metadata: Metadata = {
   title: 'TeaWork',
   description: 'Find nice environments to grab tea and work at',
 };
 
+export const dynamic = 'force-dynamic';
+
 const RootLayout: FC<{ children: ReactNode }> = async ({ children }) => {
-  const { currentUser } = await getAuthenticatedAppForUser();
-  console.log('currentUser from root', currentUser);
+  const { currentUser } = await getFirebaseServerApp();
+
+  console.log('currentUser from root', currentUser?.toJSON());
 
   const headerStore = headers();
 
@@ -50,7 +54,9 @@ const RootLayout: FC<{ children: ReactNode }> = async ({ children }) => {
   return (
     <html lang="en">
       <body className={`${montserrat.className} ${shouldUseDarkMode ? 'bg-black' : ''}`}>
-        <Providers>{children}</Providers>
+        <Providers currentUser={currentUser?.toJSON()}>{children}</Providers>
+        <Logo />
+
         <Analytics />
       </body>
     </html>

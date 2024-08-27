@@ -7993,19 +7993,23 @@
     console.log("Service worker installed with Firebase config", firebaseConfig);
   });
   self.addEventListener("fetch", (event) => {
-    const { origin } = new URL(event.request.url);
+    const fetchEvent = event;
+    const { origin } = new URL(fetchEvent.request.url);
     if (origin !== self.location.origin) return;
-    event.respondWith(fetchWithFirebaseHeaders(event.request));
+    fetchEvent.respondWith(fetchWithFirebaseHeaders(fetchEvent.request));
   });
   var fetchWithFirebaseHeaders = async (request) => {
     const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
+    const authentication = getAuth(app);
+    connectAuthEmulator(authentication, `http://localhost:9099`, {
+      disableWarnings: true
+    });
     const installations = getInstallations(app);
-    const headers = new Headers(request.headers);
     const [authIdToken, installationToken] = await Promise.all([
-      getAuthIdToken(auth),
+      getAuthIdToken(authentication),
       getToken(installations)
     ]);
+    const headers = new Headers(request.headers);
     headers.append("Firebase-Instance-ID-Token", installationToken);
     if (authIdToken) headers.append("Authorization", `Bearer ${authIdToken}`);
     const newRequest = new Request(request, { headers });
