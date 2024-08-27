@@ -5,7 +5,7 @@ import { getInstallations, getToken } from 'firebase/installations';
 // this is set during install
 let firebaseConfig: FirebaseOptions;
 
-self.addEventListener('install', event => {
+self.addEventListener('install', () => {
   // extract firebase config from query string
   const serializedFirebaseConfig = new URL(location.href).searchParams.get('firebaseConfig');
 
