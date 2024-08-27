@@ -54,7 +54,7 @@ const RootLayout: FC<{ children: ReactNode }> = async ({ children }) => {
   return (
     <html lang="en">
       <body className={`${montserrat.className} ${shouldUseDarkMode ? 'bg-black' : ''}`}>
-        <Providers currentUser={currentUser?.toJSON()}>{children}</Providers>
+        <Providers currentUser={JSON.stringify(currentUser?.toJSON())}>{children}</Providers>
         <Logo />
 
         <Analytics />
