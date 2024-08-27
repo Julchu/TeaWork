@@ -25,6 +25,4 @@ export const getMiddleware = async (request: NextRequest, response: NextResponse
       }),
     );
   }
-
-  const authIdToken = request.cookies.get('token');
 };
