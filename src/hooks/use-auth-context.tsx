@@ -104,6 +104,16 @@ const AuthProvider: FC<{ children: ReactNode; currentUser?: User }> = ({
 
   useEffect(() => {
     if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.getRegistrations().then(function (registrations) {
+        //returns installed service workers
+        if (registrations.length) {
+          for (let registration of registrations) {
+            registration.update();
+            registration.unregister();
+          }
+        }
+      });
+
       const serializedFirebaseConfig = encodeURIComponent(JSON.stringify(firebaseConfig));
       const serviceWorkerUrl = `/auth-service-worker.js?firebaseConfig=${serializedFirebaseConfig}`;
 

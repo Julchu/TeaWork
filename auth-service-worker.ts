@@ -45,7 +45,7 @@ const fetchWithFirebaseHeaders = async (request: Request) => {
     const newRequest = new Request(request, { headers });
     return await fetch(newRequest);
   } catch (error) {
-    console.error('error in auth-service-worker fetchWithFirebaseHeaders', error);
+    console.error('Error in auth-service-worker fetchWithFirebaseHeaders', error);
     return new Response();
   }
 };
