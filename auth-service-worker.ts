@@ -22,24 +22,33 @@ self.addEventListener('fetch', event => {
 
   const { origin } = new URL(fetchEvent.request.url);
   if (origin !== self.location.origin) return;
-  fetchEvent.respondWith(fetchWithFirebaseHeaders(fetchEvent.request));
+  try {
+    fetchEvent.respondWith(fetchWithFirebaseHeaders(fetchEvent.request));
+  } catch (error) {
+    console.error('error in auth-service-worker', error);
+  }
 });
 
 const fetchWithFirebaseHeaders = async (request: Request) => {
-  const app = initializeApp(firebaseConfig);
-  const authentication = getAuth(app);
-  const installations = getInstallations(app);
+  try {
+    const app = initializeApp(firebaseConfig);
+    const authentication = getAuth(app);
+    const installations = getInstallations(app);
 
-  const [authIdToken, installationToken] = await Promise.all([
-    getAuthIdToken(authentication),
-    getToken(installations),
-  ]);
+    const [authIdToken, installationToken] = await Promise.all([
+      getAuthIdToken(authentication),
+      getToken(installations),
+    ]);
 
-  const headers = new Headers(request.headers);
-  headers.append('Firebase-Instance-ID-Token', installationToken);
-  if (authIdToken) headers.append('Authorization', `Bearer ${authIdToken}`);
-  const newRequest = new Request(request, { headers });
-  return await fetch(newRequest);
+    const headers = new Headers(request.headers);
+    headers.append('Firebase-Instance-ID-Token', installationToken);
+    if (authIdToken) headers.append('Authorization', `Bearer ${authIdToken}`);
+    const newRequest = new Request(request, { headers });
+    return await fetch(newRequest);
+  } catch (error) {
+    console.error('error in auth-service-worker fetchWithFirebaseHeaders', error);
+    return new Response();
+  }
 };
 
 async function getAuthIdToken(auth: Auth) {

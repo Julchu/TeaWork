@@ -1,11 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 
 const getIpInfo = async (ip: string) => {
-  const url = `https://ipinfo.io/${ip.length > 5 ? ip : ''}?token=${
-    process.env.NEXT_PUBLIC_IPINFO_GEOLOCATION_API_KEY
-  }`;
-
   try {
+    const url = `https://ipinfo.io/${ip.length > 5 ? ip : ''}?token=${
+      process.env.NEXT_PUBLIC_IPINFO_GEOLOCATION_API_KEY
+    }`;
     const res = await fetch(new URL(url).href);
     return await res.json();
   } catch (err) {
@@ -14,15 +13,22 @@ const getIpInfo = async (ip: string) => {
 };
 
 export const getMiddleware = async (request: NextRequest, response: NextResponse) => {
-  const ip = request.headers.get('X-Forwarded-For');
-  if (ip) {
-    const { loc } = await getIpInfo(ip);
-    response.cookies.set(
-      'geo',
-      JSON.stringify({
-        lat: loc[0],
-        lng: loc[1],
-      }),
-    );
+  // GCP (with load balancer) offers 2 IPs; 1st is actual, 2nd is LB's IP address
+  const ip = request.headers.get('X-Forwarded-For')?.split(',')[0];
+  console.log('ip:', ip);
+  try {
+    if (ip) {
+      const { loc } = await getIpInfo(ip);
+      console.log('loc', loc);
+      return response.cookies.set(
+        'geo',
+        JSON.stringify({
+          lat: loc[0],
+          lng: loc[1],
+        }),
+      );
+    }
+  } catch (error) {
+    console.error('Geolocation error', error);
   }
 };
