@@ -8001,9 +8001,6 @@
   var fetchWithFirebaseHeaders = async (request) => {
     const app = initializeApp(firebaseConfig);
     const authentication = getAuth(app);
-    connectAuthEmulator(authentication, `http://localhost:9099`, {
-      disableWarnings: true
-    });
     const installations = getInstallations(app);
     const [authIdToken, installationToken] = await Promise.all([
       getAuthIdToken(authentication),
