@@ -16,7 +16,7 @@ export const getFirebaseServerApp = async () => {
     firebaseConfig,
     authIdToken
       ? {
-          authIdToken: authIdToken,
+          authIdToken,
         }
       : {},
   );
