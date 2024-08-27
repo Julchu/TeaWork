@@ -19,7 +19,7 @@ export const dynamic = 'force-dynamic';
 const RootLayout: FC<{ children: ReactNode }> = async ({ children }) => {
   const { currentUser } = await getFirebaseServerApp();
 
-  console.log('currentUser from root', currentUser?.toJSON());
+  console.log('currentUser from root', JSON.stringify(currentUser?.toJSON()));
 
   const headerStore = headers();
 
@@ -54,7 +54,7 @@ const RootLayout: FC<{ children: ReactNode }> = async ({ children }) => {
   return (
     <html lang="en">
       <body className={`${montserrat.className} ${shouldUseDarkMode ? 'bg-black' : ''}`}>
-        <Providers currentUser={JSON.stringify(currentUser?.toJSON())}>{children}</Providers>
+        <Providers currentUser={currentUser ? currentUser : undefined}>{children}</Providers>
         <Logo />
 
         <Analytics />

@@ -10,13 +10,7 @@ import {
   useEffect,
   useState,
 } from 'react';
-import {
-  GoogleAuthProvider,
-  onAuthStateChanged,
-  signInWithPopup,
-  signOut,
-  User,
-} from 'firebase/auth';
+import { GoogleAuthProvider, onAuthStateChanged, signInWithPopup, User } from 'firebase/auth';
 import { UserInfo } from 'src/lib/firebase/interfaces';
 import useUserHook from 'src/hooks/use-user-firestore-hook';
 import { authentication } from 'src/lib/firebase/client-app';
@@ -25,7 +19,6 @@ import { firebaseConfig } from 'src/lib/firebase/firebase-config';
 
 export const AuthContext = createContext<AuthProps>({
   userInfo: {},
-  testCurrentUser: {},
   setUserInfo: () => void 0,
   userLoading: false,
   setUserLoading: () => void 0,
@@ -35,7 +28,6 @@ export const AuthContext = createContext<AuthProps>({
 
 type AuthProps = {
   authUser?: User | null;
-  testCurrentUser: any;
   authLoading?: boolean;
   login: () => void;
   logout: () => void;
@@ -48,9 +40,11 @@ type AuthProps = {
 
 export const useAuthContext = (): AuthProps => useContext(AuthContext);
 
-const AuthProvider: FC<{ children: ReactNode; currentUser: any }> = ({ children, currentUser }) => {
-  const [authUser, setAuthUser] = useState<User | undefined>(undefined);
-  const [testCurrentUser, setTestCurrentUser] = useState<any>(currentUser);
+const AuthProvider: FC<{ children: ReactNode; currentUser?: User }> = ({
+  children,
+  currentUser,
+}) => {
+  const [authUser, setAuthUser] = useState<User | undefined>(currentUser);
   const [authLoading, setAuthLoading] = useState<boolean>(true);
   const [userInfo, setUserInfo] = useState<Partial<UserInfo>>();
   const [userLoading, setUserLoading] = useState<boolean>(false);
@@ -72,7 +66,8 @@ const AuthProvider: FC<{ children: ReactNode; currentUser: any }> = ({ children,
   }, []);
 
   const logout = useCallback(() => {
-    signOut(authentication)
+    authentication
+      .signOut()
       .then(async () => {
         // Sign-out successful.
         setAuthUser(undefined);
@@ -90,12 +85,11 @@ const AuthProvider: FC<{ children: ReactNode; currentUser: any }> = ({ children,
   const handleAuthChange = useCallback(
     async (firebaseUser: User | null) => {
       if (firebaseUser) {
+        setAuthUser(firebaseUser);
         const retrievedUser = await getUser(firebaseUser);
-
+        // await setCookies([{ key: 'token', value: await firebaseUser.getIdToken() }]);
         if (retrievedUser) {
-          setAuthUser(firebaseUser);
           setUserInfo({ ...retrievedUser?.data() });
-          // await setCookies([{ key: 'token', value: await firebaseUser.getIdToken() }]);
         }
       } else {
         setAuthUser(undefined);
@@ -109,6 +103,23 @@ const AuthProvider: FC<{ children: ReactNode; currentUser: any }> = ({ children,
   );
 
   useEffect(() => {
+    if ('serviceWorker' in navigator) {
+      const serializedFirebaseConfig = encodeURIComponent(JSON.stringify(firebaseConfig));
+      const serviceWorkerUrl = `/auth-service-worker.js?firebaseConfig=${serializedFirebaseConfig}`;
+
+      navigator.serviceWorker
+        .register(serviceWorkerUrl)
+        .then(registration => console.log('scope is: ', registration.scope));
+    }
+  }, []);
+
+  // Auth persistence: detect if user is authenticated or not (on page change, on page refresh)
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(authentication, handleAuthChange);
+    return () => unsubscribe();
+  }, [handleAuthChange]);
+
+  useEffect(() => {
     onAuthStateChanged(authentication, firebaseUser => {
       if (authUser === undefined) return;
 
@@ -119,26 +130,10 @@ const AuthProvider: FC<{ children: ReactNode; currentUser: any }> = ({ children,
     });
   }, [authUser, router]);
 
-  // Auth persistence: detect if user is authenticated or not (on page change, on page refresh)
-  useEffect(() => {
-    const unsubscribe = onAuthStateChanged(authentication, handleAuthChange);
-    return () => unsubscribe();
-  }, [handleAuthChange]);
-
-  useEffect(() => {
-    if ('serviceWorker' in navigator) {
-      const serializedFirebaseConfig = encodeURIComponent(JSON.stringify(firebaseConfig));
-      const serviceWorkerUrl = `/auth-service-worker.js?firebaseConfig=${serializedFirebaseConfig}`;
-
-      navigator.serviceWorker.register(serviceWorkerUrl, { scope: '/' });
-    }
-  }, []);
-
   return (
     <AuthContext.Provider
       value={{
         authUser,
-        testCurrentUser,
         authLoading,
         userInfo,
         setUserInfo,
