@@ -19,6 +19,7 @@ export const dynamic = 'force-dynamic';
 
 const RootLayout: FC<{ children: ReactNode }> = async ({ children }) => {
   const { currentUser } = await getFirebaseServerApp();
+  console.log('currentUser', JSON.stringify(currentUser?.toJSON()));
 
   const headerStore = headers();
 
