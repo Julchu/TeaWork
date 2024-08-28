@@ -72,15 +72,15 @@ const AuthProvider: FC<{ children: ReactNode; currentUser?: User }> = ({
         // Sign-out successful.
         setAuthUser(undefined);
         await deleteCookies(['token']);
+        router.refresh();
         console.log('Signed out');
-        // router.push('/');
       })
       .catch(error => {
         // An error happened.
         console.log('Sign out error:', error);
       });
     setAuthLoading(false);
-  }, []);
+  }, [router]);
 
   const handleAuthChange = useCallback(
     async (firebaseUser: User | null) => {
@@ -88,6 +88,7 @@ const AuthProvider: FC<{ children: ReactNode; currentUser?: User }> = ({
         setAuthUser(firebaseUser);
         const retrievedUser = await getUser(firebaseUser);
         await setCookies([{ key: 'token', value: await firebaseUser.getIdToken() }]);
+        router.refresh();
         if (retrievedUser) {
           setUserInfo({ ...retrievedUser?.data() });
         }
@@ -99,7 +100,7 @@ const AuthProvider: FC<{ children: ReactNode; currentUser?: User }> = ({
       }
       setAuthLoading(false);
     },
-    [getUser],
+    [getUser, router],
   );
 
   // useEffect(() => {

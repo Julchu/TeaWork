@@ -8,6 +8,7 @@ import Providers from 'src/hooks/use-providers';
 import process from 'process';
 import { getFirebaseServerApp } from 'src/lib/firebase/server-app';
 import Logo from 'src/components/ui/logo';
+import { User } from 'firebase/auth';
 
 export const metadata: Metadata = {
   title: 'TeaWork',
@@ -18,8 +19,6 @@ export const dynamic = 'force-dynamic';
 
 const RootLayout: FC<{ children: ReactNode }> = async ({ children }) => {
   const { currentUser } = await getFirebaseServerApp();
-
-  console.log('currentUser from root', JSON.stringify(currentUser?.toJSON()));
 
   const headerStore = headers();
 
@@ -54,7 +53,7 @@ const RootLayout: FC<{ children: ReactNode }> = async ({ children }) => {
   return (
     <html lang="en">
       <body className={`${montserrat.className} ${shouldUseDarkMode ? 'bg-black' : ''}`}>
-        <Providers currentUser={currentUser ? currentUser : undefined}>{children}</Providers>
+        <Providers currentUser={currentUser?.toJSON() as User}>{children}</Providers>
         <Logo />
 
         <Analytics />

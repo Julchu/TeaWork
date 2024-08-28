@@ -12,7 +12,6 @@ import { connectAuthEmulator } from '@firebase/auth';
 
 export const getFirebaseServerApp = async () => {
   const authIdToken = cookies().get('token')?.value;
-  console.log('auth token', authIdToken);
 
   try {
     const app = initializeServerApp(firebaseConfig, {
@@ -22,14 +21,11 @@ export const getFirebaseServerApp = async () => {
     const firestore = getFirestore(app);
 
     if (authentication.currentUser !== null) {
-      console.log('current user:', authentication.currentUser);
       return {
         app,
         currentUser: authentication.currentUser,
       };
     }
-
-    console.log('test server app');
 
     if (process.env.NEXT_PUBLIC_EMULATOR_ENABLED && process.env.NEXT_PUBLIC_LAN) {
       connectFirestoreEmulator(firestore, process.env.NEXT_PUBLIC_LAN, 8080);
@@ -40,7 +36,7 @@ export const getFirebaseServerApp = async () => {
 
     await authentication.authStateReady();
   } catch (error) {
-    console.log(error);
+    console.log('Error in server-app', error);
   }
   return {
     app: undefined,
