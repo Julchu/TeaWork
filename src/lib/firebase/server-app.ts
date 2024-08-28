@@ -6,18 +6,14 @@ import { headers } from 'next/headers';
 import { initializeServerApp } from 'firebase/app';
 import { getAuth } from 'firebase/auth';
 import { firebaseConfig } from './firebase-config';
-import { getApps } from '@firebase/app';
 
 export const getFirebaseServerApp = async () => {
   const authIdToken = headers().get('Authorization')?.split('Bearer ')[1];
 
   try {
-    const app =
-      getApps().length === 0
-        ? initializeServerApp(firebaseConfig, {
-            authIdToken,
-          })
-        : getApps()[0];
+    const app = initializeServerApp(firebaseConfig, {
+      authIdToken,
+    });
     const authentication = getAuth(app);
     await authentication.authStateReady();
 
