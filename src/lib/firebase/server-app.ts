@@ -12,6 +12,7 @@ import { connectAuthEmulator } from '@firebase/auth';
 
 export const getFirebaseServerApp = async () => {
   const authIdToken = cookies().get('token')?.value;
+  console.log('auth token', authIdToken);
 
   try {
     const app = initializeServerApp(firebaseConfig, {
@@ -20,11 +21,13 @@ export const getFirebaseServerApp = async () => {
     const authentication = getAuth(app);
     const firestore = getFirestore(app);
 
-    if (authentication.currentUser !== null)
+    if (authentication.currentUser !== null) {
+      console.log('current user:', authentication.currentUser);
       return {
         app,
         currentUser: authentication.currentUser,
       };
+    }
 
     console.log('test server app');
 
