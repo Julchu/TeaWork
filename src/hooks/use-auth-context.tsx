@@ -87,7 +87,9 @@ const AuthProvider: FC<{ children: ReactNode; currentUser?: User }> = ({
       if (firebaseUser) {
         setAuthUser(firebaseUser);
         const retrievedUser = await getUser(firebaseUser);
-        await setCookies([{ key: 'token', value: await firebaseUser.getIdToken() }]);
+        await setCookies([
+          { key: 'token', value: JSON.stringify(await firebaseUser.getIdToken()) },
+        ]);
         if (retrievedUser) {
           setUserInfo({ ...retrievedUser?.data() });
         }
