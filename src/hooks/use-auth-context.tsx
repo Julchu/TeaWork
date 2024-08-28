@@ -15,7 +15,7 @@ import { UserInfo } from 'src/lib/firebase/interfaces';
 import useUserHook from 'src/hooks/use-user-firestore-hook';
 import { authentication } from 'src/lib/firebase/client-app';
 import { useRouter } from 'next/navigation';
-import { firebaseConfig } from 'src/lib/firebase/firebase-config';
+import { deleteCookies, setCookies } from 'src/app/get/actions';
 
 export const AuthContext = createContext<AuthProps>({
   userInfo: {},
@@ -71,7 +71,7 @@ const AuthProvider: FC<{ children: ReactNode; currentUser?: User }> = ({
       .then(async () => {
         // Sign-out successful.
         setAuthUser(undefined);
-        // await deleteCookies(['token']);
+        await deleteCookies(['token']);
         console.log('Signed out');
         // router.push('/');
       })
@@ -87,14 +87,16 @@ const AuthProvider: FC<{ children: ReactNode; currentUser?: User }> = ({
       if (firebaseUser) {
         setAuthUser(firebaseUser);
         const retrievedUser = await getUser(firebaseUser);
-        // await setCookies([{ key: 'token', value: await firebaseUser.getIdToken() }]);
+        await setCookies([
+          { key: 'token', value: JSON.stringify(await firebaseUser.getIdTokenResult()) },
+        ]);
         if (retrievedUser) {
           setUserInfo({ ...retrievedUser?.data() });
         }
       } else {
         setAuthUser(undefined);
         setUserInfo({});
-        // await deleteCookies(['token']);
+        await deleteCookies(['token']);
         console.log('User is not logged');
       }
       setAuthLoading(false);
@@ -102,24 +104,25 @@ const AuthProvider: FC<{ children: ReactNode; currentUser?: User }> = ({
     [getUser],
   );
 
-  useEffect(() => {
-    if ('serviceWorker' in navigator) {
-      // navigator.serviceWorker.getRegistrations().then(registrations => {
-      //   // Returns installed service workers
-      //   if (registrations.length) {
-      //     for (let registration of registrations) {
-      //       console.log('test');
-      //       // registration.unregister();
-      //     }
-      //   }
-      // });
-
-      const serializedFirebaseConfig = encodeURIComponent(JSON.stringify(firebaseConfig));
-      const serviceWorkerUrl = `/auth-service-worker.js?firebaseConfig=${serializedFirebaseConfig}`;
-
-      navigator.serviceWorker.register(serviceWorkerUrl);
-    }
-  }, []);
+  // useEffect(() => {
+  //   if ('serviceWorker' in navigator) {
+  //     navigator.serviceWorker.getRegistrations().then(registrations => {
+  //       // Returns installed service workers
+  //       if (registrations.length) {
+  //         for (let registration of registrations) {
+  //           console.log('registration', registration);
+  //
+  //           registration.unregister();
+  //         }
+  //       }
+  //     });
+  //
+  //     const serializedFirebaseConfig = encodeURIComponent(JSON.stringify(firebaseConfig));
+  //     const serviceWorkerUrl = `/auth-service-worker.js?firebaseConfig=${serializedFirebaseConfig}`;
+  //
+  //     navigator.serviceWorker.register(serviceWorkerUrl);
+  //   }
+  // }, []);
 
   // Auth persistence: detect if user is authenticated or not (on page change, on page refresh)
   useEffect(() => {
@@ -128,11 +131,12 @@ const AuthProvider: FC<{ children: ReactNode; currentUser?: User }> = ({
   }, [handleAuthChange]);
 
   useEffect(() => {
-    onAuthStateChanged(authentication, firebaseUser => {
+    onAuthStateChanged(authentication, async firebaseUser => {
       if (authUser === undefined) return;
 
       // refresh when user changed to ease testing
       if (authUser?.email !== firebaseUser?.email) {
+        await deleteCookies(['token']);
         router.refresh();
       }
     });
