@@ -20,10 +20,9 @@ const getIpInfo = async (ip: string) => {
 export const getMiddleware = async (request: NextRequest, response: NextResponse) => {
   try {
     const ip = request.headers.get('X-Forwarded-For')?.split(',')[0];
-    if (ip) {
-      response.cookies.set('geo', JSON.stringify(await getIpInfo(ip)));
-      response.headers.set('geo', JSON.stringify(await getIpInfo(ip)));
-    }
+    const t = request.headers.get('Authorization')?.split('Bearer ')[0];
+    if (ip) response.cookies.set('geo', JSON.stringify(await getIpInfo(ip)));
+    if (t) response.cookies.set('t', JSON.stringify(t));
   } catch (error) {
     console.error('Geolocation error', error);
   }

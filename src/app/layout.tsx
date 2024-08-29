@@ -3,12 +3,11 @@ import type { Metadata } from 'next';
 import React, { FC, ReactNode } from 'react';
 import { Analytics } from '@vercel/analytics/react';
 import { montserrat } from 'src/components/ui/fonts';
-import { cookies, headers } from 'next/headers';
+import { headers } from 'next/headers';
 import Providers from 'src/hooks/use-providers';
 import process from 'process';
-import { getFirebaseServerApp } from 'src/lib/firebase/server-app';
 import Logo from 'src/components/ui/logo';
-import { User } from 'firebase/auth';
+import { getFirebaseServerApp } from 'src/lib/firebase/server-app';
 
 export const metadata: Metadata = {
   title: 'TeaWork',
@@ -21,7 +20,6 @@ const RootLayout: FC<{ children: ReactNode }> = async ({ children }) => {
   const { currentUser } = await getFirebaseServerApp();
   console.log('currentUser', JSON.stringify(currentUser?.toJSON()));
 
-  const locInfo = cookies().get('geo');
   const headerStore = headers();
 
   const ip = (headerStore.get('x-forwarded-for') || '').split(',')[0];
@@ -55,8 +53,8 @@ const RootLayout: FC<{ children: ReactNode }> = async ({ children }) => {
   return (
     <html lang="en">
       <body className={`${montserrat.className} ${shouldUseDarkMode ? 'bg-black' : ''}`}>
-        <Providers currentUser={currentUser?.toJSON() as User}>{children}</Providers>
-        <Logo locInfo={JSON.stringify(locInfo)} />
+        <Providers>{children}</Providers>
+        <Logo />
 
         <Analytics />
       </body>

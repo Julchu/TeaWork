@@ -3,41 +3,44 @@
 import 'server-only';
 
 import { headers } from 'next/headers';
-import { initializeServerApp } from 'firebase/app';
-import { getAuth } from 'firebase/auth';
-import { firebaseConfig } from './firebase-config';
-import process from 'process';
+import { initializeServerApp } from '@firebase/app';
+import { firebaseConfig } from 'src/lib/firebase/firebase-config';
 import { connectFirestoreEmulator, getFirestore } from '@firebase/firestore';
-import { connectAuthEmulator } from '@firebase/auth';
+import { connectAuthEmulator, getAuth } from '@firebase/auth';
+import process from 'process';
+
+let emulatorsStarted = false;
 
 export const getFirebaseServerApp = async () => {
-  const authIdToken = headers().get('Authorization')?.split('Bearer ')[1];
-  // const authIdToken = cookies().get('__session')?.value;
-  // console.log('cookies in firebase server app', cookies().getAll());
-  // console.log('auth token:', authIdToken);
-
   try {
+    const authIdToken = headers().get('Authorization')?.split('Bearer ')[1];
+
     const app = initializeServerApp(firebaseConfig, {
       authIdToken,
     });
-    const authentication = getAuth(app);
     const firestore = getFirestore(app);
+    const authentication = getAuth(app);
 
-    if (authentication.currentUser !== null) {
+    if (
+      process.env.NEXT_PUBLIC_EMULATOR_ENABLED &&
+      process.env.NEXT_PUBLIC_LAN &&
+      !emulatorsStarted
+    ) {
+      connectAuthEmulator(authentication, `http://127.0.0.1:9099`, {
+        disableWarnings: true,
+      });
+      connectFirestoreEmulator(firestore, process.env.NEXT_PUBLIC_LAN, 8080);
+      emulatorsStarted = true;
+    }
+
+    await authentication.authStateReady();
+
+    if (authentication.currentUser) {
       return {
         app,
         currentUser: authentication.currentUser,
       };
     }
-
-    if (process.env.NEXT_PUBLIC_EMULATOR_ENABLED && process.env.NEXT_PUBLIC_LAN) {
-      connectFirestoreEmulator(firestore, process.env.NEXT_PUBLIC_LAN, 8080);
-      connectAuthEmulator(authentication, `http://${process.env.NEXT_PUBLIC_LAN}:9099`, {
-        disableWarnings: true,
-      });
-    }
-
-    await authentication.authStateReady();
   } catch (error) {
     console.log('Error in server-app', error);
   }

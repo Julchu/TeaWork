@@ -17,7 +17,7 @@ const NewHomePage: FC = async searchParams => {
   const shouldUseDarkMode = false;
   const googleMapsApiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
 
-  const { app, currentUser } = await getFirebaseServerApp();
+  const { currentUser } = await getFirebaseServerApp();
 
   // const users = await getUsers(getFirestore(app), searchParams);
   const currentEmail = JSON.stringify(currentUser?.email);

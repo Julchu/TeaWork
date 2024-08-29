@@ -14,7 +14,7 @@ const MapComponent: FC<{
   currentUser: any;
   locInfo?: any;
 }> = ({ googleMapsApiKey, initialCoords, currentUser, locInfo }) => {
-  const { authUser, logout, login } = useAuthContext();
+  const { logout, login } = useAuthContext();
   console.log('currentUser', currentUser);
 
   return (
