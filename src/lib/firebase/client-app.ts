@@ -5,9 +5,9 @@
 // https://firebase.google.com/docs/web/setup#available-libraries
 
 // Initialize Firebase
-import { getApps, initializeApp } from '@firebase/app';
+import { getApps, initializeApp } from 'firebase/app';
 import { firebaseConfig } from 'src/lib/firebase/firebase-config';
-import { connectFirestoreEmulator, getFirestore } from '@firebase/firestore';
+import { connectFirestoreEmulator, getFirestore } from 'firebase/firestore';
 import { connectAuthEmulator, getAuth } from '@firebase/auth';
 import * as process from 'process';
 
