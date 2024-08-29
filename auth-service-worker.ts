@@ -41,7 +41,7 @@ const fetchWithFirebaseHeaders = async (request: Request) => {
     const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0];
     const authentication = getAuth(app);
 
-    if (!emulatorsStarted) {
+    if (!emulatorsStarted && lan) {
       connectAuthEmulator(authentication, `http://${lan}:9099`, {
         disableWarnings: true,
       });

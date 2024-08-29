@@ -26,7 +26,7 @@ export const getFirebaseServerApp = async () => {
       process.env.NEXT_PUBLIC_LAN &&
       !emulatorsStarted
     ) {
-      connectAuthEmulator(authentication, `http://127.0.0.1:9099`, {
+      connectAuthEmulator(authentication, `http://${process.env.NEXT_PUBLIC_LAN}:9099`, {
         disableWarnings: true,
       });
       connectFirestoreEmulator(firestore, process.env.NEXT_PUBLIC_LAN, 8080);
