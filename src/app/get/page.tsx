@@ -7,6 +7,10 @@ import { getFirebaseServerApp } from 'src/lib/firebase/server-app';
 
 const NewHomePage: FC = async searchParams => {
   const cookieStore = cookies();
+  // const headerStore = headers();
+
+  // console.log('cookies store', cookieStore.getAll());
+  // console.log('header store', headerStore.get);
   const locInfo = cookieStore.get('geo');
   const initialCoords: Coordinates = locInfo ? JSON.parse(locInfo.value) : { lat: 5, lng: 5 };
 
@@ -30,6 +34,7 @@ const NewHomePage: FC = async searchParams => {
         googleMapsApiKey={googleMapsApiKey}
         initialCoords={initialCoords}
         currentUser={currentEmail}
+        // locInfo={JSON.stringify(locInfo)}
       />
 
       {/*  shouldUseDarkMode={shouldUseDarkMode}*/}

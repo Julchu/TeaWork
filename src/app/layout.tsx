@@ -3,7 +3,7 @@ import type { Metadata } from 'next';
 import React, { FC, ReactNode } from 'react';
 import { Analytics } from '@vercel/analytics/react';
 import { montserrat } from 'src/components/ui/fonts';
-import { headers } from 'next/headers';
+import { cookies, headers } from 'next/headers';
 import Providers from 'src/hooks/use-providers';
 import process from 'process';
 import { getFirebaseServerApp } from 'src/lib/firebase/server-app';
@@ -21,6 +21,7 @@ const RootLayout: FC<{ children: ReactNode }> = async ({ children }) => {
   const { currentUser } = await getFirebaseServerApp();
   console.log('currentUser', JSON.stringify(currentUser?.toJSON()));
 
+  const locInfo = cookies().get('geo');
   const headerStore = headers();
 
   const ip = (headerStore.get('x-forwarded-for') || '').split(',')[0];
@@ -55,7 +56,7 @@ const RootLayout: FC<{ children: ReactNode }> = async ({ children }) => {
     <html lang="en">
       <body className={`${montserrat.className} ${shouldUseDarkMode ? 'bg-black' : ''}`}>
         <Providers currentUser={currentUser?.toJSON() as User}>{children}</Providers>
-        <Logo />
+        <Logo locInfo={JSON.stringify(locInfo)} />
 
         <Analytics />
       </body>
