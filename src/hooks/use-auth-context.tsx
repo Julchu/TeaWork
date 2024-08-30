@@ -109,7 +109,8 @@ const AuthProvider: FC<{ children: ReactNode; currentUser?: User }> = ({
         });
       }
       const serializedFirebaseConfig = encodeURIComponent(JSON.stringify(firebaseConfig));
-      const serviceWorkerUrl = `/auth-service-worker.js?firebaseConfig=${serializedFirebaseConfig}&lan=${process.env.NEXT_PUBLIC_LAN}`;
+      // if (process.env.NEXT_PUBLIC_LAN !== undefined): serviceWorkerUrl =  `/auth-service-worker.js?firebaseConfig=${serializedFirebaseConfig}&lan=${process.env.NEXT_PUBLIC_LAN}`;
+      const serviceWorkerUrl = `/auth-service-worker.js?firebaseConfig=${serializedFirebaseConfig}`;
 
       navigator.serviceWorker
         .register(serviceWorkerUrl, { scope: '/' })

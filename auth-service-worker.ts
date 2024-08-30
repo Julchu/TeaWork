@@ -21,7 +21,7 @@ firebaseConfig = JSON.parse(serializedFirebaseConfig);
 const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0];
 const authentication = getAuth(app);
 
-if (lan) {
+if (lan !== undefined) {
   connectAuthEmulator(authentication, `http://${lan}:9099`, {
     disableWarnings: true,
   });

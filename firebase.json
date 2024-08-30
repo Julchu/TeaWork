@@ -4,8 +4,10 @@
     "indexes": "firestore.indexes.json"
   },
   "hosting": {
-    "public": "public",
+    "source": ".",
+    "site": "teaworkapp",
     "cleanUrls": true,
+    "trailingSlash": true,
     "ignore": [
       "firebase.json",
       "**/.*",
@@ -17,7 +19,7 @@
     "rewrites": [
       {
         "source": "**",
-        "destination": "/index.html"
+        "function": "ssrteaworkapp"
       }
     ]
   },

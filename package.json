@@ -8,6 +8,9 @@
     "build": "npx esbuild auth-service-worker.ts --bundle --outfile=public/auth-service-worker.js && next build",
     "build-service-worker": "npx esbuild auth-service-worker.ts --bundle --outfile=public/auth-service-worker.js",
     "export": "npx esbuild auth-service-worker.ts --bundle --outfile=public/auth-service-worker.js && next build && next export",
+    "deploy:firebase": "firebase deploy",
+    "deploy:gcp": "docker compose build && gcloud builds submit --tag gcr.io/teaworkapp/feat/docker-gcp --project teaworkapp && gcloud run deploy --image gcr.io/teaworkapp/feat/docker-gcp --project teaworkapp --platform managed",
+    "deploy:cloudflare": "next deploy",
     "start": "next start",
     "lint": "next lint",
     "lint:fix": "next lint --fix '**/*.{ts,tsx}'",
@@ -50,6 +53,7 @@
     "prettier": "3.3.3",
     "tailwindcss": "^3.4.10",
     "typescript": "5.3.3",
+    "vercel": "^37.2.1",
     "wrangler": "^3.72.3"
   }
 }
