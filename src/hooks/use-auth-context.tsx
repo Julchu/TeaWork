@@ -57,8 +57,7 @@ const AuthProvider: FC<{ children: ReactNode; currentUser?: User }> = ({
     const provider = new GoogleAuthProvider();
     provider.setCustomParameters({ prompt: 'select_account' });
 
-    await signInWithPopup(authentication, provider);
-    // await signInWithRedirect(authentication, provider); // doesn't work for mobile for now
+    await signInWithPopup(authentication, provider); // signInWithRedirect(auth, provider) doesn't work for mobile for now
   }, []);
 
   const logout = useCallback(() => {
