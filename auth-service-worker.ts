@@ -33,7 +33,7 @@ console.log(authentication);
 
 const installations = getInstallations(app);
 
-_self.addEventListener('fetch', async event => {
+self.addEventListener('fetch', async event => {
   const [authIdToken, installationToken] = await Promise.all([
     getAuthIdToken(authentication),
     getToken(installations, true),
@@ -44,8 +44,8 @@ _self.addEventListener('fetch', async event => {
   const { origin, href } = new URL(fetchEvent.request.url);
 
   if (
-    origin !== _self.location.origin ||
-    !(_self.location.protocol === 'https:' || _self.location.hostname === 'localhost') ||
+    origin !== self.location.origin ||
+    !(self.location.protocol === 'https:' || self.location.hostname === 'localhost') ||
     !authIdToken
   )
     return;
@@ -86,9 +86,10 @@ const fetchWithFirebaseHeaders = async (
   }
 };
 
-_self.addEventListener('activate', event => {
+self.addEventListener('activate', event => {
   const fetchEvent = event as FetchEvent;
-  fetchEvent.waitUntil(_self.clients.claim());
+  // @ts-ignore
+  fetchEvent.waitUntil(self.clients.claim());
 });
 
 const getAuthIdToken = async (auth: Auth) => {

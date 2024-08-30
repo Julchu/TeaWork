@@ -15,6 +15,7 @@ export const metadata: Metadata = {
 };
 
 export const dynamic = 'force-dynamic';
+export const runtime = 'edge';
 
 const RootLayout: FC<{ children: ReactNode }> = async ({ children }) => {
   const { currentUser } = await getFirebaseServerApp();

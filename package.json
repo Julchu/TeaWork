@@ -13,7 +13,10 @@
     "lint:fix": "next lint --fix '**/*.{ts,tsx}'",
     "type-check": "tsc --noEmit",
     "type-check:firebase": "tsc -p functions --skipLibCheck --noEmit",
-    "test": "next lint && tsc --noEmit"
+    "test": "next lint && tsc --noEmit",
+    "pages:build": "npx @cloudflare/next-on-pages",
+    "preview": "npm run pages:build && wrangler pages dev",
+    "deploy": "npm run pages:build && wrangler pages deploy"
   },
   "dependencies": {
     "@radix-ui/react-avatar": "^1.1.0",
@@ -27,12 +30,13 @@
     "@vis.gl/react-google-maps": "^1.1.0",
     "firebase": "^10.13.0",
     "mapbox-gl": "^3.6.0",
-    "next": "^14.2.6",
+    "next": "14.2.6",
     "react": "latest",
     "react-dom": "latest",
     "server-only": "^0.0.1"
   },
   "devDependencies": {
+    "@cloudflare/next-on-pages": "^1.13.2",
     "@types/mapbox-gl": "^3.4.0",
     "@types/node": "^22.5.0",
     "@types/react": "^18.3.4",
@@ -45,6 +49,7 @@
     "postcss": "^8.4.41",
     "prettier": "3.3.3",
     "tailwindcss": "^3.4.10",
-    "typescript": "5.3.3"
+    "typescript": "5.3.3",
+    "wrangler": "^3.72.3"
   }
 }
