@@ -19,7 +19,6 @@ export const runtime = 'edge';
 
 const RootLayout: FC<{ children: ReactNode }> = async ({ children }) => {
   const { currentUser } = await getFirebaseServerApp();
-  console.log('currentUser', JSON.stringify(currentUser?.toJSON()));
 
   const headerStore = headers();
 

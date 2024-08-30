@@ -8,8 +8,6 @@ import { getApps } from '@firebase/app';
 let firebaseConfig: FirebaseOptions;
 let lan: string;
 
-const _self = self as unknown as ServiceWorkerGlobalScope;
-
 // Extract firebase config from query string
 const serializedFirebaseConfig = new URL(location.href).searchParams.get('firebaseConfig');
 lan = new URL(location.href).searchParams.get('lan') || '';
@@ -28,8 +26,6 @@ if (lan) {
     disableWarnings: true,
   });
 }
-
-console.log(authentication);
 
 const installations = getInstallations(app);
 
@@ -50,10 +46,6 @@ self.addEventListener('fetch', async event => {
   )
     return;
 
-  console.log('url2', fetchEvent.request.url);
-  console.log('href', href);
-  console.log('origin', origin);
-
   try {
     const response = await fetchWithFirebaseHeaders(fetchEvent, authIdToken, installationToken);
     if (response) fetchEvent.respondWith(response);
@@ -70,16 +62,12 @@ const fetchWithFirebaseHeaders = async (
   try {
     const headers = new Headers(fetchEvent.request.headers);
 
-    console.log('auth token', authIdToken);
-
     headers.append('Firebase-Instance-ID-Token', installationToken);
     headers.append('Authorization', `Bearer ${authIdToken}`);
     const newRequest = new Request(fetchEvent.request, { headers });
-    console.log('url', fetchEvent.request.url);
-    console.log('new request', newRequest);
 
-    return await fetch(newRequest).catch(async e => {
-      console.log('fetch error', e);
+    return await fetch(newRequest).catch(async error => {
+      console.log('Error fetching with new headers', error);
     });
   } catch (error) {
     console.log('Error in auth service worker', error);

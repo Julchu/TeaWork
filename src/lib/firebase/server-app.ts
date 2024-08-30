@@ -14,7 +14,6 @@ let emulatorsStarted = false;
 export const getFirebaseServerApp = async () => {
   try {
     const authIdToken = headers().get('Authorization')?.split('Bearer ')[1];
-    console.log('retrieving authId token:', authIdToken);
 
     if (authIdToken) {
       const app = initializeServerApp(firebaseConfig, {
@@ -43,8 +42,6 @@ export const getFirebaseServerApp = async () => {
           currentUser: authentication.currentUser,
         };
       }
-    } else {
-      console.log('No authIdToken');
     }
   } catch (error) {
     console.log('Error in server-app', error);

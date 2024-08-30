@@ -57,11 +57,6 @@ const AuthProvider: FC<{ children: ReactNode; currentUser?: User }> = ({
     const provider = new GoogleAuthProvider();
     provider.setCustomParameters({ prompt: 'select_account' });
 
-    // Retrieve user public info such as first name
-    // provider.addScope('https://www.googleapis.com/auth/userinfo.profile');
-    // provider.addScope('profile');
-    // provider.addScope('email');
-
     await signInWithPopup(authentication, provider); // signInWithRedirect(auth, provider) doesn't work for mobile for now
   }, []);
 
@@ -88,7 +83,6 @@ const AuthProvider: FC<{ children: ReactNode; currentUser?: User }> = ({
         setAuthUser(firebaseUser);
         const retrievedUser = await getUser(firebaseUser);
         // await setCookies([{ key: '__session', value: await firebaseUser.getIdToken() }]);
-        // await setCookies([{ key: 'cheese', value: 'potato' }]);
 
         if (retrievedUser) {
           setUserInfo({ ...retrievedUser?.data() });
@@ -108,20 +102,12 @@ const AuthProvider: FC<{ children: ReactNode; currentUser?: User }> = ({
   useEffect(() => {
     // Install service worker if supported.
     if ('serviceWorker' in navigator) {
-      // navigator.serviceWorker.getRegistrations().then(registrations => {
-      //   // Returns installed service workers
-      //   if (registrations.length) {
-      //     for (let registration of registrations) {
-      //       registration.unregister();
-      //     }
       if (caches) {
         // Service worker cache should be cleared with caches.delete()
         caches.keys().then(async names => {
           await Promise.all(names.map(name => caches.delete(name)));
         });
       }
-      //   }
-      // });
       const serializedFirebaseConfig = encodeURIComponent(JSON.stringify(firebaseConfig));
       const serviceWorkerUrl = `/auth-service-worker.js?firebaseConfig=${serializedFirebaseConfig}&lan=${process.env.NEXT_PUBLIC_LAN}`;
 
@@ -137,9 +123,6 @@ const AuthProvider: FC<{ children: ReactNode; currentUser?: User }> = ({
         });
       router.refresh();
     }
-    /*else {
-      window.location.assign('/unsupported');
-    }*/
   }, [router]);
 
   // Auth persistence: detect if user is authenticated or not (on page change, on page refresh)
@@ -152,7 +135,6 @@ const AuthProvider: FC<{ children: ReactNode; currentUser?: User }> = ({
     onAuthStateChanged(authentication, async firebaseUser => {
       if (authUser === undefined) return;
 
-      // refresh when user changed to ease testing
       if (authUser?.email !== firebaseUser?.email) {
         // await deleteCookies(['token']);
         router.refresh();
