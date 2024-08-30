@@ -47,7 +47,13 @@ self.addEventListener('fetch', async event => {
     return;
 
   try {
-    const response = await fetchWithFirebaseHeaders(fetchEvent, authIdToken, installationToken);
+    const response = await fetchWithFirebaseHeaders(
+      fetchEvent,
+      authIdToken,
+      installationToken,
+    ).catch(async e => {
+      return await fetchWithFirebaseHeaders(fetchEvent, authIdToken, installationToken);
+    });
     if (response) fetchEvent.respondWith(response);
   } catch (error) {
     console.error('Error in auth-service-worker', error);
