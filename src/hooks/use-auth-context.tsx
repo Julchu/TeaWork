@@ -109,7 +109,6 @@ const AuthProvider: FC<{ children: ReactNode; currentUser?: User }> = ({
         });
       }
       const serializedFirebaseConfig = encodeURIComponent(JSON.stringify(firebaseConfig));
-      // if (process.env.NEXT_PUBLIC_LAN !== undefined): serviceWorkerUrl =  `/auth-service-worker.js?firebaseConfig=${serializedFirebaseConfig}&lan=${process.env.NEXT_PUBLIC_LAN}`;
       const serviceWorkerUrl = `/auth-service-worker.js?firebaseConfig=${serializedFirebaseConfig}`;
 
       navigator.serviceWorker
@@ -138,8 +137,9 @@ const AuthProvider: FC<{ children: ReactNode; currentUser?: User }> = ({
 
       if (authUser?.email !== firebaseUser?.email) {
         // await deleteCookies(['token']);
-        router.refresh();
+        console.log('Not logged in');
       }
+      router.refresh();
     });
   }, [authUser, router]);
 

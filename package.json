@@ -10,7 +10,7 @@
     "export": "npx esbuild auth-service-worker.ts --bundle --outfile=public/auth-service-worker.js && next build && next export",
     "deploy:firebase": "firebase deploy",
     "deploy:gcp": "docker compose build && gcloud builds submit --tag gcr.io/teaworkapp/feat/docker-gcp --project teaworkapp && gcloud run deploy --image gcr.io/teaworkapp/feat/docker-gcp --project teaworkapp --platform managed",
-    "deploy:cloudflare": "next deploy",
+    "deploy:cloudflare": "yarn deploy",
     "start": "next start",
     "lint": "next lint",
     "lint:fix": "next lint --fix '**/*.{ts,tsx}'",
