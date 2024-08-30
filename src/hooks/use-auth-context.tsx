@@ -10,7 +10,7 @@ import {
   useEffect,
   useState,
 } from 'react';
-import { GoogleAuthProvider, onAuthStateChanged, signInWithRedirect, User } from 'firebase/auth';
+import { GoogleAuthProvider, onAuthStateChanged, signInWithPopup, User } from 'firebase/auth';
 import { UserInfo } from 'src/lib/firebase/interfaces';
 import useUserHook from 'src/hooks/use-user-firestore-hook';
 import { authentication } from 'src/lib/firebase/client-app';
@@ -57,8 +57,8 @@ const AuthProvider: FC<{ children: ReactNode; currentUser?: User }> = ({
     const provider = new GoogleAuthProvider();
     provider.setCustomParameters({ prompt: 'select_account' });
 
-    // await signInWithPopup(authentication, provider);
-    await signInWithRedirect(authentication, provider); // doesn't work for mobile for now
+    await signInWithPopup(authentication, provider);
+    // await signInWithRedirect(authentication, provider); // doesn't work for mobile for now
   }, []);
 
   const logout = useCallback(() => {
