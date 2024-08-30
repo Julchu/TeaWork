@@ -21,8 +21,23 @@ export const getMiddleware = async (request: NextRequest, response: NextResponse
   try {
     const ip = request.headers.get('X-Forwarded-For')?.split(',')[0];
     const t = request.headers.get('Authorization')?.split('Bearer ')[0];
-    if (ip) response.cookies.set('geo', JSON.stringify(await getIpInfo(ip)));
-    if (t) response.cookies.set('t', JSON.stringify(t));
+
+    const expiresIn = 60 * 60 * 24 * 5 * 1000;
+    if (ip)
+      response.cookies.set('geo', JSON.stringify(await getIpInfo(ip)), {
+        maxAge: expiresIn,
+        httpOnly: true,
+        secure: true,
+        sameSite: 'strict',
+      });
+
+    if (t)
+      response.cookies.set('t', JSON.stringify(t), {
+        maxAge: expiresIn,
+        httpOnly: true,
+        secure: true,
+        sameSite: 'strict',
+      });
   } catch (error) {
     console.error('Geolocation error', error);
   }

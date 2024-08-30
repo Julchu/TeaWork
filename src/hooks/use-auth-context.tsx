@@ -40,8 +40,11 @@ type AuthProps = {
 
 export const useAuthContext = (): AuthProps => useContext(AuthContext);
 
-const AuthProvider: FC<{ children: ReactNode }> = ({ children }) => {
-  const [authUser, setAuthUser] = useState<User | undefined>(undefined);
+const AuthProvider: FC<{ children: ReactNode; currentUser?: User }> = ({
+  children,
+  currentUser,
+}) => {
+  const [authUser, setAuthUser] = useState<User | undefined>(currentUser);
   const [authLoading, setAuthLoading] = useState<boolean>(true);
   const [userInfo, setUserInfo] = useState<Partial<UserInfo>>();
   const [userLoading, setUserLoading] = useState<boolean>(false);
@@ -111,16 +114,16 @@ const AuthProvider: FC<{ children: ReactNode }> = ({ children }) => {
       //     for (let registration of registrations) {
       //       registration.unregister();
       //     }
-      //     if (caches) {
-      //       // Service worker cache should be cleared with caches.delete()
-      //       caches.keys().then(async names => {
-      //         await Promise.all(names.map(name => caches.delete(name)));
-      //       });
-      //     }
+      if (caches) {
+        // Service worker cache should be cleared with caches.delete()
+        caches.keys().then(async names => {
+          await Promise.all(names.map(name => caches.delete(name)));
+        });
+      }
       //   }
       // });
       const serializedFirebaseConfig = encodeURIComponent(JSON.stringify(firebaseConfig));
-      const serviceWorkerUrl = `/auth-service-worker.js?firebaseConfig=${serializedFirebaseConfig}`; //&lan=${process.env.NEXT_PUBLIC_LAN}
+      const serviceWorkerUrl = `/auth-service-worker.js?firebaseConfig=${serializedFirebaseConfig}&lan=${process.env.NEXT_PUBLIC_LAN}`;
 
       navigator.serviceWorker
         .register(serviceWorkerUrl, { scope: '/' })

@@ -14,32 +14,37 @@ let emulatorsStarted = false;
 export const getFirebaseServerApp = async () => {
   try {
     const authIdToken = headers().get('Authorization')?.split('Bearer ')[1];
+    console.log('retrieving authId token:', authIdToken);
 
-    const app = initializeServerApp(firebaseConfig, {
-      authIdToken,
-    });
-    const firestore = getFirestore(app);
-    const authentication = getAuth(app);
-
-    if (
-      process.env.NEXT_PUBLIC_EMULATOR_ENABLED &&
-      process.env.NEXT_PUBLIC_LAN &&
-      !emulatorsStarted
-    ) {
-      connectAuthEmulator(authentication, `http://${process.env.NEXT_PUBLIC_LAN}:9099`, {
-        disableWarnings: true,
+    if (authIdToken) {
+      const app = initializeServerApp(firebaseConfig, {
+        authIdToken,
       });
-      connectFirestoreEmulator(firestore, process.env.NEXT_PUBLIC_LAN, 8080);
-      emulatorsStarted = true;
-    }
+      const firestore = getFirestore(app);
+      const authentication = getAuth(app);
 
-    await authentication.authStateReady();
+      await authentication.authStateReady();
 
-    if (authentication.currentUser) {
-      return {
-        app,
-        currentUser: authentication.currentUser,
-      };
+      if (
+        process.env.NEXT_PUBLIC_EMULATOR_ENABLED &&
+        process.env.NEXT_PUBLIC_LAN &&
+        !emulatorsStarted
+      ) {
+        connectAuthEmulator(authentication, `http://${process.env.NEXT_PUBLIC_LAN}:9099`, {
+          disableWarnings: true,
+        });
+        connectFirestoreEmulator(firestore, process.env.NEXT_PUBLIC_LAN, 8080);
+        emulatorsStarted = true;
+      }
+
+      if (authentication.currentUser) {
+        return {
+          app,
+          currentUser: authentication.currentUser,
+        };
+      }
+    } else {
+      console.log('No authIdToken');
     }
   } catch (error) {
     console.log('Error in server-app', error);

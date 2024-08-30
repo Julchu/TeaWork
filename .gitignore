@@ -139,3 +139,6 @@ emulatorData
 .pnp.*
 
 .vercel
+certificates
+
+public/auth-service-worker.js

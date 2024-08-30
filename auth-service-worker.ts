@@ -6,75 +6,115 @@ import { getApps } from '@firebase/app';
 
 // this is set during install
 let firebaseConfig: FirebaseOptions;
-let lan = '';
-let emulatorsStarted = false;
+let lan: string;
 
-self.addEventListener('install', () => {
-  // Extract firebase config from query string
-  const serializedFirebaseConfig = new URL(location.href).searchParams.get('firebaseConfig');
-  lan = new URL(location.href).searchParams.get('lan') || '';
+const _self = self as unknown as ServiceWorkerGlobalScope;
 
-  if (!serializedFirebaseConfig) {
-    throw new Error('Firebase Config object not found in service worker query string.');
-  }
+// Extract firebase config from query string
+const serializedFirebaseConfig = new URL(location.href).searchParams.get('firebaseConfig');
+lan = new URL(location.href).searchParams.get('lan') || '';
 
-  firebaseConfig = JSON.parse(serializedFirebaseConfig);
-});
+if (!serializedFirebaseConfig) {
+  throw new Error('Firebase Config object not found in service worker query string.');
+}
 
-self.addEventListener('fetch', async event => {
+firebaseConfig = JSON.parse(serializedFirebaseConfig);
+
+const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0];
+const authentication = getAuth(app);
+
+if (lan) {
+  connectAuthEmulator(authentication, `http://${lan}:9099`, {
+    disableWarnings: true,
+  });
+}
+
+console.log(authentication);
+
+const installations = getInstallations(app);
+
+_self.addEventListener('fetch', async event => {
+  const [authIdToken, installationToken] = await Promise.all([
+    getAuthIdToken(authentication),
+    getToken(installations, true),
+  ]);
+
   const fetchEvent = event as FetchEvent;
 
-  const { origin } = new URL(fetchEvent.request.url);
-  if (origin !== self.location.origin) return;
+  const { origin, href } = new URL(fetchEvent.request.url);
+
+  if (
+    origin !== _self.location.origin ||
+    !(_self.location.protocol === 'https:' || _self.location.hostname === 'localhost') ||
+    !authIdToken
+  )
+    return;
+
+  console.log('url2', fetchEvent.request.url);
+  console.log('href', href);
+  console.log('origin', origin);
 
   try {
-    const response = await fetchWithFirebaseHeaders(fetchEvent.request);
+    const response = await fetchWithFirebaseHeaders(fetchEvent, authIdToken, installationToken);
     if (response) fetchEvent.respondWith(response);
   } catch (error) {
     console.error('Error in auth-service-worker', error);
   }
 });
 
-const fetchWithFirebaseHeaders = async (request: Request) => {
+const fetchWithFirebaseHeaders = async (
+  fetchEvent: FetchEvent,
+  authIdToken: string,
+  installationToken: string,
+) => {
   try {
-    const headers = new Headers(request.headers);
+    const headers = new Headers(fetchEvent.request.headers);
 
-    const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0];
-    const authentication = getAuth(app);
-
-    if (!emulatorsStarted && lan) {
-      connectAuthEmulator(authentication, `http://127.0.0.1:9099`, {
-        disableWarnings: true,
-      });
-      emulatorsStarted = true;
-    }
-
-    const installations = getInstallations(app);
-
-    const [authIdToken, installationToken] = await Promise.all([
-      getAuthIdToken(authentication),
-      getToken(installations, true),
-    ]);
+    console.log('auth token', authIdToken);
 
     headers.append('Firebase-Instance-ID-Token', installationToken);
     headers.append('Authorization', `Bearer ${authIdToken}`);
-    const newRequest = new Request(request, { headers });
-    return await fetch(newRequest);
+    const newRequest = new Request(fetchEvent.request, { headers });
+    console.log('url', fetchEvent.request.url);
+    console.log('new request', newRequest);
+
+    return await fetch(newRequest).catch(async e => {
+      console.log('fetch error', e);
+    });
   } catch (error) {
     console.log('Error in auth service worker', error);
   }
 };
 
-// self.addEventListener('activate', event => {
-//   const fetchEvent = event as FetchEvent;
-//   fetchEvent.waitUntil(self.clients.claim());
-// });
+_self.addEventListener('activate', event => {
+  const fetchEvent = event as FetchEvent;
+  fetchEvent.waitUntil(_self.clients.claim());
+});
 
-async function getAuthIdToken(auth: Auth) {
+const getAuthIdToken = async (auth: Auth) => {
   await auth.authStateReady();
   if (!auth.currentUser) return;
   return await getIdToken(auth.currentUser, true);
-}
+};
+
+// const getBodyContent = (req: Request) => {
+//   return Promise.resolve()
+//     .then(() => {
+//       if (req.method !== 'GET') {
+//         const contentType = req.headers.get('Content-Type');
+//         if (contentType && contentType.indexOf('json') !== -1) {
+//           return req.json().then(json => {
+//             return JSON.stringify(json);
+//           });
+//         } else {
+//           return req.text();
+//         }
+//       }
+//     })
+//     .catch(error => {
+//       // Ignore error.
+//     });
+// };
 
 // import { getIdToken, onAuthStateChanged } from 'firebase/auth';
 // import { getAuth } from '@firebase/auth';

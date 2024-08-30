@@ -35,15 +35,16 @@ firebaseConfig = JSON.parse(serializedFirebaseConfig);
 const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0];
 const firestore = getFirestore(app);
 const auth = getAuth(app);
-console.log('auth', auth);
+
 if (!emulatorsStarted && lan) {
-  connectAuthEmulator(auth, `http://127.0.0.1:9099`, {
+  connectAuthEmulator(auth, `http://localhost:9099`, {
     disableWarnings: true,
   });
-  connectFirestoreEmulator(firestore, '127.0.0.1', 8080);
-  emulatorsStarted = true;
+  connectFirestoreEmulator(firestore, 'localhost', 8080);
+  // emulatorsStarted = true;
 }
-console.log('emulatorsStarted', emulatorsStarted);
+
+console.log('auth', auth);
 
 const getIdTokenPromise = () => {
   return new Promise((resolve, reject) => {
@@ -134,17 +135,22 @@ self.addEventListener('fetch', event => {
         } catch (e) {
           // This will fail for CORS requests. We just continue with the
           // fetch caching logic below and do not pass the ID token.
+          console.log('error making request', e);
         }
       });
     }
     return processRequestPromise.then(() => {
-      return fetch(req);
+      return fetch(req).catch((e) => console.log('error fetching', e));
     });
   };
   // Fetch the resource after checking for the ID token.
   // This can also be integrated with existing logic to serve cached files
   // in offline mode.
-  evt.respondWith(getIdTokenPromise().then(requestProcessor, requestProcessor));
+  try {
+    evt.respondWith(getIdTokenPromise().then(requestProcessor, requestProcessor));
+  } catch (e) {
+    console.log('evt response err', e);
+  }
 });
 // [END auth_svc_intercept]
 
