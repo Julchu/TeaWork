@@ -1,11 +1,13 @@
 import React, { FC, ReactNode } from 'react';
 import AuthProvider from 'src/hooks/use-auth-context';
 import AuthWrapper from 'src/components/auth/auth-wrapper';
-import { User } from 'firebase/auth';
 
-const Providers: FC<{ children: ReactNode; currentUser?: User }> = ({ children, currentUser }) => {
+const Providers: FC<{ children: ReactNode; currentEmail?: string }> = ({
+  children,
+  currentEmail,
+}) => {
   return (
-    <AuthProvider currentUser={currentUser}>
+    <AuthProvider currentEmail={currentEmail}>
       <AuthWrapper>{children}</AuthWrapper>
     </AuthProvider>
   );

@@ -2,7 +2,7 @@
 // https://nextjs.org/docs/app/building-your-application/rendering/composition-patterns#keeping-server-only-code-out-of-the-client-environment
 import 'server-only';
 
-import { headers } from 'next/headers';
+import { cookies } from 'next/headers';
 import { initializeServerApp } from '@firebase/app';
 import { firebaseConfig } from 'src/lib/firebase/firebase-config';
 import { connectFirestoreEmulator, getFirestore } from '@firebase/firestore';
@@ -10,9 +10,9 @@ import { connectAuthEmulator, getAuth } from '@firebase/auth';
 
 export const getFirebaseServerApp = async () => {
   try {
-    const authIdToken = headers().get('Authorization')?.split('Bearer ')[1];
+    const authIdToken = cookies().get('__session')?.value;
 
-    console.log('authIdToken', authIdToken);
+    console.log('server app authIdToken: ', authIdToken);
     if (authIdToken) {
       const app = initializeServerApp(firebaseConfig, {
         authIdToken,
@@ -28,13 +28,16 @@ export const getFirebaseServerApp = async () => {
       }
 
       await authentication.authStateReady();
+      authentication.onAuthStateChanged(currentUser => {
+        return { app, currentUser };
+      });
 
-      if (authentication.currentUser) {
-        return {
-          app,
-          currentUser: authentication.currentUser,
-        };
-      }
+      // if (authentication.currentUser) {
+      return {
+        app,
+        currentUser: authentication.currentUser,
+      };
+      // }
     }
   } catch (error) {
     console.log('Error in server-app', error);

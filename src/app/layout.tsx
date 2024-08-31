@@ -21,7 +21,7 @@ const RootLayout: FC<{ children: ReactNode }> = async ({ children }) => {
   const { currentUser } = await getFirebaseServerApp();
 
   const currentEmail = JSON.stringify(currentUser?.email);
-  console.log('current email', currentEmail);
+  console.log('current email from RootLayout', currentEmail);
 
   const headerStore = headers();
 
@@ -56,7 +56,7 @@ const RootLayout: FC<{ children: ReactNode }> = async ({ children }) => {
   return (
     <html lang="en">
       <body className={`${montserrat.className} ${shouldUseDarkMode ? 'bg-black' : ''}`}>
-        <Providers currentUser={currentUser}>{children}</Providers>
+        <Providers currentEmail={currentEmail}>{children}</Providers>
         <Logo />
 
         <Analytics />
