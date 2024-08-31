@@ -205,7 +205,6 @@
 import { FirebaseOptions, getApps, initializeApp } from 'firebase/app';
 import { Auth, getAuth, getIdToken } from 'firebase/auth';
 import { getInstallations, getToken } from 'firebase/installations';
-import { connectAuthEmulator } from '@firebase/auth';
 // import { connectAuthEmulator } from '@firebase/auth';
 
 // this is set during install
@@ -226,11 +225,11 @@ firebaseConfig = JSON.parse(serializedFirebaseConfig);
 const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0];
 const authentication = getAuth(app);
 
-if (lan !== undefined) {
-  connectAuthEmulator(authentication, `http://${lan}:9099`, {
-    disableWarnings: true,
-  });
-}
+// if (lan !== undefined) {
+//   connectAuthEmulator(authentication, `http://${lan}:9099`, {
+//     disableWarnings: true,
+//   });
+// }
 
 const installations = getInstallations(app);
 
