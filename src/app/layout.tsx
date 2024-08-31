@@ -20,6 +20,9 @@ export const runtime = 'edge';
 const RootLayout: FC<{ children: ReactNode }> = async ({ children }) => {
   const { currentUser } = await getFirebaseServerApp();
 
+  const currentEmail = JSON.stringify(currentUser?.email);
+  console.log('current email', currentEmail);
+
   const headerStore = headers();
 
   const ip = (headerStore.get('x-forwarded-for') || '').split(',')[0];

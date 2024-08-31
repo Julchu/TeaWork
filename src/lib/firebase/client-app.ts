@@ -8,7 +8,8 @@
 import { getApps, initializeApp } from 'firebase/app';
 import { firebaseConfig } from 'src/lib/firebase/firebase-config';
 import { getFirestore } from 'firebase/firestore';
-import { getAuth } from '@firebase/auth';
+import { connectAuthEmulator, getAuth } from '@firebase/auth';
+import { connectFirestoreEmulator } from '@firebase/firestore';
 
 const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0];
 
@@ -18,10 +19,10 @@ const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0
 const firestore = getFirestore(app);
 const authentication = getAuth(app);
 
-// if (process.env.NEXT_PUBLIC_EMULATOR_ENABLED && process.env.NEXT_PUBLIC_LAN) {
-//   connectFirestoreEmulator(firestore, process.env.NEXT_PUBLIC_LAN, 8080);
-//   connectAuthEmulator(authentication, `http://${process.env.NEXT_PUBLIC_LAN}:9099`, {
-//     disableWarnings: true,
-//   });
-// }
+if (process.env.NEXT_PUBLIC_LAN) {
+  connectFirestoreEmulator(firestore, process.env.NEXT_PUBLIC_LAN, 8080);
+  connectAuthEmulator(authentication, `http://${process.env.NEXT_PUBLIC_LAN}:9099`, {
+    disableWarnings: true,
+  });
+}
 export { firestore, authentication };

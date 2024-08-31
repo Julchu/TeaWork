@@ -1,7 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 
 const getIpInfo = async (ip: string) => {
+  if (ip.includes('localhost') || ip.includes('127.0.0.1')) return;
   try {
+    console.log('id', ip);
     // GCP (with load balancer) offers 2 IPs; 1st is actual, 2nd is load balancer's IP address
     const url = `https://ipinfo.io/${ip.length > 5 ? ip : ''}?token=${
       process.env.NEXT_PUBLIC_IPINFO_GEOLOCATION_API_KEY

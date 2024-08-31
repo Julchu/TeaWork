@@ -102,14 +102,26 @@ const AuthProvider: FC<{ children: ReactNode; currentUser?: User }> = ({
   useEffect(() => {
     // Install service worker if supported.
     if ('serviceWorker' in navigator) {
-      if (caches) {
-        // Service worker cache should be cleared with caches.delete()
-        caches.keys().then(async names => {
-          await Promise.all(names.map(name => caches.delete(name)));
-        });
-      }
+      navigator.serviceWorker.getRegistrations().then(async registrations => {
+        await Promise.all(registrations.map(r => r.unregister()));
+
+        if (registrations.length) {
+          for (let registration of registrations) {
+            await registration.unregister();
+          }
+          if (caches) {
+            // Service worker cache should be cleared with caches.delete()
+            caches.keys().then(async names => {
+              await Promise.all(names.map(name => caches.delete(name)));
+            });
+          }
+        }
+      });
+
+      console.log('sw', navigator.serviceWorker);
+
       const serializedFirebaseConfig = encodeURIComponent(JSON.stringify(firebaseConfig));
-      const serviceWorkerUrl = `/auth-service-worker.js?firebaseConfig=${serializedFirebaseConfig}`;
+      const serviceWorkerUrl = `/auth-service-worker.js?firebaseConfig=${serializedFirebaseConfig}&lan=${process.env.NEXT_PUBLIC_LAN}`;
 
       navigator.serviceWorker
         .register(serviceWorkerUrl, { scope: '/' })

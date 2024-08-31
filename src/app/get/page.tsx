@@ -21,6 +21,7 @@ const NewHomePage: FC = async searchParams => {
 
   // const users = await getUsers(getFirestore(app), searchParams);
   const currentEmail = JSON.stringify(currentUser?.email);
+  console.log('current email', currentEmail);
 
   if (!googleMapsApiKey) return <div>No API key</div>;
   return (
