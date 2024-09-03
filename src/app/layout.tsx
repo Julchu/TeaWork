@@ -6,7 +6,7 @@ import { montserrat } from 'src/components/ui/fonts';
 import { cookies } from 'next/headers';
 import Providers from 'src/hooks/use-providers';
 import Logo from 'src/components/ui/logo';
-import { User } from 'firebase/auth';
+import { fetchUserInfo } from 'src/lib/actions';
 
 export const metadata: Metadata = {
   title: 'TeaWork',
@@ -21,31 +21,7 @@ const RootLayout: FC<{ children: ReactNode }> = async ({ children }) => {
   // const authIdToken = headers().test('Authorization')?.split('Bearer ')[1];
   const authIdToken = cookies().get('__session')?.value;
 
-  if (authIdToken) {
-    console.log('authIdToken', authIdToken);
-    try {
-      const currentUser = await fetch('http://localhost:3001', {
-        method: 'POST',
-        headers: {
-          Authorization: `Bearer ${authIdToken}`,
-        },
-      }).then(async data => {
-        return (await data.json()) as User;
-      });
-      // if (app) {
-      //   // const user = await getUsers(firestore, searchParams);
-      //   // console.log('current user info from /test/', JSON.stringify(user));
-      // }
-      console.log('currentUser', currentUser);
-      const currentEmail = JSON.stringify(currentUser?.email);
-      console.log('current email from /test', currentEmail);
-    } catch (error) {
-      console.log('fetch error', error);
-    }
-  }
-
-  // const currentEmail = JSON.stringify(currentUser?.email);
-  // console.log('current email from RootLayout', currentEmail);
+  const currentEmail = await fetchUserInfo(authIdToken);
 
   // const headerStore = headers();
   //
@@ -80,7 +56,7 @@ const RootLayout: FC<{ children: ReactNode }> = async ({ children }) => {
   return (
     <html lang="en">
       <body className={`${montserrat.className} ${shouldUseDarkMode ? 'bg-black' : ''}`}>
-        <Providers currentEmail={'ef'}>{children}</Providers>
+        <Providers currentEmail={currentEmail}>{children}</Providers>
         <Logo />
 
         <Analytics />

@@ -11,7 +11,7 @@ import { useAuthContext } from 'src/hooks/use-auth-context';
 const MapComponent: FC<{
   googleMapsApiKey: string;
   initialCoords: Coordinates;
-  currentUser: any;
+  currentUser?: string;
   locInfo?: any;
 }> = ({ googleMapsApiKey, initialCoords, currentUser, locInfo }) => {
   const { logout, login } = useAuthContext();
