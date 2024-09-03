@@ -1,66 +1,49 @@
+import { cookies } from 'next/headers';
+import * as React from 'react';
 import { FC } from 'react';
-import Map from 'src/components/map/map';
-import { headers } from 'next/headers';
-import * as process from 'process';
-import { Coordinates, MapTime } from 'src/lib/firebase/interfaces';
+import Map from 'src/components/googleMaps/map';
+import { Coordinates } from 'src/lib/firebase/interfaces';
+import { User } from 'firebase/auth';
 
-const Home: FC = async () => {
-  const headerStore = headers();
+const HomePage: FC = async searchParams => {
+  const cookieStore = cookies();
+  // const authIdToken = headers().test('Authorization')?.split('Bearer ')[1];
+  const authIdToken = cookies().get('__session')?.value;
+  // const headerStore = headers();
 
-  // Toronto; 'America/Toronto'
-  // const defaultCoords: Coordinates = { lng: -79.387054, lat: 43.642567 };
-  // const defaultTimezone = 'America/Toronto'
+  // console.log('cookies store', cookieStore.getAll());
+  // console.log('header store', headerStore.test);
+  const locInfo = cookieStore.get('geo');
+  const initialCoords: Coordinates = locInfo ? JSON.parse(locInfo.value) : { lat: 5, lng: 5 };
 
-  // San Francisco; : if SF is loaded then it means other geolocation methods have failed
-  const defaultCoords: Coordinates = { lng: -122.419416, lat: 37.774929 };
-  const defaultTimezone = 'America/Los_Angeles';
+  const shouldUseDarkMode = false;
+  const googleMapsApiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
 
-  const ip = (headerStore.get('x-forwarded-for') || '').split(',')[0];
+  // const { app, currentUser, firestore } = await getFirebaseServerApp();
 
-  const vercelLat = headerStore.get('x-vercel-ip-latitude');
-  const vercelLng = headerStore.get('x-vercel-ip-longitude');
+  if (authIdToken) {
+    try {
+      const currentUser = await fetch('http://localhost:3001', {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${authIdToken}`,
+        },
+      }).then(async data => {
+        return (await data.json()) as User;
+      });
+      // if (app) {
+      //   // const user = await getUsers(firestore, searchParams);
+      //   // console.log('current user info from /test/', JSON.stringify(user));
+      // }
+      console.log('currentUser', currentUser);
+      const currentEmail = JSON.stringify(currentUser?.email);
+      console.log('current email from /test', currentEmail);
+    } catch (error) {
+      console.log('fetch error', error);
+    }
+  }
 
-  // Localhost IP would return ::1 which is invalid; shortest possible IP might be 5 digits
-  const url = `https://ipinfo.io/${ip.length >= 5 ? ip : ''}?token=${
-    process.env.NEXT_PUBLIC_IPINFO_GEOLOCATION_API_KEY
-  }`;
-
-  const [initialCoords, timeZone] =
-    vercelLat && vercelLng
-      ? [
-          {
-            lng: parseFloat(vercelLng),
-            lat: parseFloat(vercelLat),
-          },
-          headerStore.get('x-vercel-ip-timezone'),
-        ]
-      : // Try fetching geolocation using IpInfo.io services; if not; return Toronto geolocation
-        await fetch(url).then(async response => {
-          const locationObj = await response.json();
-          if (locationObj['loc'] && locationObj['timezone']) {
-            const [lat, lng] = locationObj['loc'].split(',');
-            return [{ lat, lng }, locationObj['timezone']];
-          } else {
-            return [defaultCoords, defaultTimezone];
-          }
-        });
-
-  const currentHour = parseInt(
-    new Intl.DateTimeFormat([], {
-      timeZone,
-      hour: 'numeric',
-      hourCycle: 'h24',
-    }).format(),
-  );
-
-  const shouldUseDarkMode = 18 < currentHour || currentHour <= 6;
-  const mapTimeMode =
-    MapTime[
-      Object.keys(MapTime)[
-        Math.floor(currentHour / 6) % Object.keys(MapTime).length
-      ] as keyof typeof MapTime
-    ];
-
+  if (!googleMapsApiKey) return <div>No API key</div>;
   return (
     // bg-gradient-to-r from-indigo-200 via-purple-500 to-pink-200
     <main
@@ -69,12 +52,15 @@ const Home: FC = async () => {
       `} // Full screen margin change: p-6
     >
       <Map
+        googleMapsApiKey={googleMapsApiKey}
         initialCoords={initialCoords}
-        shouldUseDarkMode={shouldUseDarkMode}
-        mapTimeMode={mapTimeMode}
+        currentUser={'currentEmail'}
+        // locInfo={JSON.stringify(locInfo)}
       />
+
+      {/*  shouldUseDarkMode={shouldUseDarkMode}*/}
+      {/*  mapTimeMode={mapTimeMode}*/}
     </main>
   );
 };
-
-export default Home;
+export default HomePage;

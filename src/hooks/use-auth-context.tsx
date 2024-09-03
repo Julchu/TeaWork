@@ -15,7 +15,7 @@ import { UserInfo } from 'src/lib/firebase/interfaces';
 import useUserHook from 'src/hooks/use-user-firestore-hook';
 import { authentication } from 'src/lib/firebase/client-app';
 import { useRouter } from 'next/navigation';
-import { deleteCookies, setCookies } from 'src/app/get/actions';
+import { deleteCookies, setCookies } from 'src/lib/actions';
 
 export const AuthContext = createContext<AuthProps>({
   userInfo: {},
@@ -52,78 +52,61 @@ const AuthProvider: FC<{ children: ReactNode; currentEmail?: string }> = ({
 
   const router = useRouter();
 
-  const login = useCallback(async () => {
+  const login = async () => {
     setAuthLoading(true);
     const provider = new GoogleAuthProvider();
-    provider.setCustomParameters({ prompt: 'select_account' });
+    try {
+      await signInWithPopup(authentication, provider);
+    } catch (error) {
+      console.error('Error signing in with Google', error);
+    }
+  };
 
-    await signInWithPopup(authentication, provider); // signInWithRedirect(auth, provider) doesn't work for mobile for now
-  }, []);
-
-  const logout = useCallback(() => {
-    authentication
-      .signOut()
-      .then(async () => {
-        // Sign-out successful.
-        setAuthUser(undefined);
-        await deleteCookies(['__session']);
-
-        console.log('Signed out');
-      })
-      .catch(error => {
-        // An error happened.
-        console.log('Sign out error:', error);
-      });
-
-    router.refresh();
+  const logout = () => {
+    try {
+      return authentication.signOut();
+    } catch (error) {
+      console.error('Error signing out with Google', error);
+    }
     setAuthLoading(false);
-  }, [router]);
+  };
 
   const handleAuthChange = useCallback(
     async (firebaseUser: User | null) => {
-      console.log('firebaseUser', firebaseUser);
       if (firebaseUser) {
         setAuthUser(firebaseUser);
-        await setCookies([{ key: '__session', value: await firebaseUser.getIdToken() }]);
-        router.refresh();
 
         const retrievedUser = await getUser(firebaseUser);
         if (retrievedUser) {
           setUserInfo({ ...retrievedUser?.data() });
+          await setCookies([{ key: '__session', value: await firebaseUser.getIdToken() }]);
         }
-        router.refresh();
-      } /* else {
+      } else {
         setAuthUser(undefined);
         setUserInfo({});
         await deleteCookies(['__session']);
         console.log('User is not logged');
-      }*/
-      router.refresh();
+      }
       setAuthLoading(false);
     },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [],
+    [getUser],
   );
 
   // Auth persistence: detect if user is authenticated or not (on page change, on page refresh)
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(authentication, handleAuthChange);
     return () => unsubscribe();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [handleAuthChange]);
 
   useEffect(() => {
-    onAuthStateChanged(authentication, async firebaseUser => {
+    onAuthStateChanged(authentication, firebaseUser => {
       if (authUser === undefined) return;
 
       if (authUser?.email !== firebaseUser?.email) {
-        await deleteCookies(['__session']);
-        router.refresh();
-        console.log('Not logged in');
       }
+      router.refresh();
     });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [authUser, router]);
 
   return (
     <AuthContext.Provider

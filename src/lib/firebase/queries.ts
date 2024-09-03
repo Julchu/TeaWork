@@ -1,6 +1,6 @@
-import { collection, getDocs, query } from 'firebase/firestore';
+import { collection, Firestore, getDocs, query } from 'firebase/firestore';
 
-export async function getUsers(db: any, filters = {}) {
+export async function getUsers(db: Firestore, filters = {}) {
   const q = query(collection(db, 'users'));
 
   const results = await getDocs(q);
