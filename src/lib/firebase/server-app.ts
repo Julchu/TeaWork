@@ -5,8 +5,8 @@ import 'server-only';
 import { cookies } from 'next/headers';
 import { initializeServerApp } from '@firebase/app';
 import { firebaseConfig } from 'src/lib/firebase/firebase-config';
-import { connectFirestoreEmulator, getFirestore } from '@firebase/firestore';
-import { connectAuthEmulator, getAuth } from '@firebase/auth';
+import { getFirestore } from '@firebase/firestore';
+import { getAuth } from '@firebase/auth';
 
 let emulatorStarted = false;
 export const getFirebaseServerApp = async () => {
@@ -21,13 +21,13 @@ export const getFirebaseServerApp = async () => {
       const firestore = getFirestore(app);
       const authentication = getAuth(app);
 
-      if (process.env.NEXT_PUBLIC_LAN && !emulatorStarted) {
-        connectAuthEmulator(authentication, `http://${process.env.NEXT_PUBLIC_LAN}:9099`, {
-          disableWarnings: true,
-        });
-        connectFirestoreEmulator(firestore, process.env.NEXT_PUBLIC_LAN, 8080);
-        emulatorStarted = true;
-      }
+      // if (process.env.NEXT_PUBLIC_LAN && process.env.NEXT_PUBLIC_EMULATOR_ENABLED) {
+      //   connectAuthEmulator(authentication, `http://${process.env.NEXT_PUBLIC_LAN}:9099`, {
+      //     disableWarnings: true,
+      //   });
+      //   connectFirestoreEmulator(firestore, process.env.NEXT_PUBLIC_LAN, 8080);
+      //   emulatorStarted = true;
+      // }
 
       await authentication.authStateReady();
 

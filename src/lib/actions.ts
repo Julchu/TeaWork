@@ -29,7 +29,7 @@ export const fetchUserInfo = async (authIdToken?: string): Promise<string> => {
   if (!authIdToken) return 'test email';
 
   try {
-    const currentUser = await fetch(`https://${process.env.NEXT_PUBLIC_AUTH_SERVER_URL}`, {
+    const currentUser = await fetch(`${process.env.NEXT_PUBLIC_AUTH_SERVER_URL}`, {
       method: 'POST',
       headers: {
         Authorization: `Bearer ${authIdToken}`,
