@@ -3,11 +3,10 @@ import type { Metadata } from 'next';
 import React, { FC, ReactNode } from 'react';
 import { Analytics } from '@vercel/analytics/react';
 import { montserrat } from 'src/components/ui/fonts';
-import { headers } from 'next/headers';
+import { cookies } from 'next/headers';
 import Providers from 'src/hooks/use-providers';
-import process from 'process';
 import Logo from 'src/components/ui/logo';
-import { getFirebaseServerApp } from 'src/lib/firebase/server-app';
+import { fetchUserInfo } from 'src/lib/actions';
 
 export const metadata: Metadata = {
   title: 'TeaWork',
@@ -18,40 +17,41 @@ export const dynamic = 'force-dynamic';
 export const runtime = 'edge';
 
 const RootLayout: FC<{ children: ReactNode }> = async ({ children }) => {
-  const { currentUser } = await getFirebaseServerApp();
+  // const { currentUser } = await getFirebaseServerApp();
+  // const authIdToken = headers().test('Authorization')?.split('Bearer ')[1];
+  const authIdToken = cookies().get('__session')?.value;
 
-  const currentEmail = JSON.stringify(currentUser?.email);
-  console.log('current email from RootLayout', currentEmail);
+  const currentEmail = await fetchUserInfo(authIdToken);
 
-  const headerStore = headers();
+  // const headerStore = headers();
+  //
+  // const ip = (headerStore.get('x-forwarded-for') || '').split(',')[0];
+  //
+  // const url = `https://ipinfo.io/${ip.length >= 5 ? ip : ''}?token=${
+  //   process.env.NEXT_PUBLIC_IPINFO_GEOLOCATION_API_KEY
+  // }`;
+  //
+  // const timeZone =
+  //   headerStore.get('x-vercel-ip-timezone') ||
+  //   // Try fetching geolocation using IpInfo.io services; if not; return Toronto geolocation
+  //   (await fetch(url).then(async response => {
+  //     const locationObj = await response.json();
+  //     if (locationObj['timezone']) {
+  //       return locationObj['timezone'];
+  //     } else {
+  //       return 'America/Toronto';
+  //     }
+  //   }));
+  //
+  // const currentHour = parseInt(
+  //   new Intl.DateTimeFormat([], {
+  //     timeZone,
+  //     hour: 'numeric',
+  //     hourCycle: 'h24',
+  //   }).format(),
+  // );
 
-  const ip = (headerStore.get('x-forwarded-for') || '').split(',')[0];
-
-  const url = `https://ipinfo.io/${ip.length >= 5 ? ip : ''}?token=${
-    process.env.NEXT_PUBLIC_IPINFO_GEOLOCATION_API_KEY
-  }`;
-
-  const timeZone =
-    headerStore.get('x-vercel-ip-timezone') ||
-    // Try fetching geolocation using IpInfo.io services; if not; return Toronto geolocation
-    (await fetch(url).then(async response => {
-      const locationObj = await response.json();
-      if (locationObj['timezone']) {
-        return locationObj['timezone'];
-      } else {
-        return 'America/Toronto';
-      }
-    }));
-
-  const currentHour = parseInt(
-    new Intl.DateTimeFormat([], {
-      timeZone,
-      hour: 'numeric',
-      hourCycle: 'h24',
-    }).format(),
-  );
-
-  const shouldUseDarkMode = 18 < currentHour || currentHour <= 6;
+  const shouldUseDarkMode = true; //18 < currentHour || currentHour <= 6;
 
   return (
     <html lang="en">

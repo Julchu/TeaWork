@@ -5,14 +5,15 @@ import 'server-only';
 import { cookies } from 'next/headers';
 import { initializeServerApp } from '@firebase/app';
 import { firebaseConfig } from 'src/lib/firebase/firebase-config';
-import { connectFirestoreEmulator, getFirestore } from '@firebase/firestore';
-import { connectAuthEmulator, getAuth } from '@firebase/auth';
+import { getFirestore } from '@firebase/firestore';
+import { getAuth } from '@firebase/auth';
 
+let emulatorStarted = false;
 export const getFirebaseServerApp = async () => {
   try {
     const authIdToken = cookies().get('__session')?.value;
 
-    console.log('server app authIdToken: ', authIdToken);
+    // console.log('server app authIdToken: ', authIdToken);
     if (authIdToken) {
       const app = initializeServerApp(firebaseConfig, {
         authIdToken,
@@ -20,24 +21,21 @@ export const getFirebaseServerApp = async () => {
       const firestore = getFirestore(app);
       const authentication = getAuth(app);
 
-      if (process.env.NEXT_PUBLIC_LAN) {
-        connectAuthEmulator(authentication, `http://${process.env.NEXT_PUBLIC_LAN}:9099`, {
-          disableWarnings: true,
-        });
-        connectFirestoreEmulator(firestore, process.env.NEXT_PUBLIC_LAN, 8080);
-      }
+      // if (process.env.NEXT_PUBLIC_LAN && process.env.NEXT_PUBLIC_EMULATOR_ENABLED) {
+      //   connectAuthEmulator(authentication, `http://${process.env.NEXT_PUBLIC_LAN}:9099`, {
+      //     disableWarnings: true,
+      //   });
+      //   connectFirestoreEmulator(firestore, process.env.NEXT_PUBLIC_LAN, 8080);
+      //   emulatorStarted = true;
+      // }
 
       await authentication.authStateReady();
-      authentication.onAuthStateChanged(currentUser => {
-        return { app, currentUser };
-      });
 
-      // if (authentication.currentUser) {
       return {
         app,
         currentUser: authentication.currentUser,
+        firestore,
       };
-      // }
     }
   } catch (error) {
     console.log('Error in server-app', error);
@@ -45,5 +43,6 @@ export const getFirebaseServerApp = async () => {
   return {
     app: undefined,
     currentUser: undefined,
+    firestore: undefined,
   };
 };

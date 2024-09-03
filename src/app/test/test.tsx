@@ -4,7 +4,7 @@ import * as React from 'react';
 import { FC } from 'react';
 import { Button } from 'src/components/ui/button';
 import { montserrat } from 'src/components/ui/fonts';
-import { create } from 'src/app/get/actions';
+import { create } from 'src/lib/actions';
 
 export const Test: FC = () => {
   const onClickHandler = async () => {

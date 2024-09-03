@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { FC, useCallback } from 'react';
+import { FC } from 'react';
 import { useAuthContext } from 'src/hooks/use-auth-context';
 import MapStyleSelect from 'src/components/auth/map-style-settings';
 import {
@@ -15,10 +15,6 @@ import { ChevronRightIcon } from '@radix-ui/react-icons';
 export const MenuContent: FC = () => {
   const { authUser, logout, login } = useAuthContext();
 
-  const authHandler = useCallback(async () => {
-    if (authUser) logout();
-    else login();
-  }, [login, logout, authUser]);
   return (
     <>
       {authUser?.displayName ? (
@@ -47,7 +43,7 @@ export const MenuContent: FC = () => {
           </DropdownMenuSub>
           <DropdownMenuItem
             className={`relative flex cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none transition-colors focus:bg-accent focus:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50`}
-            onSelect={authHandler}
+            onSelect={logout}
           >
             Logout
           </DropdownMenuItem>
@@ -55,7 +51,7 @@ export const MenuContent: FC = () => {
       ) : (
         <DropdownMenuItem
           className={`relative flex cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none transition-colors focus:bg-accent focus:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50`}
-          onSelect={authHandler}
+          onSelect={login}
         >
           Login
         </DropdownMenuItem>
