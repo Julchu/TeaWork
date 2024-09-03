@@ -40,13 +40,13 @@ type AuthProps = {
 
 export const useAuthContext = (): AuthProps => useContext(AuthContext);
 
-const AuthProvider: FC<{ children: ReactNode; currentEmail?: string }> = ({
+const AuthProvider: FC<{ children: ReactNode; currentUser?: UserInfo }> = ({
   children,
-  currentEmail,
+  currentUser,
 }) => {
   const [authUser, setAuthUser] = useState<User | undefined>(undefined);
   const [authLoading, setAuthLoading] = useState<boolean>(true);
-  const [userInfo, setUserInfo] = useState<Partial<UserInfo>>();
+  const [userInfo, setUserInfo] = useState<Partial<UserInfo> | undefined>(currentUser || {});
   const [userLoading, setUserLoading] = useState<boolean>(false);
   const [{ getUser }] = useUserHook();
 

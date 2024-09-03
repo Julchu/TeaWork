@@ -1,7 +1,7 @@
 'use server';
 
 import { cookies } from 'next/headers';
-import { User } from 'firebase/auth';
+import { UserInfo } from 'src/lib/firebase/interfaces';
 
 export async function create({ firstName, lastName }: { firstName: string; lastName: string }) {
   cookies().set('name', `${firstName} ${lastName}`);
@@ -25,8 +25,8 @@ export const deleteCookies = async (cookiesToRemove: string[]) => {
   });
 };
 
-export const fetchUserInfo = async (authIdToken?: string): Promise<string> => {
-  if (!authIdToken) return 'test email';
+export const fetchUserInfo = async (authIdToken?: string): Promise<UserInfo | undefined> => {
+  if (!authIdToken) return;
 
   try {
     const currentUser = await fetch(`${process.env.NEXT_PUBLIC_AUTH_SERVER_URL}`, {
@@ -35,16 +35,14 @@ export const fetchUserInfo = async (authIdToken?: string): Promise<string> => {
         Authorization: `Bearer ${authIdToken}`,
       },
     }).then(async data => {
-      return (await data.json()) as User;
+      return await data.json();
     });
 
-    if (currentUser && currentUser.email) {
-      console.log('currentUser', JSON.stringify(currentUser));
-      return currentUser.email;
+    if (currentUser) {
+      return currentUser;
     }
-    return 'cheese';
   } catch (error) {
     console.log('fetch error', error);
   }
-  return 'test email';
+  return;
 };

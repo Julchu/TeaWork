@@ -17,11 +17,9 @@ export const dynamic = 'force-dynamic';
 export const runtime = 'edge';
 
 const RootLayout: FC<{ children: ReactNode }> = async ({ children }) => {
-  // const { currentUser } = await getFirebaseServerApp();
-  // const authIdToken = headers().test('Authorization')?.split('Bearer ')[1];
   const authIdToken = cookies().get('__session')?.value;
 
-  const currentEmail = await fetchUserInfo(authIdToken);
+  const currentUser = await fetchUserInfo(authIdToken);
 
   // const headerStore = headers();
   //
@@ -56,7 +54,7 @@ const RootLayout: FC<{ children: ReactNode }> = async ({ children }) => {
   return (
     <html lang="en">
       <body className={`${montserrat.className} ${shouldUseDarkMode ? 'bg-black' : ''}`}>
-        <Providers currentEmail={currentEmail}>{children}</Providers>
+        <Providers currentUser={currentUser}>{children}</Providers>
         <Logo />
 
         <Analytics />

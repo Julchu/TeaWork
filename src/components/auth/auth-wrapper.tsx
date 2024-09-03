@@ -1,7 +1,6 @@
 'use client';
 import * as React from 'react';
 import { FC, ReactNode, useMemo } from 'react';
-import { useAuthContext } from 'src/hooks/use-auth-context';
 import PersonIcon from 'src/components/ui/icons/person';
 import { montserrat } from 'src/components/ui/fonts';
 import { MenuContent } from 'src/components/auth/auth-menu';
@@ -12,17 +11,19 @@ import {
   DropdownMenuTrigger,
 } from '@radix-ui/react-dropdown-menu';
 import { Button } from 'src/components/ui/button';
+import { UserInfo } from 'src/lib/firebase/interfaces';
 
 const AuthWrapper: FC<{
   children: ReactNode;
-}> = ({ children }) => {
+  currentUser?: UserInfo;
+}> = ({ children, currentUser }) => {
   return (
     <>
       {children}
 
       {/* Modal: false, in case PC users still want to scroll map while modal is open */}
       <DropdownMenu modal={false}>
-        <MenuTriggerButton />
+        <MenuTriggerButton currentUser={currentUser} />
 
         <DropdownMenuContent
           sideOffset={4}
@@ -39,24 +40,23 @@ const AuthWrapper: FC<{
   );
 };
 
-const MenuTriggerButton: FC = () => {
-  const { authUser } = useAuthContext();
-
+const MenuTriggerButton: FC<{ currentUser?: UserInfo }> = ({ currentUser }) => {
   /* Using user displayName (and initials) instead of userInfo first/lastName
    ** Currently userInfo name won't get updated because not using snapshot
    ** If using user snapshot and updating userInfo in real time, then can use updated userInfo
    */
   const initials = useMemo(() => {
-    const names = authUser?.displayName?.split(' ');
-    if (names) return `${names[0][0].toUpperCase()} ${names[names.length - 1][0].toUpperCase()}`;
+    const firstName = currentUser?.firstName;
+    const lastName = currentUser?.lastName;
+    if (firstName && lastName) return `${firstName[0].toUpperCase()} ${lastName[0].toUpperCase()}`;
     else return '';
-  }, [authUser?.displayName]);
+  }, [currentUser?.firstName, currentUser?.lastName]);
 
   return (
     <DropdownMenuTrigger asChild>
       <div className={'absolute top-5 right-5 w-[40px] h-[40px] cursor-pointer'}>
         {/* Full screen margin change: m-6 */}
-        {authUser ? (
+        {currentUser ? (
           <>
             <Button
               className={`font-bold absolute opacity-60 bg-blue-600 w-full h-full p-0 rounded-full ${montserrat.className}`}

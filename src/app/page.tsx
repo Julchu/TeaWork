@@ -14,9 +14,7 @@ const HomePage: FC = async searchParams => {
   const shouldUseDarkMode = false;
   const googleMapsApiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
 
-  // const { app, currentUser, firestore } = await getFirebaseServerApp();
-
-  const currentEmail = await fetchUserInfo(authIdToken);
+  const currentUser = await fetchUserInfo(authIdToken);
 
   if (!googleMapsApiKey) return <div>No API key</div>;
   return (
@@ -29,7 +27,7 @@ const HomePage: FC = async searchParams => {
       <Map
         googleMapsApiKey={googleMapsApiKey}
         initialCoords={initialCoords}
-        currentUser={currentEmail}
+        currentUser={currentUser}
         // locInfo={JSON.stringify(locInfo)}
       />
 
