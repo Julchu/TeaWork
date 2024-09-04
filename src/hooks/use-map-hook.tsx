@@ -1,8 +1,8 @@
-import mapboxgl from 'mapbox-gl';
-import { Dispatch, MutableRefObject, SetStateAction, useCallback, useMemo, useState } from 'react';
+import { Dispatch, RefObject, SetStateAction, useCallback, useMemo, useState } from 'react';
 import { useAuthContext } from 'src/hooks/use-auth-context';
 import { Coordinates, MapTime } from 'src/lib/firebase/interfaces';
 import useUserHook from 'src/hooks/use-user-firestore-hook';
+import { Map, Marker } from 'mapbox-gl';
 
 type MapMethods = {
   triggerGeolocator: () => void;
@@ -24,7 +24,7 @@ type MapMethods = {
 };
 
 const useMapHook = (
-  map: MutableRefObject<mapboxgl.Map>,
+  map: RefObject<Map>,
   mapLoading: boolean,
   setMapLoading: Dispatch<SetStateAction<boolean>>,
   shouldUseDarkMode?: boolean,
@@ -97,7 +97,7 @@ const useMapHook = (
       element.innerHTML = htmlElement;
 
       // make a marker for each feature and add to the map
-      const marker = new mapboxgl.Marker({
+      const marker = new Marker({
         element,
         draggable: !save,
         clickTolerance: 40,

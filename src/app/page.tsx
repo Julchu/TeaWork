@@ -1,9 +1,9 @@
 import { cookies } from 'next/headers';
 import * as React from 'react';
 import { FC } from 'react';
-import Map from 'src/components/googleMaps/map';
-import { Coordinates } from 'src/lib/firebase/interfaces';
+import { Coordinates, MapTime } from 'src/lib/firebase/interfaces';
 import { fetchUserInfo } from 'src/lib/actions';
+import MapBoxMap from 'src/components/map-box/map';
 
 const HomePage: FC = async searchParams => {
   const cookieStore = cookies();
@@ -24,12 +24,17 @@ const HomePage: FC = async searchParams => {
         ${shouldUseDarkMode ? 'bg-gray-900' : ''}
       `} // Full screen margin change: p-6
     >
-      <Map
-        googleMapsApiKey={googleMapsApiKey}
-        initialCoords={initialCoords}
-        currentUser={currentUser}
-        // locInfo={JSON.stringify(locInfo)}
+      <MapBoxMap
+        shouldUseDarkMode={shouldUseDarkMode}
+        mapTimeMode={MapTime.dawn}
+        initialCoords={{ lng: -79.387054, lat: 43.642567 }}
       />
+      {/*<GoogleMap*/}
+      {/*  googleMapsApiKey={googleMapsApiKey}*/}
+      {/*  initialCoords={initialCoords}*/}
+      {/*  currentUser={currentUser}*/}
+      {/*  // locInfo={JSON.stringify(locInfo)}*/}
+      {/*/>*/}
 
       {/*  shouldUseDarkMode={shouldUseDarkMode}*/}
       {/*  mapTimeMode={mapTimeMode}*/}

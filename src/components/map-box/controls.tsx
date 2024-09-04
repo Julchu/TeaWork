@@ -1,13 +1,14 @@
-import React, { Dispatch, FC, MutableRefObject, SetStateAction, useCallback } from 'react';
+import React, { Dispatch, FC, RefObject, SetStateAction, useCallback } from 'react';
 import { useAuthContext } from 'src/hooks/use-auth-context';
 import Spinner from 'src/components/ui/spinner';
 import { Button } from 'src/components/ui/button';
 import { NoPowerIcon, PowerIcon } from 'src/components/ui/icons/power';
 import { LocationIcon, NorthIcon } from 'src/components/ui/icons/map-controls';
 import useMapHook from 'src/hooks/use-map-hook';
+import { Map } from 'mapbox-gl';
 
 const Controls: FC<{
-  map: MutableRefObject<mapboxgl.Map>;
+  map: RefObject<Map>;
   mapLoading: boolean;
   setMapLoading: Dispatch<SetStateAction<boolean>>;
   locationLoading: boolean;

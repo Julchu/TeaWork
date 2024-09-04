@@ -1,5 +1,5 @@
 import { FC } from 'react';
-import Map from 'src/components/map/map';
+import Map from 'src/components/map-box/map';
 import { headers } from 'next/headers';
 import * as process from 'process';
 import { Coordinates, MapTime } from 'src/lib/firebase/interfaces';
