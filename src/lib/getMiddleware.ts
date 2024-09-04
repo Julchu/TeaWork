@@ -1,4 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { fetchGeoInfo } from 'src/lib/actions';
+import { cookies } from 'next/headers';
 
 const getIpInfo = async (ip: string) => {
   if (ip.includes('localhost') || ip.includes('127.0.0.1')) return;
@@ -20,16 +22,24 @@ const getIpInfo = async (ip: string) => {
 
 export const getMiddleware = async (request: NextRequest, response: NextResponse) => {
   try {
-    const ip = request.headers.get('X-Forwarded-For')?.split(',')[0];
+    const ip = process.env.NEXT_PUBLIC_LOCAL_IP
+      ? process.env.NEXT_PUBLIC_LOCAL_IP
+      : request.headers.get('X-Forwarded-For')?.split(',')[0];
+    const authIdToken = cookies().get('__session')?.value;
+    const geo = await fetchGeoInfo(authIdToken, ip);
+
+    // const geo = request.geo;
 
     const expiresIn = 60 * 60 * 24 * 5 * 1000;
-    // if (ip)
-    //   response.cookies.set('geo', JSON.stringify(await getIpInfo(ip)), {
-    //     maxAge: expiresIn,
-    //     httpOnly: true,
-    //     secure: true,
-    //     sameSite: 'strict',
-    //   });
+
+    // TODO: if geo cookie exists, make BE API call to grab rate-limited geolocation, pass ip as POST body
+    if (geo)
+      response.cookies.set('geo', JSON.stringify(geo), {
+        maxAge: expiresIn,
+        httpOnly: true,
+        secure: true,
+        sameSite: 'strict',
+      });
   } catch (error) {
     console.error('Geolocation error', error);
   }
