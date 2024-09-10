@@ -11,6 +11,7 @@ const HomePage: FC = async searchParams => {
   const locInfo = cookieStore.get('geo');
   const initialCoords: Coordinates = locInfo ? JSON.parse(locInfo.value) : { lat: 5, lng: 5 };
 
+  console.log('initialCoords', initialCoords);
   const shouldUseDarkMode = false;
   const googleMapsApiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
 

@@ -4,7 +4,7 @@ Finding pleasant cafes to grab coffee and to work at
 
 Filter and save specific work environment information about nearby places
 
-# TODO:
+# TODO: update README with info on GCP, separate Node server, etc...
 
 - [TODO Board](https://github.com/users/Julchu/projects/6)
 

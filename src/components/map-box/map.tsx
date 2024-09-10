@@ -19,8 +19,7 @@ const MapBoxMap: FC<{
   mapTimeMode: MapTime;
   initialCoords: Coordinates;
 }> = ({ shouldUseDarkMode, initialCoords, mapTimeMode }) => {
-  const { authUser, authLoading, userInfo, setUserInfo, userLoading, setUserLoading } =
-    useAuthContext();
+  const { userInfo, setUserInfo, userLoading, setUserLoading } = useAuthContext();
   // const [userLoading, setUserLoading]
   const [{ updateUser }] = useUserHook();
   const map = useRef<Map | null>(null);
@@ -171,41 +170,41 @@ const MapBoxMap: FC<{
   //   }
   // }, [debouncedViewingCoords, searchCategoryNearby]);
 
-  // Setting map styles
-  useEffect(() => {
-    if (map.current) {
-      if (userInfo !== undefined) {
-        if (userInfo.mapStyle && userInfo?.mapStyle !== currentMapStyle) {
-          map.current.setStyle(mapStyles[userInfo?.mapStyle]);
-          setCurrentMapStyle(userInfo?.mapStyle);
-        } else if (!mapLoading && !currentMapStyle) {
-          map.current?.setStyle(mapStyles.standard);
-          setCurrentMapStyle(MapStyle.standard);
-        }
-      }
-    }
-  }, [currentMapStyle, mapLoading, mapStyles, userInfo]);
+  // // Setting map styles
+  // useEffect(() => {
+  //   if (map.current) {
+  //     if (userInfo !== undefined) {
+  //       if (userInfo.mapStyle && userInfo?.mapStyle !== currentMapStyle) {
+  //         map.current.setStyle(mapStyles[userInfo?.mapStyle]);
+  //         setCurrentMapStyle(userInfo?.mapStyle);
+  //       } else if (!mapLoading && !currentMapStyle) {
+  //         map.current?.setStyle(mapStyles.standard);
+  //         setCurrentMapStyle(MapStyle.standard);
+  //       }
+  //     }
+  //   }
+  // }, [currentMapStyle, mapLoading, mapStyles, userInfo]);
 
-  // Setting performance mode when user toggles perf mode
-  useEffect(() => {
-    if (map.current) {
-      if (userInfo?.performanceMode !== currentPerfMode) {
-        togglePerformanceLayer(userInfo?.performanceMode);
-        setCurrentPerfMode(userInfo?.performanceMode);
-      }
-    }
-  }, [currentPerfMode, togglePerformanceLayer, userInfo?.performanceMode]);
+  // // Setting performance mode when user toggles perf mode
+  // useEffect(() => {
+  //   if (map.current) {
+  //     if (userInfo?.performanceMode !== currentPerfMode) {
+  //       togglePerformanceLayer(userInfo?.performanceMode);
+  //       setCurrentPerfMode(userInfo?.performanceMode);
+  //     }
+  //   }
+  // }, [currentPerfMode, togglePerformanceLayer, userInfo?.performanceMode]);
 
-  // Setting performance mode after style changes or page loads
-  useEffect(() => {
-    if (map.current)
-      if (userInfo?.performanceMode !== currentPerfMode) {
-        map.current.on('style.load', () => {
-          togglePerformanceLayer(userInfo?.performanceMode);
-          setCurrentPerfMode(userInfo?.performanceMode);
-        });
-      }
-  }, [currentPerfMode, togglePerformanceLayer, userInfo?.performanceMode]);
+  // // Setting performance mode after style changes or page loads
+  // useEffect(() => {
+  //   if (map.current)
+  //     if (userInfo?.performanceMode !== currentPerfMode) {
+  //       map.current.on('style.load', () => {
+  //         togglePerformanceLayer(userInfo?.performanceMode);
+  //         setCurrentPerfMode(userInfo?.performanceMode);
+  //       });
+  //     }
+  // }, [currentPerfMode, togglePerformanceLayer, userInfo?.performanceMode]);
 
   // Setting initial location
   // TODO: change current marker icon

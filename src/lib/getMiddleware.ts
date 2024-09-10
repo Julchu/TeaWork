@@ -28,8 +28,6 @@ export const getMiddleware = async (request: NextRequest, response: NextResponse
     const authIdToken = cookies().get('__session')?.value;
     const geo = await fetchGeoInfo(authIdToken, ip);
 
-    // const geo = request.geo;
-
     const expiresIn = 60 * 60 * 24 * 5 * 1000;
 
     // TODO: if geo cookie exists, make BE API call to grab rate-limited geolocation, pass ip as POST body
