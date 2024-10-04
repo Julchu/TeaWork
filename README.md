@@ -34,7 +34,7 @@ npm install --global yarn
 
 ```zsh
 npm install -g firebase-tools
-````
+```
 
 or
 
@@ -75,8 +75,8 @@ yarn build && firebase --project teaworkapp deploy
 
 # Deploying app to live on GCP; make sure to comment out lines to connect emulators in /lib/firebase/client-app.ts before deploying
 docker compose build
-gcloud builds submit --tag gcr.io/teaworkapp/feat/docker-gcp --project teaworkapp
-gcloud run deploy --image gcr.io/teaworkapp/feat/docker-gcp --project teaworkapp --platform managed
+gcloud builds submit --tag gcr.io/teaworkapp/teawork-fe --project teaworkapp
+gcloud run deploy --image gcr.io/teaworkapp/teawork-fe --project teaworkapp --platform managed
 ```
 
 ### Launching the Firebase/Firestore emulator:
@@ -108,7 +108,7 @@ sudo kill -9 $(sudo lsof -t -i:8080)
 
 - In VSCode, install the extension Prettier
 - Go to your VSCode JSON settings:
-    - Command Palette -> Preferences: Open Settings (JSON)
+  - Command Palette -> Preferences: Open Settings (JSON)
 - Add the following code to the JSON object
 - Whenever you save a file, it'll run automatic formatting based on rules defined in `/.prettierrc.json`
 

@@ -26,7 +26,7 @@ const MapBoxMap: FC<{
   // Set map loading to true in page load
   const [mapLoading, setMapLoading] = useState<boolean>(true);
 
-  const mapContainer = useRef<HTMLDivElement | null>(null);
+  const mapContainer = useRef<HTMLDivElement>(null);
   // Geolocator used to pass to external functions outside useEffect
   const [viewingCoords, setViewingCoords] = useState<Coordinates>();
   const debouncedViewingCoords = useDebouncedState(viewingCoords);
@@ -81,16 +81,12 @@ const MapBoxMap: FC<{
 
   // Initial map loading and base map event listeners that persist
   useEffect(() => {
-    if (!map.current && mapContainer.current !== null) {
-      mapBoxGL.accessToken = process.env.NEXT_PUBLIC_MAPBOX_TOKEN || '';
+    if (!map.current && mapContainer.current !== null && process.env.NEXT_PUBLIC_MAPBOX_TOKEN) {
+      // console.log('render');
+      mapBoxGL.accessToken = process.env.NEXT_PUBLIC_MAPBOX_TOKEN;
       map.current = new Map({
         attributionControl: false,
-        container: mapContainer.current || '',
-        style: {
-          version: 8,
-          sources: {},
-          layers: [],
-        },
+        container: mapContainer.current,
         center: [initialCoords.lng, initialCoords.lat],
         zoom: 9,
         antialias: true,
@@ -135,30 +131,30 @@ const MapBoxMap: FC<{
   // }, []);
 
   const filterCategory = useCallback(() => {
-    if (map.current) {
-      const layers = map.current.style._mergedLayers;
-
-      for (const layerId in layers) {
-        if (layerId.includes('poi-label')) {
-          const layer = map.current.style._mergedLayers[layerId];
-          layer.filter = [
-            'any',
-            ['==', 'category_en', 'Restaurant'],
-            ['==', 'category_en', 'Cafe'],
-            ['==', 'category_en', 'Bakery'],
-            ['==', 'category_en', 'Library'],
-            ['==', 'category_en', 'Convenience_Store'],
-            ['==', 'category_en', 'Supermarket'],
-            ['==', 'category_en', 'Bar'],
-            ['==', 'category_en', 'Community_Garden'],
-            ['==', 'category_en', 'Picnic_Site'],
-            ['==', 'category_en', 'Fast_Food'],
-          ];
-          map.current.style._updateLayer(layer);
-        }
-      }
-      map.current._update(true);
-    }
+    // if (map.current) {
+    //   const layers = map.current.style._mergedLayers;
+    //
+    //   for (const layerId in layers) {
+    //     if (layerId.includes('poi-label')) {
+    //       const layer = map.current.style._mergedLayers[layerId];
+    //       layer.filter = [
+    //         'any',
+    //         ['==', 'category_en', 'Restaurant'],
+    //         ['==', 'category_en', 'Cafe'],
+    //         ['==', 'category_en', 'Bakery'],
+    //         ['==', 'category_en', 'Library'],
+    //         ['==', 'category_en', 'Convenience_Store'],
+    //         ['==', 'category_en', 'Supermarket'],
+    //         ['==', 'category_en', 'Bar'],
+    //         ['==', 'category_en', 'Community_Garden'],
+    //         ['==', 'category_en', 'Picnic_Site'],
+    //         ['==', 'category_en', 'Fast_Food'],
+    //       ];
+    //       map.current.style._updateLayer(layer);
+    //     }
+    //   }
+    //   map.current._update(true);
+    // }
   }, []);
 
   // useEffect(() => {
