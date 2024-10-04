@@ -94,6 +94,7 @@ firebase --project="teaworkapp" emulators:start --only auth,firestore,storage --
   storage (file storage like images)
 - `firebase --import ./emulatorData` imports previously-exported data from `present working director/emulatorData`
 - `firebase --export-on-exit ./emulatorData` exports all your local Firestore data when you close your emulators
+- `firebase deploy` deploys app to Firebase Hosting
 
 ### Sometimes emulator port is in use, this command will kill that port
 
