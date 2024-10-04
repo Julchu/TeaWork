@@ -69,6 +69,11 @@ cd teawork
 yarn install
 yarn dev
 
+# New deploying:
+yarn deploy:firebase
+yarn deploy:gcp
+yarn deploy:cloudflare
+
 # Old deploying to Firebase; make sure to comment out lines to connect emulators in /lib/firebase/client-app.ts before deploying
 # Optional flag: --except functions
 yarn build && firebase --project teaworkapp deploy
